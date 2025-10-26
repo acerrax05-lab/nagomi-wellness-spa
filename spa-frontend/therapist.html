@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Therapist Dashboard | Nagomi Wellness Spa</title>
+  <link rel="stylesheet" href="css/therapist.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar">
+      <h1 class="logo">Nagomi Wellness Spa</h1>
+      <ul class="nav-links">
+        <li><a href="therapist.html" class="active">My Schedule</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+      <div class="user-info">
+        <span id="welcomeText">Welcome!</span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="therapist-dashboard">
+    <!-- Welcome Section -->
+    <section class="welcome-banner">
+      <h2>Your Daily Schedule</h2>
+      <p id="dateDisplay"></p>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+          <h3 id="todayCount">0</h3>
+          <p>Today's Appointments</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-info">
+          <h3 id="upcomingCount">0</h3>
+          <p>Upcoming Sessions</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <h3 id="completedCount">0</h3>
+          <p>Completed Today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3 id="totalEarnings">₱0</h3>
+          <p>Today's Earnings</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter Tabs -->
+    <section class="filter-tabs">
+      <button class="tab-btn active" data-filter="today">Today</button>
+      <button class="tab-btn" data-filter="upcoming">Upcoming</button>
+      <button class="tab-btn" data-filter="completed">Completed</button>
+      <button class="tab-btn" data-filter="all">All</button>
+    </section>
+
+    <!-- Appointments List -->
+    <section class="appointments-section">
+      <h2 id="sectionTitle">Today's Appointments</h2>
+      <div id="appointmentsList" class="appointments-list">
+        <!-- Appointment cards will be inserted here -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Loading Screen -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <p>Loading your schedule...</p>
+  </div>
+
+  <!-- Complete Appointment Modal -->
+  <div id="completeModal" class="modal">
+    <div class="modal-content">
+      <h3>Complete Appointment</h3>
+      <p>Mark this appointment as completed?</p>
+      <div class="modal-actions">
+        <button id="confirmComplete" class="btn-success">Mark Complete</button>
+        <button id="closeCompleteModal" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/therapist.js"></script>
+</body>
+</html>

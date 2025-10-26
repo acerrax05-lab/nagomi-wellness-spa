@@ -1,0 +1,442 @@
+/* ==========================================
+   🌸 NAGOMI WELLNESS SPA MAIN STYLESHEET
+   ========================================== */
+
+/* === RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === GLOBAL === */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f5f1eb;
+  color: #333;
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+}
+
+/* === NAVBAR === */
+.navbar {
+  background: #f5f1eb;
+  color: #4b2e1e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 80px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4b2e1e;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #4b2e1e;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links .active {
+  color: #8b4513;
+}
+
+.login-btn {
+  background: #8b4513;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+/* === HERO SECTION === */
+.hero {
+  position: relative;
+  height: 100vh;
+  background: url('hero_bg.jpg') center center / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* centers content vertically */
+  text-align: center;
+  color: #fff;
+  padding-top: 70px; /* makes space for fixed navbar */
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 0;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+.hero-text h2 {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.hero-text h1 {
+  font-size: 3.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #e9d6c8;
+  margin-bottom: 15px;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.btn {
+  background: #fff;
+  color: #4b2e1e;
+  padding: 12px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background: #e9d6c8;
+  color: #3b1d0c;
+  transform: translateY(-3px);
+}
+
+
+
+/* === SERVICES === */
+/* === SERVICES === */
+.services {
+  padding: 100px 80px;
+  background: #f5f1eb;
+  text-align: center;
+}
+
+.services h2 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+
+.service-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.service-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+.service-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.service-info {
+  padding: 20px;
+}
+
+.service-info h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #8b4513;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.service-info small {
+  color: #6b4a2b;
+  font-size: 0.95rem;
+}
+
+.center-btn {
+  margin-top: 40px;
+}
+
+.btn-outline {
+  display: inline-block;
+  border: 2px solid #8b4513;
+  color: #8b4513;
+  padding: 10px 25px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #8b4513;
+  color: #fff;
+}
+
+
+/* === PROMOS === */
+/* === PROMOS === */
+.promos {
+  padding: 100px 80px;
+  background: #fffdfb;
+  text-align: center;
+}
+
+.promos h2 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+
+.promo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.promo-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.promo-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+.promo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.promo-info {
+  padding: 20px;
+}
+
+.promo-info h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.promo-info p {
+  color: #6b4a2b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.center-btn {
+  margin-top: 40px;
+}
+
+.btn-outline {
+  display: inline-block;
+  border: 2px solid #8b4513;
+  color: #8b4513;
+  padding: 10px 25px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #8b4513;
+  color: #fff;
+}
+
+
+/* === THERAPISTS === */
+/* === THERAPISTS === */
+.therapists {
+  padding: 100px 80px;
+  background: #f5f1eb;
+  text-align: center;
+}
+
+.therapists h2 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+
+.therapist-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.therapist-card {
+  background: #fff;
+  border-radius: 12px;
+  width: 300px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.therapist-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.therapist-card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.therapist-info {
+  padding: 20px;
+}
+
+.therapist-info h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.role {
+  color: #8b4513;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.bio {
+  color: #6b4a2b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+
+/* === CONTACT === */
+/* === CONTACT SECTION === */
+.contact {
+  background: #4b2e1e;
+  color: #fff;
+  padding: 100px 80px;
+  text-align: center;
+}
+
+.contact h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  margin-bottom: 50px;
+  color: #f7c6a5;
+  letter-spacing: 1px;
+}
+
+.contact-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 450px;
+  text-align: left;
+}
+
+.contact-box h3 {
+  color: #f7c6a5;
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+
+.contact-box p {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.social-link {
+  color: #f7c6a5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.social-link:hover {
+  text-decoration: underline;
+}
+
+.contact-image img {
+  width: 360px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* === FOOTER === */
+footer {
+  text-align: center;
+  background: #2b1a10;
+  color: #fff;
+  padding: 15px;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}

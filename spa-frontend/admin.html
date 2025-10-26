@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Nagomi Wellness Spa</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar">
+      <h1 class="logo">Nagomi Wellness Spa</h1>
+      <ul class="nav-links">
+        <li><a href="admin.html" class="active">Dashboard</a></li>
+        <li><a href="login.html" id="logoutBtn">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Dashboard Main Content -->
+  <main class="dashboard">
+    <!-- Overview Section -->
+    <section class="overview">
+      <h2>Business Overview</h2>
+      <div class="cards">
+        <div class="card" id="todayBookings">Today's Bookings: 0</div>
+        <div class="card" id="totalRevenue">Daily Revenue: ₱0</div>
+        <div class="card" id="activeTherapists">Active Therapists: 0</div>
+        <div class="card" id="completionRate">Top Service: N/A</div>
+      </div>
+    </section>
+
+    <!-- Analytics Charts -->
+    <section class="charts">
+      <h2>Analytics Dashboard</h2>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Revenue Trends (This Month)</h3>
+          <canvas id="revenueChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Peak Hours</h3>
+          <canvas id="peakHoursChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Most Booked Services</h3>
+          <canvas id="servicesChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bookings Table -->
+    <section class="data">
+      <h2>Recent Bookings</h2>
+      <table id="bookingsTable">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Therapist</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Loading Screen -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

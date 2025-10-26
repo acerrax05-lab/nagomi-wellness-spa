@@ -1,0 +1,282 @@
+/* === RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === GLOBAL === */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f5f1eb;
+  color: #333;
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+}
+
+/* === NAVBAR === */
+.navbar {
+  background: #f5f1eb;
+  color: #4b2e1e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 80px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4b2e1e;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #4b2e1e;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links .active {
+  color: #8b4513;
+}
+
+.login-btn {
+  background: #8b4513;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  margin: 50px auto;
+  gap: 15px;
+  padding: 30px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.booking-form button {
+  background: #8b4513;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 25px;
+  transition: 0.3s;
+}
+
+.booking-form button:hover {
+  background: #a8613b;
+}
+
+.booking-section {
+  background: #4b2e1e;
+  color: #fff;
+  padding: 100px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.booking-container {
+  background: #4b2e1e;
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.booking-container h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: #f7c6a5;
+  margin-bottom: 10px;
+}
+
+.booking-container .subtitle {
+  font-size: 1rem;
+  color: #f3d6b3;
+  margin-bottom: 50px;
+  letter-spacing: 0.3px;
+  width: 90%;
+}
+
+.booking-form {
+  background: #4b2e1e;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  color: #fff;
+  padding: 20px 30px;
+  border-radius: 15px;
+  width: 100%;
+}
+
+/* Labels */
+.booking-form label {
+  font-weight: 500;
+  color: #f7c6a5;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 1rem;
+}
+
+/* Option Buttons */
+.option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 15px;
+}
+
+.option-grid.small {
+  justify-content: flex-start;
+}
+
+.option-btn {
+  background: #fff;
+  color: #4b2e1e;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 22px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.option-btn:hover,
+.option-btn.active {
+  background: #e9d6c8;
+  transform: translateY(-2px);
+}
+
+/* Inputs */
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 25px;
+  border: none;
+  font-size: 1rem;
+  color: #333;
+  background: #fff;
+}
+
+.booking-row {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+textarea {
+  border-radius: 15px;
+  height: 120px;
+  resize: none;
+}
+
+.char-count {
+  font-size: 0.85rem;
+  color: #f3d6b3;
+  text-align: right;
+}
+
+/* Total & Confirm */
+.total-box {
+  background: #000;
+  color: #fff;
+  border-radius: 8px;
+  padding: 12px 18px;
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.total-box span {
+  font-size: 1.2rem;
+  margin-left: 10px;
+}
+
+.down-note {
+  font-size: 0.9rem;
+  color: #ddd;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.confirm-btn {
+  background: #a8c58f;
+  border: none;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.confirm-btn:hover {
+  background: #b9d9a5;
+  transform: scale(1.02);
+}
+
+/* Add breathing room for mobile */
+@media (max-width: 768px) {
+  .booking-section {
+    padding: 70px 10px;
+  }
+
+  .booking-form {
+    padding: 15px 20px;
+  }
+
+  .option-btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+}
