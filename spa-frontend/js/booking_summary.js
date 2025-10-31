@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const numClientsSelect = document.getElementById("numClients");
   const endTimeDisplay = document.getElementById("end-time-display");
 
+  // === MODAL ELEMENTS ===
+  const summaryModal = document.getElementById("summaryModal");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const printBtn = document.getElementById("printBtn");
+
   // === THERAPIST SELECTOR ===
   const therapistDropdown = document.getElementById("therapistDropdown");
   const dropdownDisplay = document.getElementById("dropdownDisplay");
@@ -48,8 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("click", (e) => {
-      if (!therapistDropdown.contains(e.target))
-        therapistDropdown.classList.remove("open");
+      if (!therapistDropdown.contains(e.target)) therapistDropdown.classList.remove("open");
     });
 
     dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
@@ -114,12 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateCheckboxStates() {
-    const checkboxes = dropdownOptions.querySelectorAll(
-      'input[type="checkbox"]:not(#any-therapist)'
-    );
+    const checkboxes = dropdownOptions.querySelectorAll('input[type="checkbox"]:not(#any-therapist)');
     const anySelected = selectedTherapists.includes("any");
-    const limitReached =
-      selectedTherapists.length >= maxTherapists && !anySelected;
+    const limitReached = selectedTherapists.length >= maxTherapists && !anySelected;
 
     checkboxes.forEach((checkbox) => {
       const optionItem = checkbox.closest(".option-item");
@@ -159,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isSmall = group.classList.contains("small");
       const isActive = btn.classList.contains("active");
 
-      // Allow unselecting by clicking again
       if (isActive) {
         btn.classList.remove("active");
         if (isSmall) selectedMinutes = "";
@@ -216,16 +216,79 @@ document.addEventListener("DOMContentLoaded", () => {
       const base = prices[selectedService][selectedMinutes];
       const total = base * numClients;
       const down = Math.round(total * 0.25);
+      totalAmount = total;
       totalBox.textContent = `₱${total}`;
       downNote.textContent = `A 25% down payment (₱${down}) is required to confirm your booking.`;
     } else {
+      totalAmount = 0;
       totalBox.textContent = "₱0";
-      downNote.textContent =
-        "A 25% down payment will be calculated after selecting a service.";
+      downNote.textContent = "A 25% down payment will be calculated after selecting a service.";
     }
   }
 
-  // === RESET FORM TO DEFAULT ===
+  // === BOOKING SUMMARY MODAL ===
+  function generateBookingReference() {
+    const year = new Date().getFullYear();
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `NGM-${year}-${random}`;
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
+  }
+
+  function populateSummary() {
+    const fullName = document.getElementById("fullName").value;
+    const phoneNumber = document.getElementById("phoneNumber").value;
+    const preferredDate = document.getElementById("preferredDate").value;
+    const preferredTime = timeSelect.value;
+    const specialNotes = document.getElementById("specialNotes").value;
+
+    document.getElementById("summaryService").textContent = selectedService || "-";
+    document.getElementById("summaryDuration").textContent = selectedMinutes || "-";
+    document.getElementById("summaryDate").textContent = formatDate(preferredDate);
+    document.getElementById("summaryTime").textContent = preferredTime !== "Select time..." ? preferredTime : "-";
+    document.getElementById("summaryClients").textContent = numClients;
+
+    const therapistText = selectedTherapists.includes("any") ? "Any available therapist" : selectedTherapists.join(", ");
+    document.getElementById("summaryTherapist").textContent = therapistText;
+
+    document.getElementById("summaryName").textContent = fullName || "-";
+    document.getElementById("summaryPhone").textContent = phoneNumber || "-";
+
+    const notesSection = document.getElementById("notesSection");
+    if (specialNotes.trim()) {
+      document.getElementById("summaryNotes").textContent = specialNotes;
+      notesSection.style.display = "block";
+    } else {
+      notesSection.style.display = "none";
+    }
+
+    const downPayment = Math.round(totalAmount * 0.25);
+    document.getElementById("summaryTotal").textContent = `₱${totalAmount}`;
+    document.getElementById("summaryDownPayment").textContent = `₱${downPayment}`;
+    document.getElementById("bookingReference").textContent = generateBookingReference();
+  }
+
+  function showSummaryModal() {
+    populateSummary();
+    summaryModal.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideSummaryModal() {
+    summaryModal.classList.remove("show");
+    document.body.style.overflow = "auto";
+  }
+
+  function printSummary() {
+    window.print();
+  }
+
+  // === RESET FORM ===
   function resetFormToDefault() {
     form.reset();
     selectedService = "";
@@ -234,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
     numClients = 1;
     maxTherapists = 1;
 
-    // Reset UI highlights and fields
     document.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
     dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
       cb.checked = cb.value === "any";
@@ -242,9 +304,9 @@ document.addEventListener("DOMContentLoaded", () => {
       cb.closest(".option-item").classList.remove("disabled");
     });
 
+    totalAmount = 0;
     totalBox.textContent = "₱0";
-    downNote.textContent =
-      "A 25% down payment will be calculated after selecting a service.";
+    downNote.textContent = "A 25% down payment will be calculated after selecting a service.";
     textarea.value = "";
     charCount.textContent = "0/500 characters";
     endTimeDisplay.textContent = "";
@@ -257,19 +319,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // === FORM SUBMIT ===
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const therapistText = selectedTherapists.includes("any")
-      ? "Any available therapist"
-      : selectedTherapists.join(", ");
 
-    alert(
-      `Booking confirmed for ${numClients} client(s)!\nTherapist(s): ${therapistText}\nTotal: ${totalBox.textContent}`
-    );
+    if (!selectedService || !selectedMinutes) {
+      alert("Please select a service and duration.");
+      return;
+    }
 
-    // Reset everything after confirmation
+    const preferredTime = timeSelect.value;
+    if (!preferredTime || preferredTime === "Select time...") {
+      alert("Please select a preferred time.");
+      return;
+    }
+
+    showSummaryModal();
+  });
+
+  // === MODAL EVENT LISTENERS ===
+  closeModalBtn.addEventListener("click", () => {
+    hideSummaryModal();
     resetFormToDefault();
+  });
+
+  printBtn.addEventListener("click", printSummary);
+
+  summaryModal.addEventListener("click", (e) => {
+    if (e.target === summaryModal) {
+      hideSummaryModal();
+      resetFormToDefault();
+    }
   });
 
   // === INIT ===
   initTherapistSelector();
-  updateTotal(); // Ensure ₱0 default on load
+  updateTotal();
 });

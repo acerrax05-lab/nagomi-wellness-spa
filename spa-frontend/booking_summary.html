@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Your Appointment | Nagomi Wellness Spa</title>
+    <link rel="stylesheet" href="css/booking.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <section class="booking-section">
+    <div class="booking-container">
+        <h2>Book Your Appointment</h2>
+        <p class="subtitle">Complete the form below to schedule your perfect spa treatment</p>
+
+        <form class="booking-form">
+        <!-- Select Service -->
+        <label>Select Service <span>*</span></label>
+        <div class="option-grid">
+            <button type="button" class="option-btn">Nagomi Massage</button>
+            <button type="button" class="option-btn">Ventosa or Cupping Therapy</button>
+            <button type="button" class="option-btn">Shiatsu Massage</button>
+            <button type="button" class="option-btn">Aromatherapy Massage</button>
+            <button type="button" class="option-btn">Combination Massage</button>
+            <button type="button" class="option-btn">Ayurvedic Massage</button>
+            <button type="button" class="option-btn">Deep Tissue Massage</button>
+            <button type="button" class="option-btn">Mandara Massage</button>
+            <button type="button" class="option-btn">Pre Natal Massage</button>
+            <button type="button" class="option-btn">Jade and Lavastone</button>
+            <button type="button" class="option-btn">Swedish Massage</button>
+            <button type="button" class="option-btn">Thai Massage</button>
+        </div>
+
+        <!-- Minutes -->
+        <label>Minutes <span>*</span></label>
+        <div class="option-grid small">
+            <button type="button" class="option-btn">60 minutes</button>
+            <button type="button" class="option-btn">90 minutes</button>
+            <button type="button" class="option-btn">120 minutes</button>
+        </div>
+
+        <!-- Clients & Therapists -->
+        <div class="booking-row">
+            <!-- Number of Clients -->
+            <div class="input-group">
+            <label>Number of Clients <span>*</span></label>
+            <input type="number" id="numClients" min="1" max="5" value="1" required />
+
+            <!-- Preferred Date below -->
+            <label>Preferred Date <span>*</span></label>
+            <input type="date" id="preferredDate" required />
+        </div>
+
+        <!-- Preferred Therapist -->
+        <div class="input-group">
+            <label>Preferred Therapist <small>(Optional)</small></label>
+            <div class="therapist-selector">
+                <div class="therapist-dropdown" id="therapistDropdown">
+                <div class="dropdown-display" id="dropdownDisplay">
+                    <span class="placeholder">Select therapists...</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-options" id="dropdownOptions">
+                    <div class="option-item">
+                    <input type="checkbox" id="any-therapist" value="any" checked>
+                    <label for="any-therapist">Any available therapist</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="sarah" value="Sarah Johnson">
+                    <label for="sarah">Sarah Johnson</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="lisa" value="Lisa Thompson">
+                    <label for="lisa">Lisa Thompson</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="michelle" value="Michelle Rodriguez">
+                    <label for="michelle">Michelle Rodriguez</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="emma" value="Emma Wilson">
+                    <label for="emma">Emma Wilson</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="david" value="David Chen">
+                    <label for="david">David Chen</label>
+                </div>
+                </div>
+            </div>
+            <div class="selection-info" id="selectionInfo">
+                Select up to <span id="maxSelections">1</span> therapist(s)
+            </div>
+            </div>
+
+            <!-- Preferred Time below -->
+            <label>Preferred Time <span>*</span></label>
+            <select id="preferredTime" required>
+                <option>Select time...</option>
+                <option>9:00 AM</option>
+                <option>10:00 AM</option>
+                <option>11:00 AM</option>
+                <option>1:00 PM</option>
+                <option>2:00 PM</option>
+                <option>3:00 PM</option>
+                <option>4:00 PM</option>
+                <option>5:00 PM</option>
+            </select>
+            <div id="end-time-display"></div>
+        </div>
+        </div>
+
+        <!-- Notes -->
+        <label>Special Requests or Notes <small>(Optional)</small></label>
+        <textarea id="specialNotes" placeholder="Any special requests, instructions, allergies, or preferences" maxlength="500"></textarea>
+        <p class="char-count">0/500 characters</p>
+
+        <!-- Name & Phone -->
+        <div class="booking-row">
+        <div class="input-group">
+            <label>Full Name <span>*</span></label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required />
+        </div>
+        <div class="input-group">
+            <label>Phone Number <span>*</span></label>
+            <input type="text" id="phoneNumber" placeholder="(555) 123-4567" required />
+        </div>
+        </div>
+
+        <!-- Total -->
+        <div class="total-box">
+            <strong>Total Amount:</strong> <span>₱1199</span>
+        </div>
+        <p class="down-note">A 25% down payment (₱300) is required to confirm your booking.</p>
+
+        <!-- Submit -->
+        <button type="submit" class="confirm-btn">
+            Confirm Booking
+        </button>
+    </form>
+    </div>
+</section>
+
+<!-- Booking Summary Modal -->
+<div class="modal-overlay" id="summaryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h2>Booking Confirmed!</h2>
+        <p class="confirmation-message">Thank you for choosing Nagomi Wellness Spa</p>
+    </div>
+
+    <div class="modal-body">
+        <div class="summary-section">
+            <h3>Appointment Details</h3>
+            <div class="summary-grid">
+            <div class="summary-item">
+                <span class="label">Service:</span>
+                <span class="value" id="summaryService">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Duration:</span>
+                <span class="value" id="summaryDuration">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Date:</span>
+                <span class="value" id="summaryDate">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Time:</span>
+                <span class="value" id="summaryTime">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Number of Clients:</span>
+                <span class="value" id="summaryClients">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Therapist(s):</span>
+                <span class="value" id="summaryTherapist">-</span>
+            </div>
+        </div>
+        </div>
+
+        <div class="summary-section">
+            <h3>Contact Information</h3>
+            <div class="summary-grid">
+            <div class="summary-item">
+                <span class="label">Name:</span>
+                <span class="value" id="summaryName">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Phone:</span>
+                <span class="value" id="summaryPhone">-</span>
+            </div>
+        </div>
+        </div>
+
+        <div class="summary-section" id="notesSection" style="display: none;">
+            <h3>Special Requests</h3>
+            <p class="notes-text" id="summaryNotes"></p>
+        </div>
+
+        <div class="summary-section payment-section">
+            <div class="payment-row">
+            <span class="payment-label">Total Amount:</span>
+            <span class="payment-value" id="summaryTotal">₱0</span>
+        </div>
+        <div class="payment-row down-payment">
+            <span class="payment-label">Down Payment (25%):</span>
+            <span class="payment-value" id="summaryDownPayment">₱0</span>
+        </div>
+        </div>
+
+        <div class="booking-reference">
+            <p>Booking Reference: <strong id="bookingReference">NGM-2025-XXXX</strong></p>
+            <p class="reference-note">Please save this reference number for your records</p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button class="modal-btn secondary" id="printBtn">Print Summary</button>
+        <button class="modal-btn primary" id="closeModalBtn">Done</button>
+    </div>
+    </div>
+</div>
+
+<script src="js/booking.js"></script>
+</body>
+</html>

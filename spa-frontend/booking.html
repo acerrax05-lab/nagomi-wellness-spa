@@ -39,24 +39,62 @@
           <button type="button" class="option-btn">120 minutes</button>
         </div>
 
-        <!-- Preferred Therapist -->
-        <label>Preferred Therapist <small>(Optional)</small></label>
-        <select>
-          <option>Any available therapist</option>
-          <option>Sarah Johnson</option>
-          <option>Lisa Thompson</option>
-          <option>Michelle Rodriguez</option>
-        </select>
-
-        <!-- Date and Time -->
+        <!-- Clients & Therapists -->
         <div class="booking-row">
+          <!-- Number of Clients -->
           <div class="input-group">
+            <label>Number of Clients <span>*</span></label>
+            <input type="number" id="numClients" min="1" max="5" value="1" required />
+
+            <!-- Preferred Date below -->
             <label>Preferred Date <span>*</span></label>
             <input type="date" required />
           </div>
+
+          <!-- Preferred Therapist -->
           <div class="input-group">
+            <label>Preferred Therapist <small>(Optional)</small></label>
+            <div class="therapist-selector">
+              <div class="therapist-dropdown" id="therapistDropdown">
+                <div class="dropdown-display" id="dropdownDisplay">
+                  <span class="placeholder">Select therapists...</span>
+                  <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-options" id="dropdownOptions">
+                  <div class="option-item">
+                    <input type="checkbox" id="any-therapist" value="any" checked>
+                    <label for="any-therapist">Any available therapist</label>
+                  </div>
+                  <div class="option-item">
+                    <input type="checkbox" id="sarah" value="Sarah Johnson">
+                    <label for="sarah">Sarah Johnson</label>
+                  </div>
+                  <div class="option-item">
+                    <input type="checkbox" id="lisa" value="Lisa Thompson">
+                    <label for="lisa">Lisa Thompson</label>
+                  </div>
+                  <div class="option-item">
+                    <input type="checkbox" id="michelle" value="Michelle Rodriguez">
+                    <label for="michelle">Michelle Rodriguez</label>
+                  </div>
+                  <div class="option-item">
+                    <input type="checkbox" id="emma" value="Emma Wilson">
+                    <label for="emma">Emma Wilson</label>
+                  </div>
+                  <div class="option-item">
+                    <input type="checkbox" id="david" value="David Chen">
+                    <label for="david">David Chen</label>
+                  </div>
+                </div>
+              </div>
+              <div class="selection-info" id="selectionInfo">
+                Select up to <span id="maxSelections">1</span> therapist(s)
+              </div>
+            </div>
+
+            <!-- Preferred Time below -->
             <label>Preferred Time <span>*</span></label>
-            <select required>
+            <select id="preferredTime" required>
               <option>Select time...</option>
               <option>9:00 AM</option>
               <option>10:00 AM</option>
@@ -67,6 +105,7 @@
               <option>4:00 PM</option>
               <option>5:00 PM</option>
             </select>
+            <div id="end-time-display"></div>
           </div>
         </div>
 
@@ -95,12 +134,12 @@
 
         <!-- Submit -->
         <button type="submit" class="confirm-btn">
-          ✅ Confirm Booking
+          Confirm Booking
         </button>
       </form>
     </div>
   </section>
-  <script src="js/booking.js"></script>
 
+  <script src="js/booking.js"></script>
 </body>
 </html>

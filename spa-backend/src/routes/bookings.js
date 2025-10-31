@@ -7,9 +7,9 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 
-// ✅ IMPORTANT: Specific routes MUST come before parameterized routes (/:id)
+// IMPORTANT: Specific routes MUST come before parameterized routes (/:id)
 
-// ✅ Get bookings for logged-in client
+// Get bookings for logged-in client
 router.get('/my-bookings', auth, async (req, res) => {
   try {
     const bookings = await Booking.find({ client: req.user.id })
@@ -24,7 +24,7 @@ router.get('/my-bookings', auth, async (req, res) => {
   }
 });
 
-// ✅ Get bookings assigned to the logged-in therapist
+// Get bookings assigned to the logged-in therapist
 router.get('/my-appointments', auth, roles(['therapist']), async (req, res) => {
   try {
     const bookings = await Booking.find({ therapist: req.user.id })
@@ -39,7 +39,7 @@ router.get('/my-appointments', auth, roles(['therapist']), async (req, res) => {
   }
 });
 
-// ✅ Get all bookings (Admin only) - WITH POPULATION
+// Get all bookings (Admin only) - WITH POPULATION
 router.get('/', auth, roles(['admin']), async (req, res) => {
   try {
     const bookings = await Booking.find()
@@ -55,7 +55,7 @@ router.get('/', auth, roles(['admin']), async (req, res) => {
   }
 });
 
-// ✅ Create booking (Public or authenticated)
+// Create booking (Public or authenticated)
 router.post('/', async (req, res) => {
   try {
     const {
@@ -113,7 +113,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ Update booking status (Admin and Therapist can update)
+// Update booking status (Admin and Therapist can update)
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const { status } = req.body;
@@ -161,7 +161,7 @@ router.patch('/:id/status', auth, async (req, res) => {
   }
 });
 
-// ✅ Get single booking
+// Get single booking
 router.get('/:id', auth, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
@@ -187,7 +187,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// ✅ Delete booking (Admin only)
+// Delete booking (Admin only)
 router.delete('/:id', auth, roles(['admin']), async (req, res) => {
   try {
     const booking = await Booking.findByIdAndDelete(req.params.id);

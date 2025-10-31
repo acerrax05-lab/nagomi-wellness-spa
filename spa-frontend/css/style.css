@@ -1,5 +1,5 @@
 /* ==========================================
-   🌸 NAGOMI WELLNESS SPA MAIN STYLESHEET
+  NAGOMI WELLNESS SPA MAIN STYLESHEET
    ========================================== */
 
 /* === RESET === */
@@ -7,6 +7,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 /* === GLOBAL === */
@@ -73,71 +74,98 @@ h1, h2, h3 {
 .hero {
   position: relative;
   height: 100vh;
-  background: url('hero_bg.jpg') center center / cover no-repeat;
+  background: url('spa_home.png') center 30% / cover no-repeat;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center; /* centers content vertically */
+  justify-content: center;
   text-align: center;
   color: #fff;
-  padding-top: 70px; /* makes space for fixed navbar */
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
 }
 
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+.overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Remove padding-right: 300px; */
+  padding: 0 20px; /* Optional: small horizontal padding for mobile spacing */
 }
 
 .hero-text {
   position: relative;
-  z-index: 1;
-  max-width: 700px;
-  padding: 20px;
+  z-index: 2;
+  max-width: 900px;
+  padding: 10px;
   margin: 0 auto;
+  width: 100%;
+  text-align: center; /* Ensure all inner text stays centered */
 }
 
 .hero-text h2 {
-  font-size: 1.6rem;
-  font-weight: 400;
-  margin-bottom: 10px;
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin-bottom: 15px;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #fff;
+  opacity: 0.95;
+  font-style: italic;
 }
 
 .hero-text h1 {
-  font-size: 3.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: #e9d6c8;
-  margin-bottom: 15px;
+  font-size: 6rem;
+  font-family: 'Edwardian Script ITC', 'Brush Script MT', 'Lucida Handwriting', 'Freestyle Script', cursive;
+  font-weight: 400;
+  color: #fff;
+  margin: 0 auto 30px auto;
+  font-style: italic;
+  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.6);
+  line-height: 1.2;
 }
 
 .hero-text p {
-  font-size: 1.1rem;
-  margin-bottom: 25px;
-  line-height: 1.6;
+  font-size: 1.25rem;
+  margin: 0 auto 40px auto;
+  line-height: 1.8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .btn {
   background: #fff;
   color: #4b2e1e;
-  padding: 12px 28px;
-  border-radius: 8px;
+  padding: 14px 40px;
+  border-radius: 6px;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
+  display: inline-block;
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .btn:hover {
   background: #e9d6c8;
   color: #3b1d0c;
   transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 
-
-/* === SERVICES === */
 /* === SERVICES === */
 .services {
   padding: 100px 80px;
@@ -221,21 +249,32 @@ h1, h2, h3 {
   color: #fff;
 }
 
-
-/* === PROMOS === */
 /* === PROMOS === */
 .promos {
   padding: 100px 80px;
-  background: #fffdfb;
+  background: #623e2a;
   text-align: center;
 }
 
 .promos h2 {
   font-family: 'Playfair Display', serif;
-  color: #4b2e1e;
+  color: #fff;
   font-size: 2.2rem;
-  margin-bottom: 40px;
+  margin-bottom: 10px; /* smaller gap before next text */
   letter-spacing: 1px;
+}
+
+.promo-intro {
+  max-width: 800px;
+  margin: 0 auto 60px;
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.promo-subtitle {
+  margin-top: 60px;
+  margin-bottom: 40px;
 }
 
 .promo-grid {
@@ -243,6 +282,7 @@ h1, h2, h3 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 25px;
+  margin-bottom: 60px;
 }
 
 .promo-card {
@@ -260,13 +300,14 @@ h1, h2, h3 {
 }
 
 .promo-card img {
-  width: 100%;
+  width: 60%;
   height: 200px;
   object-fit: cover;
 }
 
 .promo-info {
   padding: 20px;
+  background: #fff;
 }
 
 .promo-info h3 {
@@ -282,6 +323,19 @@ h1, h2, h3 {
   line-height: 1.5;
 }
 
+.promo-closing {
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.promo-closing-text {
+  max-width: 700px;
+  margin: 0 auto 40px;
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
 .center-btn {
   margin-top: 40px;
 }
@@ -294,6 +348,7 @@ h1, h2, h3 {
   border-radius: 5px;
   text-decoration: none;
   transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .btn-outline:hover {
@@ -301,6 +356,21 @@ h1, h2, h3 {
   color: #fff;
 }
 
+/* Responsive */
+@media (max-width: 768px) {
+  .promos {
+    padding: 60px 20px;
+  }
+
+  .promos h2 {
+    font-size: 1.8rem;
+  }
+
+  .promo-card {
+    width: 100%;
+    max-width: 350px;
+  }
+}
 
 /* === THERAPISTS === */
 /* === THERAPISTS === */
@@ -368,11 +438,9 @@ h1, h2, h3 {
   line-height: 1.6;
 }
 
-
-/* === CONTACT === */
 /* === CONTACT SECTION === */
 .contact {
-  background: #4b2e1e;
+  background: #623e2a;
   color: #fff;
   padding: 100px 80px;
   text-align: center;
@@ -436,7 +504,41 @@ footer {
   text-align: center;
   background: #2b1a10;
   color: #fff;
-  padding: 15px;
+  width: 100%;
+  padding: 20px;
   font-size: 0.9rem;
   letter-spacing: 0.5px;
+  position: relative;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 992px) {
+  .navbar {
+    padding: 15px 40px;
+  }
+  .hero-text h1 {
+    font-size: 4rem;
+  }
+  .service-card,
+  .promo-card,
+  .therapist-card {
+    width: 90%;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  section {
+    padding: 60px 20px;
+  }
+  .hero-text h1 {
+    font-size: 3.5rem;
+  }
+  .hero-text p {
+    font-size: 1rem;
+  }
+  .contact-container {
+    flex-direction: column;
+    align-items: center;
+  }
 }
