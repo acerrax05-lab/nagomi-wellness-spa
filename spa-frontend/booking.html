@@ -140,6 +140,101 @@
     </div>
   </section>
 
+  <!-- Booking Summary Modal -->
+  <div id="summaryModal" class="summary-modal">
+    <div class="summary-container">
+      <div class="summary-header">
+        <h2>Review Your Booking</h2>
+        <p>Please review your booking details before confirming</p>
+      </div>
+
+      <div class="summary-content">
+        <!-- Service Details -->
+        <div class="summary-section">
+          <h3>Service Details</h3>
+          <div class="summary-row">
+            <span class="label">Service:</span>
+            <span class="value" id="summary-service">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Duration:</span>
+            <span class="value" id="summary-duration">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Number of Clients:</span>
+            <span class="value" id="summary-clients">-</span>
+          </div>
+        </div>
+
+        <!-- Therapist Details -->
+        <div class="summary-section">
+          <h3>Therapist Selection</h3>
+          <div class="summary-row">
+            <span class="label">Therapist(s):</span>
+            <span class="value" id="summary-therapists">-</span>
+          </div>
+        </div>
+
+        <!-- Schedule Details -->
+        <div class="summary-section">
+          <h3>Schedule</h3>
+          <div class="summary-row">
+            <span class="label">Date:</span>
+            <span class="value" id="summary-date">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Time:</span>
+            <span class="value" id="summary-time">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">End Time:</span>
+            <span class="value" id="summary-endtime">-</span>
+          </div>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="summary-section">
+          <h3>Contact Information</h3>
+          <div class="summary-row">
+            <span class="label">Name:</span>
+            <span class="value" id="summary-name">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Phone:</span>
+            <span class="value" id="summary-phone">-</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="summary-section" id="notes-section" style="display: none;">
+          <h3>Special Requests</h3>
+          <div class="summary-notes" id="summary-notes">-</div>
+        </div>
+
+        <!-- Price Summary -->
+        <div class="summary-section price-summary">
+          <div class="summary-row total">
+            <span class="label">Total Amount:</span>
+            <span class="value" id="summary-total">₱0</span>
+          </div>
+          <div class="summary-row down-payment">
+            <span class="label">Down Payment (25%):</span>
+            <span class="value" id="summary-downpayment">₱0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button type="button" id="backToEdit" class="btn-back">
+          ← Back to Edit
+        </button>
+        <button type="button" id="confirmBookingBtn" class="btn-confirm-final">
+          Confirm Booking →
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/booking.js"></script>
 </body>
 </html>

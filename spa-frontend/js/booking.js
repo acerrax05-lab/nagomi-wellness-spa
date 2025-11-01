@@ -1,4 +1,4 @@
-// spa-frontend/js/booking.js - UPDATED WITH NEW FEATURES
+// spa-frontend/js/booking.js - WITH SUMMARY MODAL
 
 const API_URL = "http://localhost:5000/api";
 
@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const therapistDropdown = document.getElementById("therapistDropdown");
   const preferredTimeSelect = document.getElementById("preferredTime");
   const endTimeDisplay = document.getElementById("end-time-display");
+
+  // Summary modal elements
+  const summaryModal = document.getElementById("summaryModal");
+  const backToEditBtn = document.getElementById("backToEdit");
+  const confirmBookingBtn = document.getElementById("confirmBookingBtn");
 
   // Load therapists dynamically
   await loadTherapists();
@@ -58,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Clear existing therapist options except "any"
       const existingOptions = dropdownOptions.querySelectorAll('.option-item');
       existingOptions.forEach((option, index) => {
-        if (index > 0) option.remove(); // Keep first "any" option
+        if (index > 0) option.remove();
       });
 
       // Add therapists from backend
@@ -109,7 +114,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Limit selections
       if (selectedTherapists.length > maxSelections) {
-        // Uncheck the last selected
         otherCheckboxes[otherCheckboxes.length - 1].checked = false;
         selectedTherapists.pop();
       }
@@ -220,21 +224,107 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   numClientsInput.addEventListener('input', updateTotal);
 
-  // Submit form
+  // Format date for display
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  }
+
+  // Populate summary modal
+  function populateSummary() {
+    const date = form.querySelector('input[type="date"]').value;
+    const time = preferredTimeSelect.value;
+    const notes = textarea.value.trim();
+    const name = form.querySelector('input[placeholder="Enter your full name"]').value;
+    const phone = form.querySelector('input[placeholder="(555) 123-4567"]').value;
+    const numClients = parseInt(numClientsInput.value);
+
+    // Calculate end time
+    const duration = parseInt(selectedMinutes);
+    const [timeStr, period] = time.split(' ');
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    minutes += duration;
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+    const endPeriod = hours >= 12 ? 'PM' : 'AM';
+    const endHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+    const endTime = `${endHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
+
+    // Populate summary fields
+    document.getElementById('summary-service').textContent = selectedService;
+    document.getElementById('summary-duration').textContent = selectedMinutes;
+    document.getElementById('summary-clients').textContent = numClients;
+    
+    const therapistNames = selectedTherapists.length > 0 
+      ? selectedTherapists.map(t => t.name).join(', ')
+      : 'Any available therapist';
+    document.getElementById('summary-therapists').textContent = therapistNames;
+    
+    document.getElementById('summary-date').textContent = formatDate(date);
+    document.getElementById('summary-time').textContent = time;
+    document.getElementById('summary-endtime').textContent = endTime;
+    document.getElementById('summary-name').textContent = name;
+    document.getElementById('summary-phone').textContent = phone;
+    
+    // Show/hide notes section
+    const notesSection = document.getElementById('notes-section');
+    if (notes) {
+      document.getElementById('summary-notes').textContent = notes;
+      notesSection.style.display = 'block';
+    } else {
+      notesSection.style.display = 'none';
+    }
+    
+    const downPayment = Math.round(totalAmount * 0.25);
+    document.getElementById('summary-total').textContent = `₱${totalAmount.toLocaleString()}`;
+    document.getElementById('summary-downpayment').textContent = `₱${downPayment.toLocaleString()}`;
+  }
+
+  // Show summary modal
+  function showSummaryModal() {
+    populateSummary();
+    summaryModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  // Hide summary modal
+  function hideSummaryModal() {
+    summaryModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // Back to edit button
+  backToEditBtn.addEventListener('click', hideSummaryModal);
+
+  // Form submit - show summary instead of immediate booking
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const date = form.querySelector('input[type="date"]').value;
+    const time = preferredTimeSelect.value;
+    const name = form.querySelector('input[placeholder="Enter your full name"]').value;
+    const phone = form.querySelector('input[placeholder="(555) 123-4567"]').value;
+
+    if (!selectedService || !selectedMinutes || !date || !time || time === 'Select time...' || !name || !phone) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
+    // Show summary modal instead of submitting immediately
+    showSummaryModal();
+  });
+
+  // Confirm booking button in modal - actual submission
+  confirmBookingBtn.addEventListener('click', async () => {
     const date = form.querySelector('input[type="date"]').value;
     const time = preferredTimeSelect.value;
     const notes = textarea.value;
     const name = form.querySelector('input[placeholder="Enter your full name"]').value;
     const phone = form.querySelector('input[placeholder="(555) 123-4567"]').value;
     const numClients = parseInt(numClientsInput.value);
-
-    if (!selectedService || !selectedMinutes || !date || !time || time === 'Select time...' || !name || !phone) {
-      alert("Please fill in all required fields!");
-      return;
-    }
 
     // Calculate end time for backend
     const duration = parseInt(selectedMinutes);
@@ -265,6 +355,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     console.log('📤 Submitting booking:', bookingData);
 
+    // Disable button during submission
+    confirmBookingBtn.disabled = true;
+    confirmBookingBtn.textContent = 'Processing...';
+
     try {
       const response = await fetch(`${API_URL}/bookings`, {
         method: "POST",
@@ -275,7 +369,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("✅ Booking confirmed! We'll contact you soon.");
+        // Hide modal
+        hideSummaryModal();
+        
+        // Show success message
+        alert("✅ Booking confirmed successfully! We'll contact you soon to confirm your appointment.");
+        
+        // Reset form
         form.reset();
         document.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
@@ -294,6 +394,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
       console.error("Error submitting booking:", error);
       alert("❌ Server error. Please try again later.");
+    } finally {
+      // Re-enable button
+      confirmBookingBtn.disabled = false;
+      confirmBookingBtn.textContent = 'Confirm Booking →';
     }
   });
 });
