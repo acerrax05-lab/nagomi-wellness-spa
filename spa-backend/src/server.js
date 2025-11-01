@@ -12,7 +12,7 @@ const server = http.createServer(app);
 // Socket.IO setup with CORS
 const io = socketIO(server, {
   cors: {
-    origin: "*", // In production, specify your frontend domain
+    origin: "*", 
     methods: ["GET", "POST", "PATCH", "DELETE"]
   }
 });
@@ -43,8 +43,8 @@ io.on('connection', (socket) => {
   // Join room based on user role
   socket.on('join', (data) => {
     const { userId, role } = data;
-    socket.join(role); // Join role-based room (admin, therapist, client)
-    socket.join(userId); // Join user-specific room
+    socket.join(role); 
+    socket.join(userId); 
     console.log(`👤 User ${userId} joined ${role} room`);
   });
 });

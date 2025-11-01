@@ -81,7 +81,6 @@ router.get('/users', auth, roles(['admin']), async (req, res) => {
   res.json(users);
 });
 
-// Add these routes to src/routes/auth.js
 
 // ✅ Get all therapists (public - for booking form)
 router.get('/therapists', async (req, res) => {

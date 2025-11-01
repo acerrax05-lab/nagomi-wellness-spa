@@ -7,8 +7,6 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 
-// ✅ IMPORTANT: Specific routes MUST come before parameterized routes (/:id)
-
 // ✅ Get bookings for logged-in client (NOT USED ANYMORE but keep for compatibility)
 router.get('/my-bookings', auth, async (req, res) => {
   try {
@@ -55,17 +53,17 @@ router.get('/', auth, roles(['admin']), async (req, res) => {
   }
 });
 
-// ✅ Create booking (PUBLIC - no authentication required)
+// Create booking (PUBLIC - no authentication required)
 router.post('/', async (req, res) => {
   try {
     const {
       service: serviceName,
       minutes,
-      therapists: selectedTherapists, // NEW: Array of therapists
-      numberOfClients, // NEW
+      therapists: selectedTherapists, //Array of therapists
+      numberOfClients, 
       date,
       time,
-      endTime, // NEW
+      endTime, 
       notes,
       name: guestName,
       phone: guestPhone,
@@ -163,7 +161,7 @@ router.post('/', async (req, res) => {
 
     console.log('✅ Booking created:', booking._id);
 
-    // 🔥 EMIT SOCKET EVENT
+    // EMIT SOCKET EVENT
     const io = req.app.get('socketio');
     if (io) {
       io.emit('newBooking', {
@@ -189,7 +187,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ Update booking status (Admin, Therapist, and Client)
+
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const { status } = req.body;
@@ -225,7 +223,7 @@ router.patch('/:id/status', auth, async (req, res) => {
     // Populate and return
     await booking.populate('service therapist');
 
-    // 🔥 EMIT SOCKET EVENT - STATUS UPDATE
+    // EMIT SOCKET EVENT - STATUS UPDATE
     const io = req.app.get('socketio');
     if (io) {
       io.emit('bookingStatusUpdated', {
@@ -336,7 +334,7 @@ router.delete('/:id', auth, roles(['admin']), async (req, res) => {
       return res.status(404).json({ msg: 'Booking not found' });
     }
 
-    // 🔥 EMIT SOCKET EVENT - BOOKING DELETED
+    // EMIT SOCKET EVENT - BOOKING DELETED
     const io = req.app.get('socketio');
     if (io) {
       io.emit('bookingDeleted', { bookingId: req.params.id });

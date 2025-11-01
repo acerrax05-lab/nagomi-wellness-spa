@@ -101,8 +101,6 @@ async function loadTherapistData() {
 }
 
 // Render calendar
-// Render calendar - FIXED VERSION
-// Render calendar - PROPERLY FIXED VERSION
 function renderCalendar() {
   const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
@@ -180,7 +178,6 @@ function renderCalendar() {
 }
 
 // Display appointments for selected date
-// Display appointments for selected date - UPDATED DESIGN
 function displayAppointmentsForDate(dateStr) {
   const dayBookings = allBookings.filter(b => 
     new Date(b.date).toDateString() === dateStr

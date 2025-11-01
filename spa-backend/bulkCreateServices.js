@@ -1,4 +1,4 @@
-// bulkCreateServices.js - Place this in your spa-backend root folder
+// bulkCreateServices.js
 const mongoose = require('mongoose');
 require('dotenv').config();
 
