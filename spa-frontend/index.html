@@ -10,18 +10,26 @@
 <body>
   <!-- Navbar -->
   <header>
-    <nav class="navbar">
-  <h1 class="logo">Nagomi Wellness Spa</h1>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="booking.html" class="btn-book">Book Now</a></li>
-    <li><a href="login.html" class="staff-login">Staff Login</a></li>
-  </ul>
-</nav>
+    <nav class="navbar" id="navbar">
+      <h1 class="logo">Nagomi Wellness Spa</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="booking.html" class="btn-book">Book Now</a></li>
+        <li><a href="#services" class="btn-book">Services</a></li>
+        <li><a href="#promos" class="btn-book">Our Spa</a></li>
+        <li><a href="#therapists" class="btn-book">Therapists</a></li>
+       <li><a href="#contact" class="btn-book">Contact Us</a></li>
+        <li><a href="login.html" class="staff-login">Staff Login</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Hero Section with Video Background -->
   <section id="home" class="hero">
+    <video autoplay muted loop playsinline class="hero-video">
+      <source src="css/spa_home.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
     <div class="overlay">
       <div class="hero-text">
         <h2>Welcome to</h2>
@@ -33,188 +41,187 @@
   </section>
 
   <!-- Services Section -->
-<section id="services" class="services">
-  <h2>Services</h2>
-  <div class="service-grid">
-    <div class="service-card">
-      <img src="img/service1.jpg" alt="Massage Services">
-      <div class="service-info">
-        <h3>The Nagomi Massage</h3>
-        <p class="subtitle">Massage Services</p>
-        <small>60 mins | 90 mins | 120 mins</small>
+  <section id="services" class="services">
+    <h2>Services</h2>
+    <div class="service-grid">
+      <div class="service-card">
+        <img src="img/service1.jpg" alt="Massage Services">
+        <div class="service-info">
+          <h3>The Nagomi Massage</h3>
+          <p class="subtitle">Massage Services</p>
+          <small>60 mins | 90 mins | 120 mins</small>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <img src="img/service2.jpg" alt="Package Deals">
+        <div class="service-info">
+          <h3>The Nagomi Packages</h3>
+          <p class="subtitle">Package Deals</p>
+          <small>Package 1 - 14</small>
+        </div>
+      </div>
+
+      <div class="service-card">
+        <img src="img/service3.jpg" alt="Dual Delight Packages">
+        <div class="service-info">
+          <h3>The Nagomi Packages</h3>
+          <p class="subtitle">Dual Delight Packages</p>
+          <small>For Couples</small>
+        </div>
       </div>
     </div>
 
-    <div class="service-card">
-      <img src="img/service2.jpg" alt="Package Deals">
-      <div class="service-info">
-        <h3>The Nagomi Packages</h3>
-        <p class="subtitle">Package Deals</p>
-        <small>Package 1 - 14</small>
+    <div class="center-btn">
+      <a href="#" class="btn-outline">View All Services →</a>
+    </div>
+  </section>
+
+  <!-- Promos Section -->
+  <section id="promos" class="promos">
+    <h2>Rejuvenate, Relax, and Rediscover Your Inner Peace</h2>
+    <p class="promo-intro">
+      At Nagomi Wellness Spa, we believe self-care is not a luxury—it's a necessity. 
+      Nestled in the heart of Baguio City, our spa offers a tranquil escape where you can unwind, recharge, and achieve holistic wellness.
+    </p>
+    
+    <h2 class="promo-subtitle">Why Choose Nagomi Wellness Spa?</h2>
+    
+    <div class="promo-grid">
+      <div class="promo-card">
+        <img src="img/Holistic.png" alt="Holistic Wellness Experience">
+        <div class="promo-info">
+          <h3>Holistic Wellness Experience</h3>
+          <p>Indulge in massages, facials, and aesthetic consultations tailored to your needs.</p>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <img src="img/Packages.png" alt="All-Inclusive Packages">
+        <div class="promo-info">
+          <h3>All-Inclusive Packages</h3>
+          <p>Enjoy complete relaxation with packages that include body scrubs, facials, and herbal treatments.</p>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <img src="img/Luxurious.png" alt="Luxurious Amenities">
+        <div class="promo-info">
+          <h3>Luxurious Amenities</h3>
+          <p>Complimentary use of sauna and showers for a complete spa experience.</p>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <img src="img/Skilled Therapists.png" alt="Skilled Therapists">
+        <div class="promo-info">
+          <h3>Skilled Therapists</h3>
+          <p>Our professional team ensures a safe, relaxing, and therapeutic service for every client.</p>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <img src="img/Family-Friendly.png" alt="Family-Friendly Atmosphere">
+        <div class="promo-info">
+          <h3>Family-Friendly Atmosphere</h3>
+          <p>Embrace our family-friendly atmosphere, welcoming guests of all ages to enjoy a serene and inclusive spa experience.</p>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <img src="img/comfort.png" alt="Indulgent Comfort">
+        <div class="promo-info">
+          <h3>Indulgent Comfort</h3>
+          <p>Delight in indulgent comfort with our luxurious spa services, creating an oasis of tranquility and pampering for every guest.</p>
+        </div>
       </div>
     </div>
 
-    <div class="service-card">
-      <img src="img/service3.jpg" alt="Dual Delight Packages">
-      <div class="service-info">
-        <h3>The Nagomi Packages</h3>
-        <p class="subtitle">Dual Delight Packages</p>
-        <small>For Couples</small>
+    <h2 class="promo-closing">Pamper Yourself Today!</h2>
+    <p class="promo-closing-text">
+      Your well-being is our priority. Discover the art of relaxation at Nagomi Wellness Spa—where stress melts away, and tranquility begins.
+    </p>
+  </section>
+
+  <!-- Therapists Section -->
+  <section id="therapists" class="therapists">
+    <h2>Meet Our Therapists</h2>
+
+    <div class="therapist-grid">
+      <div class="therapist-card">
+        <img src="img/therapists1.jpg" alt="Therapist 1">
+        <div class="therapist-info">
+          <h3>Sarah Johnson</h3>
+          <p class="role">Aromatherapy Expert</p>
+          <p class="bio">
+            Certified aromatherapist with expertise in essential oil treatments and relaxation techniques.
+          </p>
+        </div>
+      </div>
+
+      <div class="therapist-card">
+        <img src="img/therepists2.jpg" alt="Therapist 2">
+        <div class="therapist-info">
+          <h3>Lisa Thompson</h3>
+          <p class="role">Deep Tissue Specialist</p>
+          <p class="bio">
+            Licensed massage therapist with advanced training in deep tissue and sports massage.
+          </p>
+        </div>
+      </div>
+
+      <div class="therapist-card">
+        <img src="img/therepists3.jpg" alt="Therapist 3">
+        <div class="therapist-info">
+          <h3>Michelle Rodriguez</h3>
+          <p class="role">Hot Stone Therapy Expert</p>
+          <p class="bio">
+            Certified in hot stone massage and thermal therapy techniques for deep relaxation.
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="center-btn">
-    <a href="#" class="btn-outline">View All Services →</a>
-  </div>
-</section>
-
-<!-- Promos Section -->
-<section id="promos" class="promos">
-  <h2>Rejuvenate, Relax, and Rediscover Your Inner Peace</h2>
-  <p class="promo-intro">
-    At Nagomi Wellness Spa, we believe self-care is not a luxury—it's a necessity. 
-    Nestled in the heart of Baguio City, our spa offers a tranquil escape where you can unwind, recharge, and achieve holistic wellness.
-  </p>
-  
-  <h2 class="promo-subtitle">Why Choose Nagomi Wellness Spa?</h2>
-  
-  <div class="promo-grid">
-    <div class="promo-card">
-      <img src="img/Holistic.png" alt="Holistic Wellness Experience">
-      <div class="promo-info">
-        <h3>Holistic Wellness Experience</h3>
-        <p>Indulge in massages, facials, and aesthetic consultations tailored to your needs.</p>
-      </div>
-    </div>
-
-    <div class="promo-card">
-      <img src="img/Packages.png" alt="All-Inclusive Packages">
-      <div class="promo-info">
-        <h3>All-Inclusive Packages</h3>
-        <p>Enjoy complete relaxation with packages that include body scrubs, facials, and herbal treatments.</p>
-      </div>
-    </div>
-
-    <div class="promo-card">
-      <img src="img/Luxurious.png" alt="Luxurious Amenities">
-      <div class="promo-info">
-        <h3>Luxurious Amenities</h3>
-        <p>Complimentary use of sauna and showers for a complete spa experience.</p>
-      </div>
-    </div>
-
-    <div class="promo-card">
-      <img src="img/Skilled Therapists.png" alt="Skilled Therapists">
-      <div class="promo-info">
-        <h3>Skilled Therapists</h3>
-        <p>Our professional team ensures a safe, relaxing, and therapeutic service for every client.</p>
-      </div>
-    </div>
-
-    <div class="promo-card">
-      <img src="img/Family-Friendly.png" alt="Family-Friendly Atmosphere">
-      <div class="promo-info">
-        <h3>Family-Friendly Atmosphere</h3>
-        <p>Embrace our family-friendly atmosphere, welcoming guests of all ages to enjoy a serene and inclusive spa experience.</p>
-      </div>
-    </div>
-
-    <div class="promo-card">
-      <img src="img/comfort.png" alt="Indulgent Comfort">
-      <div class="promo-info">
-        <h3>Indulgent Comfort</h3>
-        <p>Delight in indulgent comfort with our luxurious spa services, creating an oasis of tranquility and pampering for every guest.</p>
-      </div>
-    </div>
-  </div>
-
-  <h2 class="promo-closing">Pamper Yourself Today!</h2>
-  <p class="promo-closing-text">
-    Your well-being is our priority. Discover the art of relaxation at Nagomi Wellness Spa—where stress melts away, and tranquility begins.
-  </p>
-</section>
-
-
-<!-- Therapists Section -->
-<section id="therapists" class="therapists">
-  <h2>Meet Our Therapists</h2>
-
-  <div class="therapist-grid">
-    <div class="therapist-card">
-      <img src="img/therapists1.jpg" alt="Therapist 1">
-      <div class="therapist-info">
-        <h3>Sarah Johnson</h3>
-        <p class="role">Aromatherapy Expert</p>
-        <p class="bio">
-          Certified aromatherapist with expertise in essential oil treatments and relaxation techniques.
-        </p>
-      </div>
-    </div>
-
-    <div class="therapist-card">
-      <img src="img/therepists2.jpg" alt="Therapist 2">
-      <div class="therapist-info">
-        <h3>Lisa Thompson</h3>
-        <p class="role">Deep Tissue Specialist</p>
-        <p class="bio">
-          Licensed massage therapist with advanced training in deep tissue and sports massage.
-        </p>
-      </div>
-    </div>
-
-    <div class="therapist-card">
-      <img src="img/therepists3.jpg" alt="Therapist 3">
-      <div class="therapist-info">
-        <h3>Michelle Rodriguez</h3>
-        <p class="role">Hot Stone Therapy Expert</p>
-        <p class="bio">
-          Certified in hot stone massage and thermal therapy techniques for deep relaxation.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
+  </section>
 
   <!-- Contact Section -->
-<section id="contact" class="contact">
-  <h2>Contact Us!</h2>
+  <section id="contact" class="contact">
+    <h2>Contact Us!</h2>
 
-  <div class="contact-container">
-    <div class="contact-info">
-      <div class="contact-box">
-        <h3>Reservations Office</h3>
-        <p>Legarda Burnham, 25 Kisad Rd, Baguio City</p>
-        <p>📞 0947 921 5131</p>
-        <p>📧 nagomiwellness@gmail.com</p>
+    <div class="contact-container">
+      <div class="contact-info">
+        <div class="contact-box">
+          <h3>Reservations Office</h3>
+          <p>Legarda Burnham, 25 Kisad Rd, Baguio City</p>
+          <p>📞 0947 921 5131</p>
+          <p>📧 nagomiwellness@gmail.com</p>
+        </div>
+
+        <div class="contact-box">
+          <h3>Hours</h3>
+          <p>🕒 Monday – Friday: 8:00 AM – 10:00 PM</p>
+          <p>🕒 Saturday – Sunday: 12:00 PM – 10:00 PM</p>
+        </div>
+
+        <div class="contact-box">
+          <h3>Get Social</h3>
+          <p>
+            <a href="#" class="social-link">Facebook</a> |
+            <a href="#" class="social-link">Instagram</a>
+          </p>
+        </div>
       </div>
 
-      <div class="contact-box">
-        <h3>Hours</h3>
-        <p>🕒 Monday – Friday: 8:00 AM – 10:00 PM</p>
-        <p>🕒 Saturday – Sunday: 12:00 PM – 10:00 PM</p>
-      </div>
-
-      <div class="contact-box">
-        <h3>Get Social</h3>
-        <p>
-          <a href="#" class="social-link">Facebook</a> |
-          <a href="#" class="social-link">Instagram</a>
-        </p>
+      <div class="contact-image">
+        <img src="img/spa.jpg" alt="Nagomi Spa Interior">
       </div>
     </div>
+  </section>
 
-    <div class="contact-image">
-      <img src="img/spa.jpg" alt="Nagomi Spa Interior">
-    </div>
-  </div>
-</section>
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Nagomi Wellness Spa | All Rights Reserved</p>
+  </footer>
 
-<!-- Footer -->
-<footer>
-  <p>© 2025 Nagomi Wellness Spa | All Rights Reserved</p>
-</footer>
-
+  <script src="js/homepage.js"></script>
 </body>
 </html>

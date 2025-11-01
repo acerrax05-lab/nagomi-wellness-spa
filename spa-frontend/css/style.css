@@ -21,8 +21,8 @@ h1, h2, h3 {
 
 /* === NAVBAR === */
 .navbar {
-  background: #f5f1eb;
-  color: #4b2e1e;
+  background: transparent;
+  color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,46 +31,89 @@ h1, h2, h3 {
   width: 100%;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar.scrolled {
+  background: #f5f1eb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.navbar.scrolled .logo,
+.navbar.scrolled .nav-links li:not(:last-child) a {
+  color: #4b2e1e;
 }
 
 .logo {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #4b2e1e;
+  color: #fff;
+  transition: color 0.3s ease;
+  flex-shrink: 0;
 }
 
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 20px;
+  gap: 25px;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.nav-links a {
+.nav-links li:last-child {
+  position: absolute;
+  right: -600px;
+}
+
+.nav-links li:not(:last-child) a {
   text-decoration: none;
-  color: #4b2e1e;
+  color: #fff;
   font-weight: 500;
-  transition: 0.3s;
+  transition: color 0.3s ease;
 }
 
-.nav-links a:hover,
-.nav-links .active {
+.nav-links li:not(:last-child) a:hover {
+  color: #f7c6a5;
+}
+
+.navbar.scrolled .nav-links li:not(:last-child) a:hover {
   color: #8b4513;
 }
 
-.login-btn {
-  background: #8b4513;
-  color: #fff;
-  padding: 6px 14px;
+.staff-login {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 8px 20px;
   border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  color: #fff !important;
   text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-/* === HERO SECTION === */
+.navbar.scrolled .staff-login {
+  background: #8b4513;
+  color: #fff !important;
+  border: none;
+}
+
+.staff-login:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.navbar.scrolled .staff-login:hover {
+  background: #6d3610;
+}
+
+/* === HERO SECTION WITH VIDEO === */
 .hero {
   position: relative;
   height: 100vh;
-  background: url('spa_home.png') center 30% / cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,11 +124,24 @@ h1, h2, h3 {
   margin: 0;
 }
 
+.hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  object-fit: cover;
+}
+
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 1;
 }
 
@@ -96,8 +152,7 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Remove padding-right: 300px; */
-  padding: 0 20px; /* Optional: small horizontal padding for mobile spacing */
+  padding: 0 20px;
 }
 
 .hero-text {
@@ -107,7 +162,7 @@ h1, h2, h3 {
   padding: 10px;
   margin: 0 auto;
   width: 100%;
-  text-align: center; /* Ensure all inner text stays centered */
+  text-align: center;
 }
 
 .hero-text h2 {
@@ -160,7 +215,6 @@ h1, h2, h3 {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
-
 
 /* === SERVICES === */
 .services {
@@ -256,7 +310,7 @@ h1, h2, h3 {
   font-family: 'Playfair Display', serif;
   color: #fff;
   font-size: 2.2rem;
-  margin-bottom: 10px; /* smaller gap before next text */
+  margin-bottom: 10px;
   letter-spacing: 1px;
 }
 
@@ -332,43 +386,6 @@ h1, h2, h3 {
   line-height: 1.8;
 }
 
-.center-btn {
-  margin-top: 40px;
-}
-
-.btn-outline {
-  display: inline-block;
-  border: 2px solid #8b4513;
-  color: #8b4513;
-  padding: 10px 25px;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.btn-outline:hover {
-  background: #8b4513;
-  color: #fff;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .promos {
-    padding: 60px 20px;
-  }
-
-  .promos h2 {
-    font-size: 1.8rem;
-  }
-
-  .promo-card {
-    width: 100%;
-    max-width: 350px;
-  }
-}
-
-/* === THERAPISTS === */
 /* === THERAPISTS === */
 .therapists {
   padding: 100px 80px;
@@ -512,6 +529,13 @@ footer {
   .navbar {
     padding: 15px 40px;
   }
+  .nav-links {
+    gap: 15px;
+    font-size: 0.9rem;
+  }
+  .nav-links li:last-child {
+    right: -500px;
+  }
   .hero-text h1 {
     font-size: 4rem;
   }
@@ -524,6 +548,20 @@ footer {
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  .nav-links {
+    position: static;
+    transform: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav-links li:last-child {
+    position: static;
+  }
   section {
     padding: 60px 20px;
   }
