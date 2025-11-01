@@ -5,79 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Therapist Dashboard | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/therapist.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Navbar -->
-  <header>
-    <nav class="navbar">
-      <h1 class="logo">Nagomi Wellness Spa</h1>
-      <ul class="nav-links">
-        <li><a href="therapist.html" class="active">My Schedule</a></li>
-        <li><a href="#" id="logoutBtn">Logout</a></li>
-      </ul>
-      <div class="user-info">
-        <span id="welcomeText">Welcome!</span>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 id="welcomeMessage">Welcome back, Sarah!</h1>
+      <p id="dashboardSubtitle">Here's your dashboard overview, Sarah</p>
+    </div>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </section>
+
+  <!-- Stats Cards -->
+  <section class="stats-section">
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="todayAppointments">5</div>
+        <div class="stat-label">Today's Appointments</div>
       </div>
-    </nav>
-  </header>
+      <div class="stat-icon" style="background: #c8e6c9;">✅</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="upcomingCount">3</div>
+        <div class="stat-label">Upcoming</div>
+      </div>
+      <div class="stat-icon" style="background: #bbdefb;">⏰</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="completedCount">2</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-icon" style="background: #c8e6c9;">✓</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="todayRevenue">P2,500</div>
+        <div class="stat-label">Todays Revenue</div>
+      </div>
+      <div class="stat-icon" style="background: #e1bee7;">💰</div>
+    </div>
+  </section>
 
   <!-- Main Content -->
-  <main class="therapist-dashboard">
-    <!-- Welcome Section -->
-    <section class="welcome-banner">
-      <h2>Your Daily Schedule</h2>
-      <p id="dateDisplay"></p>
-    </section>
+  <section class="main-content">
+    <!-- Calendar Section -->
+    <!-- Calendar Section -->
+<div class="calendar-section">
+  <h2 class="section-title">Today's Schedule</h2>
+  
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-dot booked"></span>
+      <span>booked client/s</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot day-off"></span>
+      <span>day off</span>
+    </div>
+  </div>
 
-    <!-- Quick Stats -->
-    <section class="quick-stats">
-      <div class="stat-card">
-        <div class="stat-icon">📅</div>
-        <div class="stat-info">
-          <h3 id="todayCount">0</h3>
-          <p>Today's Appointments</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">⏰</div>
-        <div class="stat-info">
-          <h3 id="upcomingCount">0</h3>
-          <p>Upcoming Sessions</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div class="stat-info">
-          <h3 id="completedCount">0</h3>
-          <p>Completed Today</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-info">
-          <h3 id="totalEarnings">₱0</h3>
-          <p>Today's Earnings</p>
-        </div>
-      </div>
-    </section>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button id="prevMonth" class="nav-btn">▲</button>
+      <h3 id="currentMonth">October 2025</h3>
+      <button id="nextMonth" class="nav-btn">▼</button>
+    </div>
 
-    <!-- Filter Tabs -->
-    <section class="filter-tabs">
-      <button class="tab-btn active" data-filter="today">Today</button>
-      <button class="tab-btn" data-filter="upcoming">Upcoming</button>
-      <button class="tab-btn" data-filter="completed">Completed</button>
-      <button class="tab-btn" data-filter="all">All</button>
-    </section>
+    <div class="calendar-wrapper">
+      <!-- Day labels -->
+      <div class="calendar-days-header">
+        <div class="day-label">Sun</div>
+        <div class="day-label">Mon</div>
+        <div class="day-label">Tue</div>
+        <div class="day-label">Wed</div>
+        <div class="day-label">Thur</div>
+        <div class="day-label">Fri</div>
+        <div class="day-label">Sat</div>
+      </div>
+      
+      <!-- Calendar days grid -->
+      <div class="calendar-grid" id="calendarDays"></div>
+    </div>
+  </div>
+</div>
 
     <!-- Appointments List -->
-    <section class="appointments-section">
-      <h2 id="sectionTitle">Today's Appointments</h2>
-      <div id="appointmentsList" class="appointments-list">
-        <!-- Appointment cards will be inserted here -->
-      </div>
-    </section>
-  </main>
+    <div class="appointments-section">
+      <div id="appointmentsList"></div>
+    </div>
+  </section>
 
   <!-- Loading Screen -->
   <div id="loader">
@@ -85,7 +107,7 @@
     <p>Loading your schedule...</p>
   </div>
 
-  <!-- Complete Appointment Modal -->
+  <!-- Complete Modal -->
   <div id="completeModal" class="modal">
     <div class="modal-content">
       <h3>Complete Appointment</h3>
@@ -97,7 +119,7 @@
     </div>
   </div>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-   <script src="js/therapist.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="js/therapist.js"></script>
 </body>
 </html>
