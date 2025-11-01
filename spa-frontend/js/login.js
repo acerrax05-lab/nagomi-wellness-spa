@@ -27,7 +27,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       return;
     }
 
-    // ✅ Save token and user info
+    // ✅ Only allow admin and therapist to login
+    if (data.user.role !== "admin" && data.user.role !== "therapist") {
+      msg.textContent = "❌ Access denied. Staff login only.";
+      return;
+    }
+
+    // Save token and user info
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("role", data.user.role);
@@ -35,14 +41,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     msg.textContent = "✅ Login successful! Redirecting...";
 
-    // ✅ Redirect based on role
+    // Redirect based on role
     setTimeout(() => {
       if (data.user.role === "admin") {
         window.location.href = "admin.html";
       } else if (data.user.role === "therapist") {
         window.location.href = "therapist.html";
-      } else {
-        window.location.href = "client.html"; // client -> main homepage
       }
     }, 1000);
 

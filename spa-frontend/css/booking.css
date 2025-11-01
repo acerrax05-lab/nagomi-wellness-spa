@@ -398,6 +398,99 @@ label.selected:hover {
   transform: scale(1.02);
 }
 
+/* Therapist Dropdown Styles */
+.therapist-selector {
+  position: relative;
+}
+
+.therapist-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-display {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.dropdown-display:hover {
+  border-color: #8b4513;
+}
+
+.dropdown-display .placeholder {
+  color: #333;
+  flex: 1;
+}
+
+.dropdown-arrow {
+  color: #666;
+  font-size: 0.8rem;
+  transition: transform 0.3s;
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: none;
+}
+
+.dropdown-options.show {
+  display: block;
+}
+
+.option-item {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.option-item:hover {
+  background: #f5f1eb;
+}
+
+.option-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.option-item label {
+  flex: 1;
+  cursor: pointer;
+  margin: 0;
+}
+
+.selection-info {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+#maxSelections {
+  font-weight: 600;
+  color: #8b4513;
+}
+
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {

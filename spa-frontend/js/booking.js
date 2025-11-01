@@ -1,27 +1,39 @@
-document.addEventListener("DOMContentLoaded", () => {
+// spa-frontend/js/booking.js - UPDATED WITH NEW FEATURES
+
+const API_URL = "http://localhost:5000/api";
+
+document.addEventListener("DOMContentLoaded", async () => {
   const form = document.querySelector(".booking-form");
+  const charCount = document.querySelector(".char-count");
+  const textarea = form.querySelector("textarea");
   const totalBox = document.querySelector(".total-box span");
   const downNote = document.querySelector(".down-note");
-  const textarea = form.querySelector("textarea");
-  const charCount = document.querySelector(".char-count");
-  const timeSelect = document.getElementById("preferredTime");
-  const numClientsSelect = document.getElementById("numClients");
-  const endTimeDisplay = document.getElementById("end-time-display");
-
-  // === THERAPIST SELECTOR ===
-  const therapistDropdown = document.getElementById("therapistDropdown");
+  const numClientsInput = document.getElementById("numClients");
+  const maxSelectionsSpan = document.getElementById("maxSelections");
   const dropdownDisplay = document.getElementById("dropdownDisplay");
   const dropdownOptions = document.getElementById("dropdownOptions");
-  const maxSelectionsSpan = document.getElementById("maxSelections");
-  const selectionInfo = document.getElementById("selectionInfo");
+  const therapistDropdown = document.getElementById("therapistDropdown");
+  const preferredTimeSelect = document.getElementById("preferredTime");
+  const endTimeDisplay = document.getElementById("end-time-display");
 
+  // Load therapists dynamically
+  await loadTherapists();
+
+  // Character counter
+  textarea.addEventListener("input", () => {
+    charCount.textContent = `${textarea.value.length}/500 characters`;
+  });
+
+  // Initialize
   let selectedService = "";
   let selectedMinutes = "";
   let totalAmount = 0;
-  let numClients = 1;
-  let selectedTherapists = ["any"];
-  let maxTherapists = 1;
+  let selectedTherapists = [];
+  
+  totalBox.textContent = "₱0";
+  downNote.textContent = "A 25% down payment will be calculated after selecting a service.";
 
+  // Pricing table
   const prices = {
     "Nagomi Massage": { "60 minutes": 1199, "90 minutes": 1499, "120 minutes": 1799 },
     "Ventosa or Cupping Therapy": { "60 minutes": 999, "90 minutes": 1299, "120 minutes": 1599 },
@@ -37,239 +49,251 @@ document.addEventListener("DOMContentLoaded", () => {
     "Thai Massage": { "60 minutes": 1199, "90 minutes": 1499, "120 minutes": 1799 }
   };
 
-  // === THERAPIST DROPDOWN LOGIC ===
-  function initTherapistSelector() {
-    updateMaxTherapists();
-    updateTherapistDisplay();
+  // Load therapists from backend
+  async function loadTherapists() {
+    try {
+      const res = await fetch(`${API_URL}/auth/therapists`);
+      const therapists = await res.json();
 
-    dropdownDisplay.addEventListener("click", (e) => {
-      e.stopPropagation();
-      therapistDropdown.classList.toggle("open");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!therapistDropdown.contains(e.target))
-        therapistDropdown.classList.remove("open");
-    });
-
-    dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-      checkbox.addEventListener("change", handleTherapistSelection);
-    });
-  }
-
-  function updateMaxTherapists() {
-    numClients = parseInt(numClientsSelect.value) || 1;
-    maxTherapists = numClients;
-    maxSelectionsSpan.textContent = maxTherapists;
-
-    if (selectedTherapists.includes("any")) return;
-
-    if (selectedTherapists.length > maxTherapists) {
-      selectedTherapists = selectedTherapists.slice(0, maxTherapists);
-      dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-        cb.checked = selectedTherapists.includes(cb.value);
+      // Clear existing therapist options except "any"
+      const existingOptions = dropdownOptions.querySelectorAll('.option-item');
+      existingOptions.forEach((option, index) => {
+        if (index > 0) option.remove(); // Keep first "any" option
       });
-    }
 
-    updateTherapistDisplay();
-    updateCheckboxStates();
+      // Add therapists from backend
+      therapists.forEach(t => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option-item';
+        const id = t._id;
+        optionDiv.innerHTML = `
+          <input type="checkbox" id="therapist-${id}" value="${t.name}" data-id="${id}">
+          <label for="therapist-${id}">${t.name}</label>
+        `;
+        dropdownOptions.appendChild(optionDiv);
+      });
+
+      console.log(`✅ Loaded ${therapists.length} therapists`);
+      setupTherapistDropdown();
+    } catch (err) {
+      console.error('Failed to load therapists:', err);
+    }
   }
 
-  function handleTherapistSelection(e) {
-    const checkbox = e.target;
-    const value = checkbox.value;
-    const anyCheckbox = document.getElementById("any-therapist");
+  // Setup therapist dropdown functionality
+  function setupTherapistDropdown() {
+    const anyCheckbox = document.getElementById('any-therapist');
+    const otherCheckboxes = Array.from(dropdownOptions.querySelectorAll('input[type="checkbox"]:not(#any-therapist)'));
 
-    if (value === "any") {
-      if (checkbox.checked) {
-        selectedTherapists = ["any"];
-        dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-          if (cb.id !== "any-therapist") cb.checked = false;
-        });
-      } else {
-        selectedTherapists = [];
-      }
-    } else {
-      if (checkbox.checked) {
-        anyCheckbox.checked = false;
-        selectedTherapists = selectedTherapists.filter((t) => t !== "any");
+    // Toggle dropdown
+    dropdownDisplay.addEventListener('click', () => {
+      dropdownOptions.classList.toggle('show');
+    });
 
-        if (selectedTherapists.length < maxTherapists) {
-          selectedTherapists.push(value);
-        } else {
-          checkbox.checked = false;
-          alert(`You can only select up to ${maxTherapists} therapist(s).`);
-        }
-      } else {
-        selectedTherapists = selectedTherapists.filter((t) => t !== value);
-        if (selectedTherapists.length === 0) {
-          anyCheckbox.checked = true;
-          selectedTherapists = ["any"];
-        }
-      }
-    }
-
-    updateTherapistDisplay();
-    updateCheckboxStates();
-  }
-
-  function updateCheckboxStates() {
-    const checkboxes = dropdownOptions.querySelectorAll(
-      'input[type="checkbox"]:not(#any-therapist)'
-    );
-    const anySelected = selectedTherapists.includes("any");
-    const limitReached =
-      selectedTherapists.length >= maxTherapists && !anySelected;
-
-    checkboxes.forEach((checkbox) => {
-      const optionItem = checkbox.closest(".option-item");
-      if (anySelected || (limitReached && !checkbox.checked)) {
-        checkbox.disabled = true;
-        optionItem.classList.add("disabled");
-      } else {
-        checkbox.disabled = false;
-        optionItem.classList.remove("disabled");
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!therapistDropdown.contains(e.target)) {
+        dropdownOptions.classList.remove('show');
       }
     });
-  }
 
-  function updateTherapistDisplay() {
-    const placeholder = dropdownDisplay.querySelector(".placeholder");
-    if (selectedTherapists.includes("any")) {
-      placeholder.textContent = "Any available therapist";
-      selectionInfo.textContent = "Any available therapist selected";
-    } else if (selectedTherapists.length === 1) {
-      placeholder.textContent = selectedTherapists[0];
-      selectionInfo.textContent = `Select up to ${maxTherapists} therapist(s)`;
-    } else {
-      placeholder.textContent = `${selectedTherapists.length} therapists selected`;
-      selectionInfo.textContent = `Maximum: ${maxTherapists} therapist(s)`;
+    // Handle checkbox changes
+    function updateTherapistSelection() {
+      const numClients = parseInt(numClientsInput.value);
+      const maxSelections = numClients;
+      maxSelectionsSpan.textContent = maxSelections;
+
+      selectedTherapists = otherCheckboxes
+        .filter(cb => cb.checked)
+        .map(cb => ({ name: cb.value, id: cb.dataset.id }));
+
+      // Limit selections
+      if (selectedTherapists.length > maxSelections) {
+        // Uncheck the last selected
+        otherCheckboxes[otherCheckboxes.length - 1].checked = false;
+        selectedTherapists.pop();
+      }
+
+      // Update "Any" checkbox
+      if (selectedTherapists.length > 0) {
+        anyCheckbox.checked = false;
+      }
+
+      // Update display
+      updateDropdownDisplay();
     }
+
+    function updateDropdownDisplay() {
+      if (anyCheckbox.checked) {
+        dropdownDisplay.querySelector('.placeholder').textContent = 'Any available therapist';
+      } else if (selectedTherapists.length === 0) {
+        dropdownDisplay.querySelector('.placeholder').textContent = 'Select therapists...';
+      } else {
+        const names = selectedTherapists.map(t => t.name).join(', ');
+        dropdownDisplay.querySelector('.placeholder').textContent = names;
+      }
+    }
+
+    // Any therapist checkbox
+    anyCheckbox.addEventListener('change', () => {
+      if (anyCheckbox.checked) {
+        otherCheckboxes.forEach(cb => cb.checked = false);
+        selectedTherapists = [];
+        updateDropdownDisplay();
+      }
+    });
+
+    // Other checkboxes
+    otherCheckboxes.forEach(cb => {
+      cb.addEventListener('change', updateTherapistSelection);
+    });
+
+    // Number of clients change
+    numClientsInput.addEventListener('input', updateTherapistSelection);
   }
 
-  // === CHARACTER COUNTER ===
-  textarea.addEventListener("input", () => {
-    charCount.textContent = `${textarea.value.length}/500 characters`;
-  });
-
-  // === SERVICE & MINUTES SELECTION ===
+  // Service button selection
   document.querySelectorAll(".option-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const group = btn.parentElement;
-      const isSmall = group.classList.contains("small");
-      const isActive = btn.classList.contains("active");
+      group.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
 
-      // Allow unselecting by clicking again
-      if (isActive) {
-        btn.classList.remove("active");
-        if (isSmall) selectedMinutes = "";
-        else selectedService = "";
+      if (group.classList.contains("small")) {
+        selectedMinutes = btn.textContent;
+        calculateEndTime();
       } else {
-        group.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        if (isSmall) selectedMinutes = btn.textContent;
-        else selectedService = btn.textContent;
+        selectedService = btn.textContent;
       }
 
-      displayEndTime();
       updateTotal();
     });
   });
 
-  numClientsSelect.addEventListener("change", () => {
-    updateMaxTherapists();
-    updateTotal();
-  });
-
-  // === CALCULATE END TIME ===
-  function calculateEndTime(startTime, durationMinutes) {
-    if (!startTime || startTime === "Select time..." || !durationMinutes) return "";
-    const [time, period] = startTime.split(" ");
-    const [hours, minutes] = time.split(":").map(Number);
-    let hour24 = hours % 12 + (period === "PM" ? 12 : 0);
-    const totalMinutes = hour24 * 60 + minutes + durationMinutes;
-    const endHour24 = Math.floor(totalMinutes / 60);
-    const finalMinutes = totalMinutes % 60;
-    const endPeriod = endHour24 >= 12 ? "PM" : "AM";
-    const endHour12 = endHour24 % 12 || 12;
-    return `${endHour12}:${finalMinutes.toString().padStart(2, "0")} ${endPeriod}`;
-  }
-
-  function displayEndTime() {
-    const startTime = timeSelect.value;
-    const duration = parseInt(selectedMinutes);
-    if (startTime && duration) {
-      const endTime = calculateEndTime(startTime, duration);
-      endTimeDisplay.textContent = `Session ends at: ${endTime}`;
-    } else {
-      endTimeDisplay.textContent = "";
+  // Calculate end time
+  function calculateEndTime() {
+    const startTime = preferredTimeSelect.value;
+    if (!startTime || startTime === 'Select time...' || !selectedMinutes) {
+      endTimeDisplay.textContent = '';
+      return;
     }
+
+    const duration = parseInt(selectedMinutes);
+    const [time, period] = startTime.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    // Add duration
+    minutes += duration;
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+
+    // Convert back to 12-hour format
+    const endPeriod = hours >= 12 ? 'PM' : 'AM';
+    const endHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+    const endMinutes = minutes.toString().padStart(2, '0');
+
+    endTimeDisplay.textContent = `End time: ${endHours}:${endMinutes} ${endPeriod}`;
+    endTimeDisplay.style.cssText = 'margin-top: 8px; color: #666; font-size: 0.9rem;';
   }
 
-  timeSelect.addEventListener("change", displayEndTime);
+  preferredTimeSelect.addEventListener('change', calculateEndTime);
 
-  // === UPDATE TOTAL ===
+  // Update total
   function updateTotal() {
-    numClients = parseInt(numClientsSelect.value) || 1;
-
     if (selectedService && selectedMinutes && prices[selectedService]) {
-      const base = prices[selectedService][selectedMinutes];
-      const total = base * numClients;
-      const down = Math.round(total * 0.25);
-      totalBox.textContent = `₱${total}`;
-      downNote.textContent = `A 25% down payment (₱${down}) is required to confirm your booking.`;
+      const basePrice = prices[selectedService][selectedMinutes] || 0;
+      const numClients = parseInt(numClientsInput.value);
+      totalAmount = basePrice * numClients;
+      
+      const downPayment = Math.round(totalAmount * 0.25);
+      totalBox.textContent = `₱${totalAmount.toLocaleString()}`;
+      downNote.textContent = `A 25% down payment (₱${downPayment.toLocaleString()}) is required to confirm your booking.`;
     } else {
       totalBox.textContent = "₱0";
-      downNote.textContent =
-        "A 25% down payment will be calculated after selecting a service.";
+      downNote.textContent = "A 25% down payment will be calculated after selecting a service.";
     }
   }
 
-  // === RESET FORM TO DEFAULT ===
-  function resetFormToDefault() {
-    form.reset();
-    selectedService = "";
-    selectedMinutes = "";
-    selectedTherapists = ["any"];
-    numClients = 1;
-    maxTherapists = 1;
+  numClientsInput.addEventListener('input', updateTotal);
 
-    // Reset UI highlights and fields
-    document.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
-    dropdownOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-      cb.checked = cb.value === "any";
-      cb.disabled = false;
-      cb.closest(".option-item").classList.remove("disabled");
-    });
-
-    totalBox.textContent = "₱0";
-    downNote.textContent =
-      "A 25% down payment will be calculated after selecting a service.";
-    textarea.value = "";
-    charCount.textContent = "0/500 characters";
-    endTimeDisplay.textContent = "";
-    timeSelect.value = "";
-    numClientsSelect.value = "1";
-
-    updateTherapistDisplay();
-  }
-
-  // === FORM SUBMIT ===
-  form.addEventListener("submit", (e) => {
+  // Submit form
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const therapistText = selectedTherapists.includes("any")
-      ? "Any available therapist"
-      : selectedTherapists.join(", ");
 
-    alert(
-      `Booking confirmed for ${numClients} client(s)!\nTherapist(s): ${therapistText}\nTotal: ${totalBox.textContent}`
-    );
+    const date = form.querySelector('input[type="date"]').value;
+    const time = preferredTimeSelect.value;
+    const notes = textarea.value;
+    const name = form.querySelector('input[placeholder="Enter your full name"]').value;
+    const phone = form.querySelector('input[placeholder="(555) 123-4567"]').value;
+    const numClients = parseInt(numClientsInput.value);
 
-    // Reset everything after confirmation
-    resetFormToDefault();
+    if (!selectedService || !selectedMinutes || !date || !time || time === 'Select time...' || !name || !phone) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
+    // Calculate end time for backend
+    const duration = parseInt(selectedMinutes);
+    const [timeStr, period] = time.split(' ');
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    minutes += duration;
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+    const endPeriod = hours >= 12 ? 'PM' : 'AM';
+    const endHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+    const endTime = `${endHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
+
+    const bookingData = {
+      service: selectedService,
+      minutes: selectedMinutes,
+      therapists: selectedTherapists.length > 0 ? selectedTherapists : [{ name: 'Any available therapist' }],
+      numberOfClients: numClients,
+      date,
+      time,
+      endTime,
+      notes,
+      name,
+      phone,
+      totalAmount
+    };
+
+    console.log('📤 Submitting booking:', bookingData);
+
+    try {
+      const response = await fetch(`${API_URL}/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("✅ Booking confirmed! We'll contact you soon.");
+        form.reset();
+        document.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          if (cb.id === 'any-therapist') cb.checked = true;
+          else cb.checked = false;
+        });
+        selectedService = "";
+        selectedMinutes = "";
+        selectedTherapists = [];
+        updateTotal();
+        dropdownDisplay.querySelector('.placeholder').textContent = 'Select therapists...';
+        endTimeDisplay.textContent = '';
+      } else {
+        alert(`⚠️ ${data.msg || "Booking failed. Please try again."}`);
+      }
+    } catch (error) {
+      console.error("Error submitting booking:", error);
+      alert("❌ Server error. Please try again later.");
+    }
   });
-
-  // === INIT ===
-  initTherapistSelector();
-  updateTotal(); // Ensure ₱0 default on load
 });

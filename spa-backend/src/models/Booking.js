@@ -3,17 +3,31 @@ const mongoose = require('mongoose');
 
 const BookingSchema = new mongoose.Schema({
   service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
-  therapist: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to User with role 'therapist'
-  client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to client
+  
+  // Multiple therapists support
+  therapists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  therapist: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Keep for backward compatibility
+  
+  // Client is optional (only for staff-created bookings)
+  client: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  
+  // Guest info (required for public bookings)
+  guestName: { type: String, required: true },
+  guestPhone: { type: String, required: true },
+  
+  // NEW: Number of clients
+  numberOfClients: { type: Number, default: 1, min: 1, max: 5 },
+  
+  durationMinutes: { type: Number, required: true },
   date: { type: Date, required: true },
   time: { type: String, required: true },
+  
+  // NEW: End time (calculated)
+  endTime: { type: String },
+  
   notes: { type: String },
-  
-  // Keep these for non-registered clients (walk-ins)
-  guestName: { type: String },
-  guestPhone: { type: String },
-  
   price: { type: Number, required: true },
+  
   status: {
     type: String,
     enum: ['pending', 'confirmed', 'completed', 'cancelled'],

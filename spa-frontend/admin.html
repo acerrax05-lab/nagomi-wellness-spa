@@ -5,80 +5,294 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Navbar -->
   <header>
     <nav class="navbar">
-      <h1 class="logo">Nagomi Wellness Spa</h1>
-      <ul class="nav-links">
-        <li><a href="admin.html" class="active">Dashboard</a></li>
-        <li><a href="login.html" id="logoutBtn">Logout</a></li>
-      </ul>
+      <h1 class="logo">Nagomi Wellness Spa - Admin</h1>
+      <div class="user-info">
+        <span id="adminName">Admin</span>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
     </nav>
   </header>
 
-  <!-- Dashboard Main Content -->
-  <main class="dashboard">
-    <!-- Overview Section -->
-    <section class="overview">
-      <h2>Business Overview</h2>
-      <div class="cards">
-        <div class="card" id="todayBookings">Today's Bookings: 0</div>
-        <div class="card" id="totalRevenue">Daily Revenue: ₱0</div>
-        <div class="card" id="activeTherapists">Active Therapists: 0</div>
-        <div class="card" id="completionRate">Top Service: N/A</div>
-      </div>
-    </section>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+    <button class="tab-btn" data-tab="bookings">📅 Bookings</button>
+    <button class="tab-btn" data-tab="services">💆 Services</button>
+    <button class="tab-btn" data-tab="therapists">👥 Therapists</button>
+  </aside>
 
-    <!-- Analytics Charts -->
-    <section class="charts">
-      <h2>Analytics Dashboard</h2>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <h3>Revenue Trends (This Month)</h3>
-          <canvas id="revenueChart"></canvas>
+  <!-- Main Content -->
+  <main class="admin-content">
+    
+    <!-- OVERVIEW TAB -->
+    <section id="overview-tab" class="tab-content active">
+      <h2>Business Overview</h2>
+      
+      <!-- Time Filter -->
+      <div class="time-filter">
+        <button class="filter-btn active" data-period="today">Today</button>
+        <button class="filter-btn" data-period="week">This Week</button>
+        <button class="filter-btn" data-period="month">This Month</button>
+        <button class="filter-btn" data-period="year">This Year</button>
+      </div>
+
+      <!-- 10 Stat Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-details">
+            <h3 id="todayBookings">0</h3>
+            <p>Today's Bookings</p>
+          </div>
         </div>
 
-        <div class="chart-card">
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-details">
+            <h3 id="completedToday">0</h3>
+            <p>Completed Today</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-details">
+            <h3 id="todayRevenue">₱0</h3>
+            <p>Today's Revenue</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💵</div>
+          <div class="stat-details">
+            <h3 id="todayDownPayment">₱0</h3>
+            <p>Down Payment Today</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-details">
+            <h3 id="overallBookings">0</h3>
+            <p>Overall Bookings</p>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon">❌</div>
+          <div class="stat-details">
+            <h3 id="cancelledToday">0</h3>
+            <p>Cancelled Today</p>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon">📉</div>
+          <div class="stat-details">
+            <h3 id="todayLoss">₱0</h3>
+            <p>Today's Total Loss</p>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon">💸</div>
+          <div class="stat-details">
+            <h3 id="cancelledDownPayment">₱0</h3>
+            <p>Cancelled Down Payment</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">👨‍⚕️</div>
+          <div class="stat-details">
+            <h3 id="todayTherapists">0</h3>
+            <p>Active Therapists</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-details">
+            <h3 id="todayClients">0</h3>
+            <p>Clients Served</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-container">
+        <!-- Peak Hours Chart -->
+        <div class="chart-box">
           <h3>Peak Hours</h3>
           <canvas id="peakHoursChart"></canvas>
         </div>
 
-        <div class="chart-card">
+        <!-- Most Booked Services Chart -->
+        <div class="chart-box">
           <h3>Most Booked Services</h3>
           <canvas id="servicesChart"></canvas>
+        </div>
+
+        <!-- Overall Revenue Chart -->
+        <div class="chart-box">
+          <h3>Overall Revenue</h3>
+          <canvas id="revenueChart"></canvas>
+        </div>
+
+        <!-- Revenue Status Chart -->
+        <div class="chart-box">
+          <h3>Revenue Status</h3>
+          <canvas id="revenueStatusChart"></canvas>
+        </div>
+
+        <!-- Booking Distribution Pie Chart -->
+        <div class="chart-box">
+          <h3>Booking Distribution</h3>
+          <canvas id="bookingDistChart"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- Bookings Table -->
-    <section class="data">
-      <h2>Recent Bookings</h2>
-      <table id="bookingsTable">
-        <thead>
-          <tr>
-            <th>Client</th>
-            <th>Service</th>
-            <th>Therapist</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Price</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <!-- BOOKINGS TAB -->
+    <section id="bookings-tab" class="tab-content">
+      <h2>Booking Calendar</h2>
+      
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <button id="prevMonth">◀</button>
+          <h3 id="currentMonth">January 2025</h3>
+          <button id="nextMonth">▶</button>
+        </div>
+        <div id="calendar" class="calendar-grid"></div>
+      </div>
+
+      <div class="bookings-table-section">
+        <h3 id="selectedDateTitle">Select a date to view bookings</h3>
+        <table id="bookingsTable" class="bookings-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Time</th>
+              <th>Service</th>
+              <th>Therapist</th>
+              <th>Duration</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
+
+    <!-- SERVICES TAB -->
+    <section id="services-tab" class="tab-content">
+      <div class="section-header">
+        <h2>Services Management</h2>
+        <button id="addServiceBtn" class="btn-primary">+ Add Service</button>
+      </div>
+
+      <div id="servicesList" class="services-list"></div>
+    </section>
+
+    <!-- THERAPISTS TAB -->
+    <section id="therapists-tab" class="tab-content">
+      <div class="section-header">
+        <h2>Therapists Management</h2>
+        <button id="addTherapistBtn" class="btn-primary">+ Add Therapist</button>
+      </div>
+
+      <div id="therapistsList" class="therapists-grid"></div>
+    </section>
+
   </main>
+
+  <!-- Modals -->
+  <!-- Confirm/Cancel Booking Modal -->
+  <div id="actionModal" class="modal">
+    <div class="modal-content">
+      <h3 id="actionModalTitle">Confirm Action</h3>
+      <p id="actionModalText">Are you sure?</p>
+      <div class="modal-actions">
+        <button id="confirmActionBtn" class="btn-success">Confirm</button>
+        <button id="cancelActionBtn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Service Modal -->
+  <div id="editServiceModal" class="modal">
+    <div class="modal-content large">
+      <h3 id="serviceModalTitle">Edit Service</h3>
+      <form id="serviceForm">
+        <label>Service Name</label>
+        <input type="text" id="serviceName" required>
+        
+        <label>Description</label>
+        <textarea id="serviceDesc" rows="3"></textarea>
+        
+        <label>Pricing</label>
+        <div class="pricing-inputs">
+          <div>
+            <label>60 minutes</label>
+            <input type="number" id="price60" placeholder="₱1199" required>
+          </div>
+          <div>
+            <label>90 minutes</label>
+            <input type="number" id="price90" placeholder="₱1499" required>
+          </div>
+          <div>
+            <label>120 minutes</label>
+            <input type="number" id="price120" placeholder="₱1799" required>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="submit" class="btn-success">Save</button>
+          <button type="button" id="closeServiceModal" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Therapist Modal -->
+  <div id="editTherapistModal" class="modal">
+    <div class="modal-content">
+      <h3 id="therapistModalTitle">Edit Therapist</h3>
+      <form id="therapistForm">
+        <label>Name</label>
+        <input type="text" id="therapistName" required>
+        
+        <label>Email</label>
+        <input type="email" id="therapistEmail" required>
+        
+        <label>Phone</label>
+        <input type="text" id="therapistPhone">
+        
+        <div class="modal-actions">
+          <button type="submit" class="btn-success">Save</button>
+          <button type="button" id="closeTherapistModal" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Loading Screen -->
   <div id="loader">
     <div class="spinner"></div>
-    <p>Loading your dashboard...</p>
+    <p>Loading dashboard...</p>
   </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

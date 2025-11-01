@@ -31,4 +31,38 @@ router.delete('/:id', auth, roles(['admin']), async (req, res) => {
   res.json({ msg: 'Service deactivated', service: s });
 });
 
+router.put('/:id', auth, roles(['admin']), async (req, res) => {
+  try {
+    const { name, description, durationMinutes, price, pricing } = req.body;
+    
+    const updateData = {
+      name,
+      description,
+      durationMinutes,
+      price
+    };
+    
+    // Handle pricing Map
+    if (pricing) {
+      updateData.pricing = new Map(Object.entries(pricing));
+    }
+    
+    const updated = await Service.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+    
+    if (!updated) {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+    
+    res.json({ msg: 'Service updated', service: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+
 module.exports = router;
