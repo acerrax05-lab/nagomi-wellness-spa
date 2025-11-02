@@ -1,4 +1,4 @@
-// spa-frontend/js/booking.js - WITH SUMMARY MODAL
+// spa-frontend/js/booking.js - WITH SUMMARY MODAL AND FIXED THERAPIST SELECTION
 
 const API_URL = "http://localhost:5000/api";
 
@@ -102,26 +102,64 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+    // Disable/enable checkboxes based on selection limit
+    function updateCheckboxStates() {
+      const numClients = parseInt(numClientsInput.value);
+      const maxSelections = numClients;
+      
+      selectedTherapists = otherCheckboxes
+        .filter(cb => cb.checked)
+        .map(cb => ({ name: cb.value, id: cb.dataset.id }));
+
+      // If max selections reached, disable unchecked boxes
+      if (selectedTherapists.length >= maxSelections) {
+        otherCheckboxes.forEach(cb => {
+          if (!cb.checked) {
+            cb.disabled = true;
+            cb.parentElement.style.opacity = '0.5';
+            cb.parentElement.style.cursor = 'not-allowed';
+          }
+        });
+      } else {
+        // Enable all checkboxes if under the limit
+        otherCheckboxes.forEach(cb => {
+          cb.disabled = false;
+          cb.parentElement.style.opacity = '1';
+          cb.parentElement.style.cursor = 'pointer';
+        });
+      }
+    }
+
     // Handle checkbox changes
-    function updateTherapistSelection() {
+    function updateTherapistSelection(e) {
       const numClients = parseInt(numClientsInput.value);
       const maxSelections = numClients;
       maxSelectionsSpan.textContent = maxSelections;
+
+      // If this is a checkbox event (not initial load)
+      if (e && e.target) {
+        // Count checked BEFORE this change (excluding the current target)
+        const currentlyCheckedCount = otherCheckboxes.filter(cb => cb.checked && cb !== e.target).length;
+        
+        // If trying to check a box and already at limit, prevent it
+        if (e.target.checked && currentlyCheckedCount >= maxSelections) {
+          e.target.checked = false;
+          alert(`You can only select up to ${maxSelections} therapist(s) for ${numClients} client(s).`);
+          return;
+        }
+      }
 
       selectedTherapists = otherCheckboxes
         .filter(cb => cb.checked)
         .map(cb => ({ name: cb.value, id: cb.dataset.id }));
 
-      // Limit selections
-      if (selectedTherapists.length > maxSelections) {
-        otherCheckboxes[otherCheckboxes.length - 1].checked = false;
-        selectedTherapists.pop();
-      }
-
       // Update "Any" checkbox
       if (selectedTherapists.length > 0) {
         anyCheckbox.checked = false;
       }
+
+      // Update checkbox states (disable/enable)
+      updateCheckboxStates();
 
       // Update display
       updateDropdownDisplay();
@@ -141,19 +179,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Any therapist checkbox
     anyCheckbox.addEventListener('change', () => {
       if (anyCheckbox.checked) {
-        otherCheckboxes.forEach(cb => cb.checked = false);
+        otherCheckboxes.forEach(cb => {
+          cb.checked = false;
+          cb.disabled = false;
+          cb.parentElement.style.opacity = '1';
+          cb.parentElement.style.cursor = 'pointer';
+        });
         selectedTherapists = [];
         updateDropdownDisplay();
       }
     });
 
-    // Other checkboxes
+    // Other checkboxes - pass event to handler
     otherCheckboxes.forEach(cb => {
-      cb.addEventListener('change', updateTherapistSelection);
+      cb.addEventListener('change', (e) => updateTherapistSelection(e));
     });
 
-    // Number of clients change
-    numClientsInput.addEventListener('input', updateTherapistSelection);
+    // Number of clients change - reset selections if needed
+    numClientsInput.addEventListener('input', () => {
+      const numClients = parseInt(numClientsInput.value);
+      
+      // If reducing number of clients, uncheck excess selections
+      selectedTherapists = otherCheckboxes
+        .filter(cb => cb.checked)
+        .map(cb => ({ name: cb.value, id: cb.dataset.id }));
+
+      if (selectedTherapists.length > numClients) {
+        // Uncheck excess therapists
+        let unchecked = 0;
+        for (let i = otherCheckboxes.length - 1; i >= 0; i--) {
+          if (otherCheckboxes[i].checked && unchecked < (selectedTherapists.length - numClients)) {
+            otherCheckboxes[i].checked = false;
+            unchecked++;
+          }
+        }
+      }
+
+      updateTherapistSelection(null);
+    });
+
+    // Initial state
+    updateTherapistSelection(null);
   }
 
   // Service button selection
@@ -287,7 +353,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showSummaryModal() {
     populateSummary();
     summaryModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
   }
 
   // Hide summary modal
@@ -401,4 +467,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
-
