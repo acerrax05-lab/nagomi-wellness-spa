@@ -1,8 +1,49 @@
-// spa-frontend/js/booking.js - WITH SUMMARY MODAL AND FIXED THERAPIST SELECTION
+// spa-frontend/js/booking.js - WITH SUMMARY MODAL, THERAPIST SELECTION, AND MOBILE MENU
 
 const API_URL = "http://localhost:5000/api";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Mobile menu functionality
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  const navItems = navLinks.querySelectorAll('a');
+  
+  // Toggle mobile menu
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('active');
+    document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+  });
+  
+  // Close menu when clicking on a link
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const navbar = document.getElementById('navbar');
+    if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768 && navLinks.classList.contains('active')) {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Booking form functionality
   const form = document.querySelector(".booking-form");
   const charCount = document.querySelector(".char-count");
   const textarea = form.querySelector("textarea");
