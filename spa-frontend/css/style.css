@@ -12,6 +12,7 @@ body {
   background: #f5f1eb;
   color: #333;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 h1, h2, h3 {
@@ -39,8 +40,7 @@ h1, h2, h3 {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.navbar.scrolled .logo,
-.navbar.scrolled .nav-links li:not(:last-child) a {
+.navbar.scrolled .logo {
   color: #4b2e1e;
 }
 
@@ -50,35 +50,68 @@ h1, h2, h3 {
   color: #fff;
   transition: color 0.3s ease;
   flex-shrink: 0;
+  z-index: 1001;
 }
 
+/* Hamburger Menu Icon */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  z-index: 1001;
+  gap: 5px;
+}
+
+.hamburger span {
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.navbar.scrolled .hamburger span {
+  background: #4b2e1e;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Navigation Links */
 .nav-links {
   list-style: none;
   display: flex;
   gap: 25px;
   align-items: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
-.nav-links li:last-child {
-  position: absolute;
-  right: -600px;
-}
-
-.nav-links li:not(:last-child) a {
+.nav-links li a {
   text-decoration: none;
   color: #fff;
   font-weight: 500;
   transition: color 0.3s ease;
+  display: block;
+  padding: 5px 10px;
 }
 
-.nav-links li:not(:last-child) a:hover {
+.nav-links li a:hover {
   color: #f7c6a5;
 }
 
-.navbar.scrolled .nav-links li:not(:last-child) a:hover {
+.navbar.scrolled .nav-links li a {
+  color: #4b2e1e;
+}
+
+.navbar.scrolled .nav-links li a:hover {
   color: #8b4513;
 }
 
@@ -232,17 +265,17 @@ h1, h2, h3 {
 }
 
 .service-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .service-card {
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  width: 300px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -328,18 +361,17 @@ h1, h2, h3 {
 }
 
 .promo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 25px;
-  margin-bottom: 60px;
+  max-width: 1200px;
+  margin: 0 auto 60px;
 }
 
 .promo-card {
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  width: 300px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -402,16 +434,16 @@ h1, h2, h3 {
 }
 
 .therapist-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .therapist-card {
   background: #fff;
   border-radius: 12px;
-  width: 300px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -473,6 +505,8 @@ h1, h2, h3 {
   justify-content: center;
   align-items: flex-start;
   gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .contact-info {
@@ -481,6 +515,8 @@ h1, h2, h3 {
   gap: 30px;
   max-width: 450px;
   text-align: left;
+  flex: 1;
+  min-width: 280px;
 }
 
 .contact-box h3 {
@@ -506,8 +542,14 @@ h1, h2, h3 {
   text-decoration: underline;
 }
 
+.contact-image {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+
 .contact-image img {
-  width: 360px;
+  width: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -524,55 +566,143 @@ footer {
   position: relative;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 992px) {
+/* ====================================
+   RESPONSIVE DESIGN
+   ==================================== */
+
+/* === TABLET (1024px and below) === */
+@media (max-width: 1024px) {
   .navbar {
     padding: 15px 40px;
   }
-  .nav-links {
-    gap: 15px;
-    font-size: 0.9rem;
+  
+  .services, .promos, .therapists, .contact {
+    padding: 80px 40px;
   }
-  .nav-links li:last-child {
-    right: -500px;
-  }
+  
   .hero-text h1 {
-    font-size: 4rem;
+    font-size: 4.5rem;
   }
-  .service-card,
-  .promo-card,
-  .therapist-card {
-    width: 90%;
-    max-width: 350px;
+  
+  .nav-links {
+    gap: 20px;
   }
 }
 
+/* === MOBILE & TABLET (768px and below) === */
 @media (max-width: 768px) {
+  /* Mobile Navigation */
   .navbar {
-    flex-direction: column;
-    gap: 15px;
     padding: 15px 20px;
   }
+  
+  .hamburger {
+    display: flex;
+  }
+  
   .nav-links {
-    position: static;
-    transform: none;
-    flex-wrap: wrap;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 75%;
+    max-width: 320px;
+    background: rgba(75, 46, 30, 0.98);
+    backdrop-filter: blur(10px);
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: 30px;
+    transition: right 0.4s ease;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
   }
-  .nav-links li:last-child {
-    position: static;
+  
+  .nav-links.active {
+    right: 0;
   }
-  section {
+  
+  .nav-links li a {
+    color: #fff !important;
+    font-size: 1.1rem;
+  }
+  
+  .staff-login {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* Hero Section */
+  .hero-text h2 {
+    font-size: 1.2rem;
+  }
+  
+  .hero-text h1 {
+    font-size: 3rem;
+  }
+  
+  .hero-text p {
+    font-size: 1.05rem;
+  }
+  
+  .btn {
+    padding: 12px 30px;
+    font-size: 0.95rem;
+  }
+  
+  /* Sections */
+  .services, .promos, .therapists, .contact {
     padding: 60px 20px;
   }
-  .hero-text h1 {
-    font-size: 3.5rem;
+  
+  .services h2, .promos h2, .therapists h2, .contact h2 {
+    font-size: 1.9rem;
   }
-  .hero-text p {
-    font-size: 1rem;
+  
+  .service-grid,
+  .promo-grid,
+  .therapist-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
+  
+  .contact-info {
+    text-align: center;
+  }
+  
   .contact-container {
     flex-direction: column;
     align-items: center;
+  }
+}
+
+/* === SMALL MOBILE (480px and below) === */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.1rem;
+  }
+  
+  .hero-text h1 {
+    font-size: 2.2rem;
+  }
+  
+  .hero-text h2 {
+    font-size: 1rem;
+  }
+  
+  .hero-text p {
+    font-size: 0.95rem;
+  }
+  
+  .services h2, .promos h2, .therapists h2 {
+    font-size: 1.6rem;
+  }
+  
+  .nav-links {
+    width: 85%;
+  }
+  
+  .btn {
+    padding: 10px 25px;
   }
 }
