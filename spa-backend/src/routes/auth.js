@@ -82,7 +82,7 @@ router.get('/users', auth, roles(['admin']), async (req, res) => {
 });
 
 
-// ✅ Get all therapists (public - for booking form)
+// Get all therapists (public - for booking form)
 router.get('/therapists', async (req, res) => {
   try {
     const therapists = await User.find({ role: 'therapist' }, 'name email phone')
@@ -94,7 +94,7 @@ router.get('/therapists', async (req, res) => {
   }
 });
 
-// ✅ Get user statistics (admin only)
+// Get user statistics (admin only)
 router.get('/stats', auth, roles(['admin']), async (req, res) => {
   try {
     const totalClients = await User.countDocuments({ role: 'client' });
@@ -137,7 +137,7 @@ router.put('/users/:id', auth, roles(['admin']), async (req, res) => {
   }
 });
 
-// ✅ Delete user (Admin only)
+// Delete user (Admin only)
 router.delete('/users/:id', auth, roles(['admin']), async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
@@ -150,6 +150,26 @@ router.delete('/users/:id', auth, roles(['admin']), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// DEBUG: Check all users
+router.get('/debug/all-users', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json({
+      total: users.length,
+      therapists: users.filter(u => u.role === 'therapist').map(t => ({
+        id: t._id,
+        name: t.name,
+        role: t.role,
+        isActive: t.isActive,
+        hasWeeklySchedule: !!(t.weeklySchedule && t.weeklySchedule.length > 0),
+        weeklySchedule: t.weeklySchedule
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

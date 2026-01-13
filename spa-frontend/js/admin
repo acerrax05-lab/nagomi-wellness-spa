@@ -27,16 +27,13 @@ socket.on('connect', () => {
 });
 
 socket.on('newBooking', () => {
-  console.log('🔔 New booking received - refreshing dashboard');
-  loadOverviewData(); // This should refresh everything
+  loadOverviewData();
   showNotification('New booking received!', 'success');
 });
 
 socket.on('bookingStatusUpdated', () => {
-  console.log('🔄 Booking status updated - refreshing dashboard');
   loadOverviewData();
 });
-
 
 // TAB SWITCHING
 document.querySelectorAll('.sidebar .tab-btn').forEach(btn => {
@@ -129,21 +126,12 @@ function updateStatLabels() {
 // LOAD OVERVIEW DATA
 async function loadOverviewData() {
   try {
-    console.log('📊 Loading overview data...');
-    
     const res = await fetch(`${apiBase}/bookings`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
-    if (!res.ok) {
-      throw new Error('Failed to fetch bookings');
-    }
-    
     allBookings = await res.json();
-    console.log('📦 Loaded bookings:', allBookings.length);
-    
     filteredBookingsData = filterByPeriod(allBookings, currentPeriod);
-    console.log('🔍 Filtered bookings for', currentPeriod, ':', filteredBookingsData.length);
     
     calculateStats(filteredBookingsData);
     createCharts(filteredBookingsData);
@@ -151,36 +139,27 @@ async function loadOverviewData() {
     
     hideLoader();
   } catch (err) {
-    console.error('❌ Error loading dashboard:', err);
+    console.error(err);
     alert("Failed to load dashboard data");
   }
 }
+
 // FILTER BOOKINGS BY PERIOD
 function filterByPeriod(bookings, period) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
-  console.log('🔍 Filtering for period:', period);
-  console.log('📅 Today is:', today.toDateString());
-  
-  const filtered = bookings.filter(b => {
+  return bookings.filter(b => {
     const bookingDate = new Date(b.date);
     
     switch(period) {
       case 'today':
-        const isToday = bookingDate.toDateString() === today.toDateString();
-        if (isToday) console.log('✅ Today booking:', b.date, b.time);
-        return isToday;
+        return bookingDate.toDateString() === today.toDateString();
       
       case 'week':
-        const weekStart = new Date(today);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6); // Sunday
-        
-        const isThisWeek = bookingDate >= weekStart && bookingDate <= weekEnd;
-        if (isThisWeek) console.log('✅ This week booking:', b.date, b.time);
-        return isThisWeek;
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return bookingDate >= weekAgo;
       
       case 'month':
         return bookingDate.getMonth() === now.getMonth() &&
@@ -193,9 +172,6 @@ function filterByPeriod(bookings, period) {
         return true;
     }
   });
-  
-  console.log(`📊 Found ${filtered.length} bookings for ${period}`);
-  return filtered;
 }
 
 // CALCULATE STATS FOR 6 CARDS
@@ -526,43 +502,17 @@ function createCharts(bookings) {
 
 function createPeakHoursChart(bookings) {
   const ctx = document.getElementById('peakHoursChart');
-  if (!ctx) {
-    console.warn('⚠️ Peak hours chart canvas not found');
-    return;
-  }
+  if (!ctx) return;
   
   const hourCounts = Array(24).fill(0);
-  
   bookings.forEach(b => {
-    if (b.time) {
-      // Parse time like "3:00 PM"
-      const timeParts = b.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (timeParts) {
-        let hour = parseInt(timeParts[1]);
-        const period = timeParts[3].toUpperCase();
-        
-        // Convert to 24-hour format
-        if (period === 'PM' && hour !== 12) hour += 12;
-        if (period === 'AM' && hour === 12) hour = 0;
-        
-        hourCounts[hour]++;
-        console.log('⏰', b.time, '-> Hour:', hour);
-      }
-    }
+    const hour = new Date(b.date).getHours();
+    hourCounts[hour]++;
   });
   
-  console.log('📊 Peak hours distribution:', hourCounts);
+  const labels = hourCounts.map((_, i) => `${i}:00`);
   
-  const labels = hourCounts.map((_, i) => {
-    const period = i >= 12 ? 'PM' : 'AM';
-    const displayHour = i === 0 ? 12 : i > 12 ? i - 12 : i;
-    return `${displayHour} ${period}`;
-  });
-  
-  // DESTROY old chart
-  if (currentChart.peakHours) {
-    currentChart.peakHours.destroy();
-  }
+  if (currentChart.peakHours) currentChart.peakHours.destroy();
   
   currentChart.peakHours = new Chart(ctx, {
     type: 'bar',
@@ -571,39 +521,14 @@ function createPeakHoursChart(bookings) {
       datasets: [{
         label: 'Bookings',
         data: hourCounts,
-        backgroundColor: '#8b4513',
-        borderRadius: 4
+        backgroundColor: '#8b4513'
       }]
     },
     options: {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: true,
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const count = context.parsed.x;
-              return `${count} booking${count !== 1 ? 's' : ''}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1,
-            precision: 0,
-            callback: function(value) {
-              if (Math.floor(value) === value) {
-                return value;
-              }
-            }
-          }
-        }
-      }
+      plugins: { legend: { display: false } }
     }
   });
 }
@@ -646,87 +571,41 @@ function createServicesChart(bookings) {
 
 function createRevenueChart(bookings) {
   const ctx = document.getElementById('revenueChart');
-  if (!ctx) {
-    console.warn('⚠️ Revenue chart canvas not found');
-    return;
-  }
+  if (!ctx) return;
   
   let labels, data;
   
   if (currentPeriod === 'today') {
-    // Group by booking TIME hour
-    labels = Array.from({length: 24}, (_, i) => {
-      const period = i >= 12 ? 'PM' : 'AM';
-      const displayHour = i === 0 ? 12 : i > 12 ? i - 12 : i;
-      return `${displayHour} ${period}`;
-    });
+    labels = Array.from({length: 24}, (_, i) => `${i}:00`);
     data = Array(24).fill(0);
-    
     bookings.filter(b => b.status === 'completed').forEach(b => {
-      if (b.time) {
-        // Parse time like "3:00 PM"
-        const timeParts = b.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-        if (timeParts) {
-          let hour = parseInt(timeParts[1]);
-          const period = timeParts[3].toUpperCase();
-          
-          if (period === 'PM' && hour !== 12) hour += 12;
-          if (period === 'AM' && hour === 12) hour = 0;
-          
-          data[hour] += b.price || 0;
-        }
-      }
+      const hour = new Date(b.date).getHours();
+      data[hour] += b.price || 0;
     });
-    
-    console.log('📊 Today revenue by hour:', data);
-    
   } else if (currentPeriod === 'week') {
     labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     data = Array(7).fill(0);
-    
     bookings.filter(b => b.status === 'completed').forEach(b => {
-      const bookingDate = new Date(b.date);
-      let day = bookingDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-      
-      // Convert Sunday=0 to Sunday=6, Monday=1 to Monday=0, etc.
-      day = day === 0 ? 6 : day - 1;
-      
+      const day = new Date(b.date).getDay();
       data[day] += b.price || 0;
-      
-      console.log('📅', b.date, '-> Day:', bookingDate.getDay(), '-> Index:', day, labels[day]);
     });
-    
-    console.log('📊 Week revenue by day:', data);
-    
   } else if (currentPeriod === 'month') {
-    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
-    data = Array(5).fill(0);
-    
+    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    data = Array(4).fill(0);
     bookings.filter(b => b.status === 'completed').forEach(b => {
-      const bookingDate = new Date(b.date);
-      const dayOfMonth = bookingDate.getDate();
-      const weekIndex = Math.min(Math.floor((dayOfMonth - 1) / 7), 4);
-      data[weekIndex] += b.price || 0;
+      const week = Math.floor(new Date(b.date).getDate() / 7);
+      data[week] += b.price || 0;
     });
-    
-    console.log('📊 Month revenue by week:', data);
-    
-  } else { // year
+  } else {
     labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     data = Array(12).fill(0);
-    
     bookings.filter(b => b.status === 'completed').forEach(b => {
       const month = new Date(b.date).getMonth();
       data[month] += b.price || 0;
     });
-    
-    console.log('📊 Year revenue by month:', data);
   }
   
-  // DESTROY old chart before creating new one
-  if (currentChart.revenue) {
-    currentChart.revenue.destroy();
-  }
+  if (currentChart.revenue) currentChart.revenue.destroy();
   
   currentChart.revenue = new Chart(ctx, {
     type: 'bar',
@@ -735,23 +614,13 @@ function createRevenueChart(bookings) {
       datasets: [{
         label: 'Revenue (₱)',
         data,
-        backgroundColor: '#4b2e1e',
-        borderRadius: 4
+        backgroundColor: '#4b2e1e'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return '₱' + context.parsed.y.toLocaleString();
-            }
-          }
-        }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
@@ -766,6 +635,7 @@ function createRevenueChart(bookings) {
   });
 }
 
+// Continue from line with createRevenueStatusChart...
 
 function createRevenueStatusChart(bookings) {
   const ctx = document.getElementById('revenueStatusChart');
@@ -875,36 +745,6 @@ function createBookingDistChart(bookings) {
               return `${label}: ${value} bookings (${percentage}%)`;
             }
           }
-        }
-      }
-    }
-  });
-}
-
-function createBookingDistChart(bookings) {
-  const ctx = document.getElementById('bookingDistChart');
-  if (!ctx) return;
-  
-  const completed = bookings.filter(b => b.status === 'completed').length;
-  const cancelled = bookings.filter(b => b.status === 'cancelled').length;
-  
-  if (currentChart.bookingDist) currentChart.bookingDist.destroy();
-  
-  currentChart.bookingDist = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Completed', 'Cancelled'],
-      datasets: [{
-        data: [completed, cancelled],
-        backgroundColor: ['#28a745', '#dc3545']
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: {
-          position: 'bottom'
         }
       }
     }
@@ -1043,13 +883,6 @@ function loadBookingsForDate(dateStr) {
     const numClients = b.numberOfClients || 1;
     const timeRange = b.endTime ? `${b.time} - ${b.endTime}` : b.time;
     
-    // ✅ Payment method badge
-    const paymentBadge = b.paymentMethod ? `
-      <span style="display: inline-block; padding: 4px 8px; background: #e3f2fd; color: #1976d2; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">
-        ${b.paymentMethod}
-      </span>
-    ` : '';
-    
     return `
       <tr>
         <td>${clientName} ${numClients > 1 ? `(${numClients} clients)` : ''}</td>
@@ -1057,7 +890,7 @@ function loadBookingsForDate(dateStr) {
         <td>${serviceName}</td>
         <td>${therapistDisplay}</td>
         <td>${duration} mins</td>
-        <td>₱${(b.price || 0).toLocaleString()}${paymentBadge}</td>
+        <td>₱${(b.price || 0).toLocaleString()}</td>
         <td><span class="status-badge status-${b.status}">${b.status}</span></td>
         <td class="action-buttons">
           ${b.status === 'pending' ? `
@@ -1425,6 +1258,548 @@ async function deleteService(serviceId) {
   }
 }
 
+document.getElementById('closeServiceModal').addEventListener('click', () => {
+  document.getElementById('editServiceModal').classList.remove('active');
+});
+
+// CALENDAR AND BOOKINGS MANAGEMENT
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
+async function loadBookingsCalendar() {
+  try {
+    const res = await fetch(`${apiBase}/bookings`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    allBookings = await res.json();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Render calendar with green highlighting for booked dates
+function renderCalendar() {
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  
+  document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+  
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  
+  const calendarGrid = document.getElementById('calendar');
+  calendarGrid.innerHTML = '';
+  
+  // Day headers
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  days.forEach(day => {
+    const header = document.createElement('div');
+    header.textContent = day;
+    header.style.cssText = 'font-weight: 600; text-align: center; padding: 10px;';
+    calendarGrid.appendChild(header);
+  });
+  
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement('div');
+    calendarGrid.appendChild(emptyCell);
+  }
+  
+  // Day cells
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayCell = document.createElement('div');
+    dayCell.textContent = day;
+    dayCell.className = 'calendar-day';
+    
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    // Check if this date has bookings
+    const hasBookings = allBookings.some(b => {
+      const bookingDate = new Date(b.date).toISOString().split('T')[0];
+      return bookingDate === dateStr;
+    });
+    
+    if (hasBookings) {
+      dayCell.classList.add('has-bookings');
+    }
+    
+    dayCell.addEventListener('click', () => {
+      selectDate(dateStr, dayCell);
+    });
+    
+    calendarGrid.appendChild(dayCell);
+  }
+}
+
+function selectDate(dateStr, dayCell) {
+  document.querySelectorAll('.calendar-day').forEach(cell => {
+    cell.classList.remove('selected');
+  });
+  
+  dayCell.classList.add('selected');
+  selectedDate = dateStr;
+  
+  loadBookingsForDate(dateStr);
+}
+
+// Load bookings with therapist display improvements
+function loadBookingsForDate(dateStr) {
+  const dayBookings = allBookings.filter(b => {
+    const bookingDate = new Date(b.date).toISOString().split('T')[0];
+    return bookingDate === dateStr;
+  });
+  
+  const formattedDate = new Date(dateStr).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  document.getElementById('selectedDateTitle').textContent = `Bookings for ${formattedDate}`;
+  
+  const tbody = document.querySelector('#bookingsTable tbody');
+  
+  if (dayBookings.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+          No bookings for this date
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tbody.innerHTML = dayBookings.map(b => {
+    const clientName = b.guestName || "Guest";
+    const serviceName = b.service ? b.service.name : "N/A";
+    
+    //Show therapist or "Any Available" with assign button
+    let therapistDisplay = "Unassigned";
+    
+    if (b.therapists && b.therapists.length > 0) {
+      therapistDisplay = b.therapists.map(t => t.name).join(', ');
+    } else if (b.therapist) {
+      therapistDisplay = b.therapist.name;
+    } else {
+      // "Any Available Therapist" - Show clickable button
+      therapistDisplay = `
+        <span style="color: #666; font-style: italic;">Any Available</span>
+        <button 
+          class="btn-assign-therapist" 
+          onclick="showAvailableTherapists('${b._id}', '${b.date}', '${b.time}', ${b.durationMinutes}, '${serviceName}')"
+          style="margin-left: 8px; padding: 4px 12px; background: #4b2e1e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;"
+        >
+          Assign →
+        </button>
+      `;
+    }
+    
+    const duration = b.durationMinutes || 60;
+    const numClients = b.numberOfClients || 1;
+    const timeRange = b.endTime ? `${b.time} - ${b.endTime}` : b.time;
+    
+    return `
+      <tr>
+        <td>${clientName} ${numClients > 1 ? `(${numClients} clients)` : ''}</td>
+        <td>${timeRange}</td>
+        <td>${serviceName}</td>
+        <td>${therapistDisplay}</td>
+        <td>${duration} mins</td>
+        <td>₱${(b.price || 0).toLocaleString()}</td>
+        <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+        <td class="action-buttons">
+          ${b.status === 'pending' ? `
+            <button class="btn-confirm" onclick="confirmBooking('${b._id}')">Confirm</button>
+            <button class="btn-cancel-booking" onclick="cancelBooking('${b._id}')">Cancel</button>
+          ` : '-'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Show available therapists modal for assignment
+async function showAvailableTherapists(bookingId, date, time, duration, serviceName) {
+  try {
+    const res = await fetch(`${apiBase}/bookings/check-availability`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        service: serviceName,
+        date: date,
+        time: time,
+        durationMinutes: duration
+      })
+    });
+    
+    const data = await res.json();
+    const available = data.available || [];
+    
+    if (available.length === 0) {
+      alert('❌ No therapists available for this time slot.\n\nReasons could be:\n• All therapists are booked\n• No therapists have expertise in this service\n• No therapists are working at this time');
+      return;
+    }
+    
+    // Create modal to show available therapists
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    `;
+    
+    modal.innerHTML = `
+      <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 style="color: #4b2e1e; margin-bottom: 20px;">✅ Available Therapists (${available.length})</h3>
+        <p style="color: #666; margin-bottom: 20px;">Select a therapist to assign to this booking:</p>
+        <div style="max-height: 400px; overflow-y: auto;">
+          ${available.map(t => `
+            <button 
+              onclick="assignTherapist('${bookingId}', '${t.id}')"
+              style="width: 100%; padding: 16px; margin-bottom: 12px; background: #f5f1eb; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.3s;"
+              onmouseover="this.style.borderColor='#4b2e1e'; this.style.background='#fff';"
+              onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='#f5f1eb';"
+            >
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 50px; height: 50px; background: #4b2e1e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                  👤
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; color: #4b2e1e; margin-bottom: 4px;">${t.name}</div>
+                  <div style="color: #888; font-size: 0.85rem;">
+                    ${t.expertise && t.expertise.length > 0 ? t.expertise.join(', ') : 'All services'}
+                  </div>
+                </div>
+              </div>
+            </button>
+          `).join('')}
+        </div>
+        <button 
+          onclick="this.parentElement.parentElement.remove()"
+          style="width: 100%; margin-top: 20px; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
+        >
+          Cancel
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  } catch (err) {
+    console.error(err);
+    alert('Failed to load available therapists');
+  }
+}
+
+// Assign therapist to booking
+async function assignTherapist(bookingId, therapistId) {
+  try {
+    const res = await fetch(`${apiBase}/bookings/${bookingId}/reassign`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ therapistId })
+    });
+    
+    if (res.ok) {
+      showNotification('✅ Therapist assigned successfully!', 'success');
+      
+      // Close modal
+      document.querySelectorAll('[style*="z-index: 10001"]').forEach(el => el.remove());
+      
+      // Reload bookings
+      loadBookingsForDate(selectedDate);
+    } else {
+      const data = await res.json();
+      alert(`❌ ${data.msg || 'Failed to assign therapist'}`);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Failed to assign therapist');
+  }
+}
+
+// Confirm booking
+async function confirmBooking(bookingId) {
+  if (!confirm('Confirm this booking?')) return;
+  
+  try {
+    const res = await fetch(`${apiBase}/bookings/${bookingId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'confirmed' })
+    });
+    
+    if (res.ok) {
+      showNotification('Booking confirmed!', 'success');
+      loadBookingsForDate(selectedDate);
+      loadOverviewData();
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to confirm booking', 'error');
+  }
+}
+
+// Cancel booking
+async function cancelBooking(bookingId) {
+  if (!confirm('Cancel this booking? This cannot be undone.')) return;
+  
+  try {
+    const res = await fetch(`${apiBase}/bookings/${bookingId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'cancelled' })
+    });
+    
+    if (res.ok) {
+      showNotification('Booking cancelled', 'success');
+      loadBookingsForDate(selectedDate);
+      loadOverviewData();
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to cancel booking', 'error');
+  }
+}
+
+// Calendar navigation
+document.getElementById('prevMonth').addEventListener('click', () => {
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  renderCalendar();
+});
+
+document.getElementById('nextMonth').addEventListener('click', () => {
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  renderCalendar();
+});
+
+// SERVICES MANAGEMENT
+let currentServiceId = null;
+
+// Load services with duration restrictions display
+async function loadServices() {
+  try {
+    const res = await fetch(`${apiBase}/services`);
+    const services = await res.json();
+    
+    const servicesList = document.getElementById('servicesList');
+    
+    if (services.length === 0) {
+      servicesList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No services yet</p>';
+      return;
+    }
+    
+    servicesList.innerHTML = services.map(s => {
+      const pricing = s.pricing ? s.pricing : { 60: s.price, 90: s.price, 120: s.price };
+      const price60 = pricing[60] || pricing['60'] || s.price || 0;
+      const price90 = pricing[90] || pricing['90'] || s.price || 0;
+      const price120 = pricing[120] || pricing['120'] || s.price || 0;
+      
+      // Show allowed durations
+      const allowedDurations = s.allowedDurations || [60, 90, 120];
+      const durationsText = allowedDurations.length === 3 ? 
+        'All durations available' : 
+        `Available: ${allowedDurations.join(', ')} minutes only`;
+      
+      return `
+        <div class="service-card">
+          <div class="service-info">
+            <h3>${s.name}</h3>
+            <p>${s.description || 'No description'}</p>
+            <div class="service-pricing">
+              <span class="price-tag ${!allowedDurations.includes(60) ? 'disabled' : ''}" 
+      style="${!allowedDurations.includes(60) ? 'pointer-events: none; opacity: 0.5;' : ''}">
+  60 min: ₱${price60}
+</span>
+
+              <span class="price-tag ${!allowedDurations.includes(90) ? 'disabled' : ''}" 
+      style="${!allowedDurations.includes(90) ? 'pointer-events: none; opacity: 0.5;' : ''}">
+  90 min: ₱${price90}
+</span>
+
+              <span class="price-tag ${!allowedDurations.includes(120) ? 'disabled' : ''}" 
+      style="${!allowedDurations.includes(120) ? 'pointer-events: none; opacity: 0.5;' : ''}">
+  120 min: ₱${price120}
+</span>
+
+            </div>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 8px; font-style: italic;">
+              ℹ️ ${durationsText}
+            </p>
+          </div>
+          <div class="service-actions">
+            <button class="btn-edit" onclick="editService('${s._id}')">Edit</button>
+            <button class="btn-delete" onclick="deleteService('${s._id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to load services', 'error');
+  }
+}
+
+// Add service button
+document.getElementById('addServiceBtn').addEventListener('click', () => {
+  currentServiceId = null;
+  document.getElementById('serviceModalTitle').textContent = 'Add New Service';
+  document.getElementById('serviceName').value = '';
+  document.getElementById('serviceDesc').value = '';
+  document.getElementById('price60').value = '';
+  document.getElementById('price90').value = '';
+  document.getElementById('price120').value = '';
+  
+  // Reset duration checkboxes
+  document.getElementById('duration60').checked = true;
+  document.getElementById('duration90').checked = true;
+  document.getElementById('duration120').checked = true;
+  
+  document.getElementById('editServiceModal').classList.add('active');
+});
+
+// ENHANCED: Edit service with duration restrictions
+async function editService(serviceId) {
+  try {
+    const res = await fetch(`${apiBase}/services`);
+    const services = await res.json();
+    const service = services.find(s => s._id === serviceId);
+    
+    if (!service) return;
+    
+    currentServiceId = serviceId;
+    document.getElementById('serviceModalTitle').textContent = 'Edit Service';
+    document.getElementById('serviceName').value = service.name;
+    document.getElementById('serviceDesc').value = service.description || '';
+    
+    const pricing = service.pricing || {};
+    document.getElementById('price60').value = pricing[60] || pricing['60'] || service.price || '';
+    document.getElementById('price90').value = pricing[90] || pricing['90'] || service.price || '';
+    document.getElementById('price120').value = pricing[120] || pricing['120'] || service.price || '';
+    
+    // Set allowed durations checkboxes
+    const allowedDurations = service.allowedDurations || [60, 90, 120];
+    document.getElementById('duration60').checked = allowedDurations.includes(60);
+    document.getElementById('duration90').checked = allowedDurations.includes(90);
+    document.getElementById('duration120').checked = allowedDurations.includes(120);
+    
+    document.getElementById('editServiceModal').classList.add('active');
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to load service', 'error');
+  }
+}
+
+// ENHANCED: Save service with duration restrictions
+document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // Get allowed durations
+  const allowedDurations = [];
+  if (document.getElementById('duration60').checked) allowedDurations.push(60);
+  if (document.getElementById('duration90').checked) allowedDurations.push(90);
+  if (document.getElementById('duration120').checked) allowedDurations.push(120);
+  
+  if (allowedDurations.length === 0) {
+    alert('❌ Please select at least one duration');
+    return;
+  }
+  
+  const serviceData = {
+    name: document.getElementById('serviceName').value,
+    description: document.getElementById('serviceDesc').value,
+    durationMinutes: 60,
+    price: parseInt(document.getElementById('price60').value),
+    pricing: {
+      60: parseInt(document.getElementById('price60').value),
+      90: parseInt(document.getElementById('price90').value),
+      120: parseInt(document.getElementById('price120').value)
+    },
+    allowedDurations
+  };
+  
+  try {
+    if (currentServiceId) {
+      // Update existing
+      await fetch(`${apiBase}/services/${currentServiceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(serviceData)
+      });
+      showNotification('Service updated!', 'success');
+    } else {
+      // Create new
+      await fetch(`${apiBase}/services`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(serviceData)
+      });
+      showNotification('Service created!', 'success');
+    }
+    
+    document.getElementById('editServiceModal').classList.remove('active');
+    loadServices();
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to save service', 'error');
+  }
+});
+
+// Delete service
+async function deleteService(serviceId) {
+  if (!confirm('Delete this service? This cannot be undone.')) return;
+  
+  try {
+    await fetch(`${apiBase}/services/${serviceId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    showNotification('Service deleted', 'success');
+    loadServices();
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete service', 'error');
+  }
+}
+
+// Close service modal
 document.getElementById('closeServiceModal').addEventListener('click', () => {
   document.getElementById('editServiceModal').classList.remove('active');
 });
@@ -2377,10 +2752,8 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   window.location.href = "login.html";
 });
 
-// Make functions global for onclick handlers
 window.showStatDetail = showStatDetail;
 window.closeStatDetail = closeStatDetail;
-window.closeStatDetailOnBackdrop = closeStatDetailOnBackdrop;
 window.editService = editService;
 window.deleteService = deleteService;
 window.showAvailableTherapists = showAvailableTherapists;
@@ -2404,3 +2777,4 @@ window.removeOverride = removeOverride;
 window.saveTherapistSchedule = saveTherapistSchedule;
 window.addBreak = addBreak;
 window.removeBreak = removeBreak;
+

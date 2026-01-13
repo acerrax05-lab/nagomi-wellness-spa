@@ -10,7 +10,7 @@ async function resetPassword() {
     await mongoose.connect('mongodb://localhost:27017/spa_db');
     console.log('✅ Connected to spa_db\n');
 
-    const email = 'admin@nagomi.com';
+    const email = 'admin@nagomiwellness.com';
     const newPassword = 'admin123';
 
     

@@ -5,7 +5,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 
-// ✅ Get analytics data for admin dashboard
+// Get analytics data for admin dashboard
 router.get('/dashboard', auth, roles(['admin']), async (req, res) => {
   try {
     const { period = 'today' } = req.query;
