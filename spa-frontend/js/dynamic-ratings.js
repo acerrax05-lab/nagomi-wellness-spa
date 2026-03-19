@@ -10,7 +10,7 @@ async function loadDynamicReviewsAndRatings() {
   try {
     console.log('📝 Loading reviews and ratings...');
     
-    const API_BASE = "http://localhost:5000/api";
+    const API_BASE = 'https://nagomi-backend.onrender.com/api';
     
     // Fetch reviews
     const response = await fetch(`${API_BASE}/reviews/public?limit=6`);
@@ -147,7 +147,7 @@ function displayReviews(reviews) {
 // ============================================
 async function loadReviewStatistics() {
   try {
-    const API_BASE = "http://localhost:5000/api";
+    const API_BASE = 'https://nagomi-backend.onrender.com/api';
     const response = await fetch(`${API_BASE}/reviews/admin/stats`);
     
     if (!response.ok) return;

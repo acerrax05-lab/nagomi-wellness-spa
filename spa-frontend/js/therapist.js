@@ -1,5 +1,5 @@
 // js/therapist.js - Commission-based payroll + strict completion enforcement
-const apiBase = "http://localhost:5000/api";
+const apiBase = 'https://nagomi-backend.onrender.com/api';
 const token = localStorage.getItem("token");
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 

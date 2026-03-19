@@ -1,5 +1,5 @@
 // js/manage-booking.js — with approval workflow
-const API_URL ="http://localhost:5000/api";
+const API_URL ='https://nagomi-backend.onrender.com/api';
 
 let currentBookings = [];
 let selectedBooking = null;

@@ -2,7 +2,7 @@
   'use strict';
   
   // ✅ FIXED: API base URL
-  const REVIEWS_API  = "http://localhost:5000/api";
+  const REVIEWS_API  = 'https://nagomi-backend.onrender.com/api';
   
   let selectedRating = 0;
 

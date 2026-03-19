@@ -1,4 +1,4 @@
-const API_URL        = "http://localhost:5000/api";
+const API_URL        = 'https://nagomi-backend.onrender.com/api';
 
 // Wrap fetch to always include ngrok-skip-browser-warning (safe to include in production too)
 const apiFetch = (url, options = {}) => {

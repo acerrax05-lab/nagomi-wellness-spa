@@ -1,5 +1,5 @@
 // js/login.js
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = 'https://nagomi-backend.onrender.com/api';
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();

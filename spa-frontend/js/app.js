@@ -1,5 +1,5 @@
 // js/app.js
-const apiBase = "http://localhost:5000/api";
+const apiBase = 'https://nagomi-backend.onrender.com/api';
 
 async function loadServices() {
   try {

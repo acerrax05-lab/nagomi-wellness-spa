@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = 'https://nagomi-backend.onrender.com/api';
   const params   = new URLSearchParams(window.location.search);
 
   const serviceParam = (params.get('service') || '').trim();

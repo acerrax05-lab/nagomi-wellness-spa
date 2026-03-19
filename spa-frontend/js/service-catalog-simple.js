@@ -1,12 +1,12 @@
 (function() {
   'use strict';
   
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = 'https://nagomi-backend.onrender.com/api';
   // ── Backend host for resolving uploaded image paths ───────────────────────
   // Your frontend runs on a different port (e.g. 5501 via Live Server).
   // Uploaded images are stored on the backend (port 5000), so relative paths
   // like /img/services/... must be prefixed with the backend origin.
-  const BACKEND_ORIGIN  = "http://localhost:5000/api";
+  const BACKEND_ORIGIN  = 'https://nagomi-backend.onrender.com/api';
 
   let allServices = [];
   let currentCategory = 'all';
