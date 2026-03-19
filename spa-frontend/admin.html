@@ -11,7 +11,12 @@
   <!-- Navbar -->
   <header>
     <nav class="navbar">
-      <h1 class="logo">Nagomi Wellness Spa - Admin</h1>
+      <div class="navbar-left">
+        <button class="hamburger" id="adminMenuBtn" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="logo">zentraX | Nagomi Wellness Spa - Admin</h1>
+      </div>
       <div class="user-info">
         <span id="adminName">Admin</span>
         <button id="logoutBtn" class="logout-btn">Logout</button>
@@ -19,13 +24,17 @@
     </nav>
   </header>
 
+  <!-- Sidebar overlay (mobile tap-to-close) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="adminSidebar">
     <button class="tab-btn active" data-tab="overview">📊 Overview</button>
     <button class="tab-btn" data-tab="bookings">📅 Bookings</button>
     <button class="tab-btn" data-tab="services">💆 Services</button>
     <button class="tab-btn" data-tab="therapists">👥 Therapists</button>
     <button class="tab-btn" data-tab="grace-periods">⏰ Grace Periods</button>
+    <button class="tab-btn" data-tab="reviews">📝 Reviews</button>
   </aside>
 
   <!-- Main Content -->
@@ -36,20 +45,49 @@
       <h2>Business Overview</h2>
       
       <!-- Time Filter -->
-      <div class="time-filter">
-        <button class="filter-btn active" data-period="today">Today</button>
-        <button class="filter-btn" data-period="week">This Week</button>
-        <button class="filter-btn" data-period="month">This Month</button>
-        <button class="filter-btn" data-period="year">This Year</button>
-      </div>
+      <div class="time-filter" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
 
-      <!-- 6 Stat Cards (Removed 4 cards) -->
+  <!-- Period Buttons -->
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="filter-btn active" data-period="today">Today</button>
+    <button class="filter-btn" data-period="week">This Week</button>
+    <button class="filter-btn" data-period="month">This Month</button>
+    <button class="filter-btn" data-period="year">This Year</button>
+    <div id="sarimaStatusIndicator" style="padding: 4px 12px;"></div>
+  </div>
+
+  <!-- Forecast Toggle & Insights -->
+  <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    <!-- Forecast Toggle -->
+    <div class="forecast-toggle">
+  <label>Forecasting:</label>
+  <button class="toggle-btn" onclick="toggleForecast()">
+    <span class="forecast-status on">ON</span>
+  </button>
+</div>
+    
+    <!-- Insights Button -->
+    <button class="btn-insights" onclick="showComprehensiveInsights()">
+      📊 Forecast & Prescription Insights
+    </button>
+  </div>
+</div>
+
+<!-- Date Range Display (will be populated by JS) -->
+<div class="date-range-display" style="padding: 8px 14px; background: rgba(201,168,130,0.12); border-left: 3px solid #c9a882; border-radius: 0 6px 6px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+  <span style="font-size:1rem;">📅</span>
+  <span id="dateRangeValue" style="font-weight:700; color:#4b2e1e; font-size:0.95rem;"></span>
+  <span id="dateRangeSub" style="color:#8b6045; font-size:0.82rem; opacity:0.85;"></span>
+</div>
+
+      <!-- 7 Stat Cards -->
       <div class="stats-grid">
         <div class="stat-card clickable" onclick="showStatDetail('bookings')">
           <div class="stat-icon">📅</div>
           <div class="stat-details">
             <h3 id="periodBookings">0</h3>
             <p id="periodBookingsLabel">Today's Bookings</p>
+            <div id="bookingsInsight" class="stat-insight"></div>
           </div>
           <div class="hover-indicator">👁️ Click for details</div>
         </div>
@@ -63,24 +101,6 @@
           <div class="hover-indicator">👁️ Click for details</div>
         </div>
 
-        <div class="stat-card clickable" onclick="showStatDetail('revenue')">
-          <div class="stat-icon">💰</div>
-          <div class="stat-details">
-            <h3 id="periodRevenue">₱0</h3>
-            <p id="periodRevenueLabel">Today's Revenue</p>
-          </div>
-          <div class="hover-indicator">👁️ Click for details</div>
-        </div>
-
-        <div class="stat-card clickable" onclick="showStatDetail('downpayment')">
-          <div class="stat-icon">💵</div>
-          <div class="stat-details">
-            <h3 id="periodDownPayment">₱0</h3>
-            <p id="periodDownPaymentLabel">Down Payment Today</p>
-          </div>
-          <div class="hover-indicator">👁️ Click for details</div>
-        </div>
-
         <div class="stat-card red clickable" onclick="showStatDetail('cancelled')">
           <div class="stat-icon">❌</div>
           <div class="stat-details">
@@ -89,7 +109,16 @@
           </div>
           <div class="hover-indicator">👁️ Click for details</div>
         </div>
-
+        
+        <div class="stat-card clickable" onclick="showStatDetail('revenue')">
+          <div class="stat-icon">💰</div>
+          <div class="stat-details">
+            <h3 id="periodRevenue">₱0</h3>
+            <p id="periodRevenueLabel">Today's Revenue</p>
+          </div>
+          <div class="hover-indicator">👁️ Click for details</div>
+        </div>
+        
         <div class="stat-card clickable" onclick="showStatDetail('therapists')">
           <div class="stat-icon">👨‍⚕️</div>
           <div class="stat-details">
@@ -98,19 +127,32 @@
           </div>
           <div class="hover-indicator">👁️ Click for details</div>
         </div>
+
+        <div class="stat-card clickable" onclick="showPredictionsDetail()">
+          <div class="stat-icon">📈</div>
+          <div class="stat-details">
+            <h3 id="periodPredictions">0</h3>
+            <p id="periodPredictionsLabel">Next 7 Days Bookings</p>
+            <div id="predictionsSubtitle" class="stat-subtitle" style="margin-top: 8px; font-size: 0.75rem; color: #666;"></div>
+          </div>
+          <div class="hover-indicator">👁️ Click for details</div>
+        </div>
       </div>
 
       <!-- Charts Grid -->
       <div class="charts-container">
+        <div class="data-timestamp" style="grid-column: 1 / -1; margin-bottom: 0;">
+          <span style="color: #28a745;">●</span> Loading data...
+        </div>
         <!-- Peak Hours Chart -->
         <div class="chart-box">
-          <h3>Peak Hours</h3>
+          <h3 id="peakHoursTitle">Peak Hours</h3>
           <canvas id="peakHoursChart"></canvas>
         </div>
 
         <!-- Most Booked Services Chart -->
         <div class="chart-box">
-          <h3>Most Booked Services</h3>
+          <h3 id="servicesTitle">Most Booked Services</h3>
           <canvas id="servicesChart"></canvas>
         </div>
 
@@ -137,6 +179,27 @@
     <!-- BOOKINGS TAB -->
     <section id="bookings-tab" class="tab-content">
       <h2>Booking Calendar</h2>
+
+      <div class="booking-search-container" style="margin-bottom: 25px;">
+        <div style="position: relative;">
+          <input 
+            type="text" 
+            id="bookingSearchInput" 
+            placeholder="🔍 Search by name, phone, service, or transaction number..." 
+            style="width: 100%; padding: 15px 50px 15px 20px; font-size: 1rem; border: 2px solid #d8c3b2; border-radius: 10px;"
+          />
+          <button 
+            id="clearSearchBtn" 
+            onclick="clearBookingSearch()" 
+            style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #666; display: none;"
+          >
+            ✕
+          </button>
+        </div>
+        <div id="searchResultsInfo" style="margin-top: 10px; color: #666; font-size: 0.9rem;"></div>
+      </div>
+
+      <div id="pendingRequestsPanel"></div>
       
       <div class="calendar-section">
         <div class="calendar-header">
@@ -153,7 +216,9 @@
           <thead>
             <tr>
               <th>Client</th>
-              <th>Time</th>
+              <th>Date</th>  
+              <th>Start Time</th>
+              <th>End Time</th>
               <th>Service</th>
               <th>Therapist</th>
               <th>Duration</th>
@@ -174,19 +239,120 @@
         <button id="addServiceBtn" class="btn-primary">+ Add Service</button>
       </div>
 
+      <!-- Category tabs injected here by JS (renderServiceCategoryTabs) -->
       <div id="servicesList" class="services-list"></div>
     </section>
 
     <!-- THERAPISTS TAB -->
     <section id="therapists-tab" class="tab-content">
       <div class="section-header">
-        <h2>Therapists Management</h2>
-        <button id="addTherapistBtn" class="btn-primary">+ Add Therapist</button>
+        <div>
+          <h2>Therapists Management & Analytics</h2>
+          <p style="color: #666; font-size: 0.95rem; margin-top: 8px;">
+            Manage therapists, view real-time status, and track performance
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <button id="addTherapistBtn" class="btn-primary">+ Add Therapist</button>
+          <button onclick="openArchivedTherapists()" class="btn-secondary" style="background:#6c757d;color:white;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:0.95rem;">🗃️ View Archived</button>
+        </div>
       </div>
 
-      <div id="therapistsList" class="therapists-grid"></div>
+      <div class="therapist-status-section">
+        <div class="status-header">
+          <h3>🟢 Live Status Dashboard</h3>
+          <div class="auto-refresh-indicator">
+            <span class="refresh-icon">🔄</span>
+            <span>Auto-refreshing every 30 seconds</span>
+          </div>
+        </div>
+
+        <div class="status-legend">
+          <div class="legend-item">
+            <span class="status-dot-large status-available"></span>
+            <span>Available</span>
+          </div>
+          <div class="legend-item">
+            <span class="status-dot-large status-busy"></span>
+            <span>In Session</span>
+          </div>
+          <div class="legend-item">
+            <span class="status-dot-large status-break"></span>
+            <span>On Break</span>
+          </div>
+          <div class="legend-item">
+            <span class="status-dot-large status-off"></span>
+            <span>Off Duty</span>
+          </div>
+        </div>
+
+        <div id="therapistStatusGrid" class="therapist-status-grid">
+          <div class="loading-indicator">
+            <div class="spinner-small"></div>
+            <p>Loading therapist status...</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 40px;">
+        <h3 style="color: #4b2e1e; margin-bottom: 20px; font-size: 1.3rem;">👥 Therapist Management</h3>
+        <div id="therapistsList" class="therapists-grid"></div>
+      </div>
+
+      <div class="income-section" style="margin-top: 40px;">
+        <h3>💰 Income & Commission Tracking</h3>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
+          Track therapist earnings based on completed services
+        </p>
+
+        <div class="commission-settings-box">
+          <div class="commission-header">
+            <h4>⚙️ Commission Settings</h4>
+            <button class="btn-primary" onclick="saveCommissionSettings()">💾 Save Settings</button>
+          </div>
+          <div class="commission-form">
+            <div class="form-group">
+              <label for="commissionRate">Commission Rate (%)</label>
+              <input type="number" id="commissionRate" min="0" max="100" step="5" value="60" placeholder="e.g., 60">
+              <small>Percentage of service price that therapist receives</small>
+            </div>
+            <div class="form-group">
+              <label for="baseRate">Base Rate (₱/hour)</label>
+              <input type="number" id="baseRate" min="0" step="50" value="0" placeholder="e.g., 200">
+              <small>Optional: Fixed hourly rate if no commission</small>
+            </div>
+          </div>
+          <div class="commission-example">
+            <strong>Example:</strong> Service price ₱1,500 × 60% commission = ₱900 to therapist
+          </div>
+        </div>
+
+        <div class="income-summary-grid" id="incomeSummaryGrid"></div>
+
+        <div class="income-table-container">
+          <button class="filter-btn active" data-income-period="today" onclick="filterIncomeByPeriod('today')">Today</button>
+          <button class="filter-btn" data-income-period="week" onclick="filterIncomeByPeriod('week')">This Week</button>
+          <button class="filter-btn" data-income-period="month" onclick="filterIncomeByPeriod('month')">This Month</button>
+          <button class="filter-btn" data-income-period="year" onclick="filterIncomeByPeriod('year')">This Year</button>
+          <h4>Detailed Earnings Breakdown</h4>
+          <table class="income-table" id="incomeTable">
+            <thead>
+              <tr>
+                <th>Therapist</th>
+                <th>Completed Services</th>
+                <th>Total Revenue</th>
+                <th>Commission Earned</th>
+                <th>Success Rate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
+    <!-- GRACE PERIODS TAB -->
     <section id="grace-periods-tab" class="tab-content">
       <div class="section-header">
         <div>
@@ -215,7 +381,28 @@
       </div>
     </section>
 
+    <!-- REVIEWS TAB -->
+    <section id="reviews-tab" class="tab-content">
+      <div class="section-header">
+        <h2>📝 Review Management</h2>
+      </div>
+      <div id="reviewsManagementContainer"></div>
+    </section>
+    
   </main>
+
+  <!-- Income Detail Modal -->
+  <div id="incomeDetailModal" class="modal">
+    <div class="modal-content large">
+      <button class="close-modal-btn" onclick="closeIncomeDetail()">✕</button>
+      <h3 id="incomeDetailTitle">Therapist Income Details</h3>
+      <div id="incomeDetailContent"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeIncomeDetail()">Close</button>
+        <button class="btn-primary" onclick="exportIncomeReport()">📊 Export Report</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Stat Detail Modal -->
   <div id="statDetailModal" class="modal" onclick="closeStatDetailOnBackdrop(event)">
@@ -231,7 +418,7 @@
     </div>
   </div>
 
-  <!-- Other Modals (keeping existing modals) -->
+  <!-- Action Modal -->
   <div id="actionModal" class="modal">
     <div class="modal-content">
       <h3 id="actionModalTitle">Confirm Action</h3>
@@ -243,15 +430,41 @@
     </div>
   </div>
 
+  <!-- Edit Service Modal -->
   <div id="editServiceModal" class="modal">
     <div class="modal-content large">
       <h3 id="serviceModalTitle">Edit Service</h3>
       <form id="serviceForm">
+
         <label>Service Name</label>
         <input type="text" id="serviceName" required>
         
         <label>Description</label>
         <textarea id="serviceDesc" rows="3"></textarea>
+
+        <!-- ✅ NEW: Category -->
+        <label for="serviceCategory" style="margin-top: 16px; display: block;">Category</label>
+        <select id="serviceCategory" required style="
+          width: 100%;
+          padding: 10px 14px;
+          border: 1.5px solid #ddd;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          background: white;
+          color: #333;
+          cursor: pointer;
+          margin-bottom: 16px;
+          box-sizing: border-box;
+        ">
+          <option value="">— Select category —</option>
+          <option value="Massage Services">Massage Services</option>
+          <option value="Spot Massage">Spot Massage</option>
+          <option value="Body Scrub">Body Scrub</option>
+          <option value="Facial Treatment">Facial Treatment</option>
+          <option value="Foot Treatment">Foot Treatment</option>
+          <option value="Packages">Packages</option>
+          <option value="Couples Packages">Couples Packages</option>
+        </select>
         
         <label>Pricing</label>
         <div class="pricing-inputs">
@@ -296,6 +509,7 @@
     </div>
   </div>
 
+  <!-- Edit Therapist Modal -->
   <div id="editTherapistModal" class="modal">
     <div class="modal-content">
       <h3 id="therapistModalTitle">Edit Therapist</h3>
@@ -308,6 +522,18 @@
         
         <label>Phone</label>
         <input type="text" id="therapistPhone">
+
+        <label>Gender</label>
+        <div style="display:flex;gap:1rem;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:400;text-transform:none;cursor:pointer;">
+            <input type="radio" name="therapistGender" id="genderFemale" value="female" checked>
+            ♀ Female
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:400;text-transform:none;cursor:pointer;">
+            <input type="radio" name="therapistGender" id="genderMale" value="male">
+            ♂ Male
+          </label>
+        </div>
         
         <div class="modal-actions">
           <button type="submit" class="btn-success">Save</button>
@@ -317,6 +543,7 @@
     </div>
   </div>
 
+  <!-- Schedule Modal -->
   <div id="scheduleModal" class="modal">
     <div class="modal-content extra-large">
       <div class="modal-header">
@@ -327,7 +554,7 @@
       <div class="modal-body">
         <div class="therapist-info-box">
           <h4 id="therapist-name-display">Therapist Name</h4>
-          <p id="therapist-email-display">email@example.com</p>
+          <p id="therapist-email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bdd8d0dcd4d1fdd8c5dcd0cdd1d893ded2d0">[email&#160;protected]</a></p>
         </div>
 
         <div class="schedule-tabs">
@@ -403,8 +630,96 @@
     <p>Loading dashboard...</p>
   </div>
 
+  <div id="assignTherapistModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:480px;">
+    <h3>👤 Assign Therapist</h3>
+    <p style="color:#666; margin-bottom:16px;">
+      Current: <strong id="assignCurrentTherapist"></strong>
+    </p>
+
+    <label style="display:block; margin-bottom:6px; font-weight:600;">Select New Therapist</label>
+    <select id="assignTherapistSelect" style="width:100%; padding:10px; border:1.5px solid #ddd; border-radius:8px; margin-bottom:16px; font-size:0.95rem;">
+    </select>
+
+    <label style="display:block; margin-bottom:6px; font-weight:600;">Reason / Note (optional)</label>
+    <textarea id="assignReason" rows="3" placeholder="e.g. Original therapist on leave, client agreed to reassignment…"
+      style="width:100%; padding:10px; border:1.5px solid #ddd; border-radius:8px; font-size:0.9rem; resize:vertical;">
+    </textarea>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-success" onclick="confirmAssignTherapist()">✅ Confirm Assignment</button>
+      <button class="btn-secondary" onclick="closeAssignTherapist()">Cancel</button>
+    </div>
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="js/admin.js"></script>
+  <script>
+    // ── Admin Sidebar Hamburger ──────────────────────────────────────────────
+    const adminMenuBtn   = document.getElementById('adminMenuBtn');
+    const adminSidebar   = document.getElementById('adminSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+      adminSidebar?.classList.add('mobile-open');
+      sidebarOverlay?.classList.add('active');
+      adminMenuBtn?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      adminSidebar?.classList.remove('mobile-open');
+      sidebarOverlay?.classList.remove('active');
+      adminMenuBtn?.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    adminMenuBtn?.addEventListener('click', () => {
+      adminSidebar?.classList.contains('mobile-open') ? closeSidebar() : openSidebar();
+    });
+    sidebarOverlay?.addEventListener('click', closeSidebar);
+
+    // Close sidebar when a nav tab is clicked on mobile
+    document.querySelectorAll('.sidebar .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeSidebar();
+      });
+    });
+  </script>
+
+  <!-- ── Archive Reason Modal ─────────────────────────────────────────── -->
+  <div id="archiveTherapistModal" class="modal">
+    <div class="modal-content" style="max-width:480px;">
+      <h3>🗃️ Archive Therapist</h3>
+      <p style="color:#666; margin-bottom:16px;">
+        You are about to archive <strong id="archiveTherapistName"></strong>.
+        This will mark them as inactive. Their booking history and records will be preserved.
+      </p>
+      <label style="display:block; margin-bottom:6px; font-weight:600;">Reason for Archiving <span style="color:#dc3545">*</span></label>
+      <textarea id="archiveReason" rows="4"
+        placeholder="e.g. Resigned, Contract ended, Performance issues..."
+        style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95rem;resize:vertical;box-sizing:border-box;margin-bottom:20px;"></textarea>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="confirmArchiveTherapist()">✅ Confirm Archive</button>
+        <button class="btn-secondary" onclick="closeArchiveModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Archived Therapists Modal ────────────────────────────────────── -->
+  <div id="archivedTherapistsModal" class="modal">
+    <div class="modal-content extra-large" style="max-height:90vh;display:flex;flex-direction:column;">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid #eee;margin-bottom:20px;">
+        <h3 style="margin:0;">🗃️ Archived Therapists</h3>
+        <button onclick="closeArchivedTherapists()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#666;">✕</button>
+      </div>
+      <div id="archivedTherapistsList" style="overflow-y:auto;flex:1;padding-right:4px;"></div>
+      <div style="padding-top:16px;border-top:1px solid #eee;margin-top:16px;">
+        <button onclick="closeArchivedTherapists()" class="btn-secondary" style="width:100%;padding:12px;font-size:1rem;">Close</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

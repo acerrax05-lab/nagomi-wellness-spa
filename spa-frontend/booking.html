@@ -5,319 +5,448 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Book Your Appointment | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/booking.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Gender columns — Step 2 */
+    .gender-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .gender-col {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 1.25rem 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .gender-col--female { border-top: 3px solid #e8a0b4; }
+    .gender-col--male   { border-top: 3px solid #90b4e8; }
+    .gender-col-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .gender-icon { font-size: 1.3rem; }
+    .gender-title { font-weight: 700; font-size: 1rem; }
+    .gender-max { font-size: 0.78rem; opacity: 0.6; }
+    .total-clients-bar {
+      text-align: center;
+      font-size: 0.9rem;
+      padding: 0.6rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+    .clients-warning { color: #ff9800; margin-left: 0.5rem; }
+    .field-group-inline { position: relative; }
+    @media (max-width: 600px) {
+      .gender-columns { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
   <header>
     <nav class="navbar" id="navbar">
-      <h1 class="logo">Nagomi Wellness Spa</h1>
-      
-      <!-- Hamburger Menu Icon -->
-      <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <h1 class="logo">Nagomi Wellness Spa</h1>
+        <div style="font-size:0.65rem;opacity:0.5;letter-spacing:1px;text-transform:uppercase;margin-top:-4px;">zentraX</div>
       </div>
-      
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
       <ul class="nav-links" id="navLinks">
         <li><a href="index.html">Home</a></li>
-        <li><a href="login.html" class="staff-login">Staff Login</a></li>
+        <li><a href="manage-booking.html" class="staff-login">Manage Booking</a></li>
+        <li><a href="login.html" style="color:#f7c6a5;font-size:0.85rem;opacity:0.8;">Staff</a></li>
       </ul>
     </nav>
   </header>
-  
+
   <section class="booking-section">
     <div class="booking-container">
       <h2>Book Your Appointment</h2>
-      <p class="subtitle">Complete the form below to schedule your perfect spa treatment</p>
 
-      <form class="booking-form">
-        <!-- Select Service -->
-        <label>Select Service <span>*</span></label>
-        <div class="option-grid">
-          <button type="button" class="option-btn">Nagomi Massage</button>
-          <button type="button" class="option-btn">Ventosa or Cupping Therapy</button>
-          <button type="button" class="option-btn">Shiatsu Massage</button>
-          <button type="button" class="option-btn">Aromatherapy Massage</button>
-          <button type="button" class="option-btn">Combination Massage</button>
-          <button type="button" class="option-btn">Ayurvedic Massage</button>
-          <button type="button" class="option-btn">Deep Tissue Massage</button>
-          <button type="button" class="option-btn">Mandara Massage</button>
-          <button type="button" class="option-btn">Pre Natal Massage</button>
-          <button type="button" class="option-btn">Jade and Lavastone</button>
-          <button type="button" class="option-btn">Swedish Massage</button>
-          <button type="button" class="option-btn">Thai Massage</button>
+      <!-- Progress Bar -->
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-step active" data-step="1" id="pStep1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Service</div>
         </div>
-
-        <!-- Minutes -->
-        <label>Minutes <span>*</span></label>
-        <div class="option-grid small">
-          <button type="button" class="option-btn">60 minutes</button>
-          <button type="button" class="option-btn">90 minutes</button>
-          <button type="button" class="option-btn">120 minutes</button>
+        <div class="progress-connector" id="pConn1"></div>
+        <div class="progress-step" data-step="2" id="pStep2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Schedule</div>
         </div>
+        <div class="progress-connector" id="pConn2"></div>
+        <div class="progress-step" data-step="3" id="pStep3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Your Info</div>
+        </div>
+      </div>
 
-        <!-- Clients & Date/Time -->
-        <div class="booking-row">
-          <!-- Number of Clients -->
-          <div class="input-group">
-            <label>Number of Clients <span>*</span></label>
-            <input type="number" id="numClients" min="1" max="5" value="1" required />
-
-            <!-- Preferred Date below -->
-            <label>Preferred Date <span>*</span></label>
-            <input type="date" required />
+      <!-- STEP 1 — Select Your Service -->
+      <div class="booking-step active" id="step-1">
+        <p class="step-heading">Select Your Service</p>
+        <p class="step-subheading">Browse by category and choose the treatment that's right for you</p>
+        <div class="booking-type-row">
+          <button type="button" class="btype-btn active" id="btnOnline" onclick="setBookingType('online')">💻 Online Booking</button>
+          <button type="button" class="btype-btn" id="btnWalkin" onclick="setBookingType('walk-in')">🚶 Walk-in</button>
+        </div>
+        <div class="walkin-notice" id="walkinNotice">
+          <strong>⚠️ Walk-in:</strong> For recording walk-in customers. Payment is collected at the spa.
+        </div>
+        <div class="category-tabs-wrapper">
+          <div class="category-tabs" id="categoryTabs"></div>
+        </div>
+        <div class="sort-row">
+          <label for="sortFilter">Sort by:</label>
+          <select id="sortFilter">
+            <option value="name">A–Z</option>
+            <option value="popular">Most Booked</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+        </div>
+        <div class="services-grid" id="servicesGrid">
+          <div class="services-loading">Loading services…</div>
+        </div>
+        <div class="duration-section" id="durationSection">
+          <label>Select Duration <span style="color:#e07b5a">*</span></label>
+          <div class="duration-grid" id="durationGrid"></div>
+        </div>
+        <div class="selection-summary-bar" id="summaryBar">
+          <div class="ssb-left">
+            <div class="ssb-service" id="ssbServiceName">—</div>
+            <div class="ssb-dur" id="ssbDuration">Select a duration above</div>
           </div>
+          <div class="ssb-price" id="ssbPrice">₱0</div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-next" id="btnStep1Next" disabled onclick="goToStep(2)">Continue to Schedule →</button>
+        </div>
+      </div>
 
-          <!-- ✅ MOVED: Preferred Time FIRST -->
-          <div class="input-group">
-            <label>Preferred Time <span>*</span></label>
-            <select id="preferredTime" required>
-              <option>Select time...</option>
-              <!-- ✅ EXTENDED: 9 AM - 11 PM -->
-              <option>9:00 AM</option>
-              <option>9:30 AM</option>
-              <option>10:00 AM</option>
-              <option>10:30 AM</option>
-              <option>11:00 AM</option>
-              <option>11:30 AM</option>
-              <option>12:00 PM</option>
-              <option>12:30 PM</option>
-              <option>1:00 PM</option>
-              <option>1:30 PM</option>
-              <option>2:00 PM</option>
-              <option>2:30 PM</option>
-              <option>3:00 PM</option>
-              <option>3:30 PM</option>
-              <option>4:00 PM</option>
-              <option>4:30 PM</option>
-              <option>5:00 PM</option>
-              <option>5:30 PM</option>
-              <option>6:00 PM</option>
-              <option>6:30 PM</option>
-              <option>7:00 PM</option>
-              <option>7:30 PM</option>
-              <option>8:00 PM</option>
-              <option>8:30 PM</option>
-              <option>9:00 PM</option>
-              <option>9:30 PM</option>
-              <option>10:00 PM</option>
-              <option>10:30 PM</option>
+      <!-- STEP 2 — Schedule Your Visit -->
+      <div class="booking-step" id="step-2">
+        <p class="step-heading">Schedule Your Visit</p>
+        <p class="step-subheading">Choose when you'd like to come in and who you'd like to see</p>
+
+        <div class="couples-notice" id="couplesNotice">
+          👫 You've selected a Couples Package. A minimum of 2 clients is required.
+        </div>
+
+        <!-- Date + Time row -->
+        <div class="schedule-grid">
+          <div>
+            <span class="field-label">Preferred Date <span class="req">*</span></span>
+            <input type="date" id="preferredDate" class="spa-input" required />
+          </div>
+          <div class="field-group-inline field-group-locked" id="timeFieldGroup">
+            <span class="field-label">Preferred Time <span class="req">*</span></span>
+            <select id="preferredTime" class="spa-select" required>
+              <option value="">Select a time…</option>
+              <option>9:30 AM</option><option>10:00 AM</option><option>10:30 AM</option>
+              <option>11:00 AM</option><option>11:30 AM</option><option>12:00 PM</option>
+              <option>12:30 PM</option><option>1:00 PM</option><option>1:30 PM</option>
+              <option>2:00 PM</option><option>2:30 PM</option><option>3:00 PM</option>
+              <option>3:30 PM</option><option>4:00 PM</option><option>4:30 PM</option>
+              <option>5:00 PM</option><option>5:30 PM</option><option>6:00 PM</option>
+              <option>6:30 PM</option><option>7:00 PM</option><option>7:30 PM</option>
+              <option>8:00 PM</option><option>8:30 PM</option><option>9:00 PM</option>
+              <option>9:30 PM</option><option>10:00 PM</option><option>10:30 PM</option>
               <option>11:00 PM</option>
             </select>
-            <div id="end-time-display"></div>
+            <div class="end-time-badge" id="endTimeBadge">⏱ End time: —</div>
+            <span class="lock-hint" id="timeLockHint">⟳ Select a date first</span>
+          </div>
+        </div>
 
-            <!-- ✅ MOVED: Preferred Therapist AFTER Time -->
-            <label style="margin-top: 16px;">Preferred Therapist <small>(Optional)</small></label>
-            <div class="therapist-selector">
-              <div class="therapist-dropdown" id="therapistDropdown">
-                <div class="dropdown-display" id="dropdownDisplay">
-                  <span class="placeholder">Select therapists...</span>
-                  <span class="dropdown-arrow">▼</span>
-                </div>
-                <div class="dropdown-options" id="dropdownOptions">
-                  <div class="option-item">
-                    <input type="checkbox" id="any-therapist" value="any" checked>
-                    <label for="any-therapist">Any available therapist</label>
+        <div id="dateAvailWarning" class="date-avail-warning" style="display:none;"></div>
+
+        <!-- Gender columns -->
+        <div class="gender-columns">
+
+          <!-- FEMALE COLUMN -->
+          <div class="gender-col gender-col--female">
+            <div class="gender-col-header">
+              <span class="gender-icon">♀</span>
+              <span class="gender-title">Female</span>
+              <span class="gender-max">(max 4)</span>
+            </div>
+            <span class="field-label">Number of Female Clients</span>
+            <div class="client-counter">
+              <button type="button" class="cc-btn" id="ccFMinus" onclick="adjustFemaleClients(-1)" disabled>−</button>
+              <span class="cc-value" id="ccFValue">0</span>
+              <button type="button" class="cc-btn" id="ccFPlus" onclick="adjustFemaleClients(1)">+</button>
+            </div>
+            <div class="field-group field-group-locked" id="femaleTherapistFieldGroup">
+              <span class="field-label">Female Therapist <small style="text-transform:none;font-weight:400;opacity:0.7">(Optional)</small></span>
+              <div class="therapist-selector">
+                <div class="therapist-dropdown" id="femaleTherapistDropdown">
+                  <div class="dropdown-display" id="femaleDropdownDisplay">
+                    <span class="placeholder">Select female therapist(s)…</span>
+                    <span class="dropdown-arrow">▼</span>
+                  </div>
+                  <div class="dropdown-options" id="femaleDropdownOptions">
+                    <div class="option-item">
+                      <input type="checkbox" id="any-female-therapist" value="any" checked>
+                      <label for="any-female-therapist">Any available female therapist</label>
+                    </div>
                   </div>
                 </div>
+                <div class="selection-info">Select up to <span id="femaleMaxSelections">0</span> therapist(s)</div>
               </div>
-              <div class="selection-info" id="selectionInfo">
-                Select up to <span id="maxSelections">1</span> therapist(s)
-              </div>
+              <span class="lock-hint" id="femaleTherapistLockHint">⟳ Add female clients first</span>
             </div>
           </div>
-        </div>
 
-        <!-- Notes -->
-        <label>Special Requests or Notes <small>(Optional)</small></label>
-        <textarea placeholder="Any special requests, instructions, allergies, or preferences" maxlength="500"></textarea>
-        <p class="char-count">0/500 characters</p>
-
-        <!-- Name & Phone -->
-        <div class="booking-row">
-          <div class="input-group">
-            <label>Full Name <span>*</span></label>
-            <input type="text" placeholder="Enter your full name" required />
+          <!-- MALE COLUMN -->
+          <div class="gender-col gender-col--male">
+            <div class="gender-col-header">
+              <span class="gender-icon">♂</span>
+              <span class="gender-title">Male</span>
+              <span class="gender-max">(max 2)</span>
+            </div>
+            <span class="field-label">Number of Male Clients</span>
+            <div class="client-counter">
+              <button type="button" class="cc-btn" id="ccMMinus" onclick="adjustMaleClients(-1)" disabled>−</button>
+              <span class="cc-value" id="ccMValue">0</span>
+              <button type="button" class="cc-btn" id="ccMPlus" onclick="adjustMaleClients(1)">+</button>
+            </div>
+            <div class="field-group field-group-locked" id="maleTherapistFieldGroup">
+              <span class="field-label">Male Therapist <small style="text-transform:none;font-weight:400;opacity:0.7">(Optional)</small></span>
+              <div class="therapist-selector">
+                <div class="therapist-dropdown" id="maleTherapistDropdown">
+                  <div class="dropdown-display" id="maleDropdownDisplay">
+                    <span class="placeholder">Select male therapist(s)…</span>
+                    <span class="dropdown-arrow">▼</span>
+                  </div>
+                  <div class="dropdown-options" id="maleDropdownOptions">
+                    <div class="option-item">
+                      <input type="checkbox" id="any-male-therapist" value="any" checked>
+                      <label for="any-male-therapist">Any available male therapist</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="selection-info">Select up to <span id="maleMaxSelections">0</span> therapist(s)</div>
+              </div>
+              <span class="lock-hint" id="maleTherapistLockHint">⟳ Add male clients first</span>
+            </div>
           </div>
-          <div class="input-group">
-            <label>Phone Number <span>*</span></label>
-            <input type="text" placeholder="(555) 123-4567" required />
+
+        </div><!-- /gender-columns -->
+
+        <div class="total-clients-bar" id="totalClientsBar">
+          Total clients: <strong id="totalClientsDisplay">0</strong>
+          <span id="totalClientsWarning" class="clients-warning" style="display:none;">⚠️ Please add at least 1 client</span>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn-prev" onclick="goToStep(1)">← Back</button>
+          <button class="btn-next" id="btnStep2Next" disabled onclick="goToStep(3)">Continue to Your Info →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 — Your Information -->
+      <div class="booking-step" id="step-3">
+        <p class="step-heading">Your Information</p>
+        <p class="step-subheading">Almost done! Tell us how to reach you</p>
+        <div class="info-row">
+          <div class="field-group">
+            <span class="field-label">Full Name <span class="req">*</span></span>
+            <input type="text" id="guestName" class="spa-input" placeholder="Enter your full name" required />
+          </div>
+          <div class="field-group">
+            <span class="field-label">Phone Number <span class="req">*</span></span>
+            <input type="text" id="guestPhone" class="spa-input" placeholder="e.g. 09171234567" required />
           </div>
         </div>
-
-        <!-- Total -->
-        <div class="total-box">
-          <strong>Total Amount:</strong> <span>₱1199</span>
+        <div class="field-group">
+          <span class="field-label">Special Requests or Notes <small style="text-transform:none;font-weight:400;opacity:0.7">(Optional)</small></span>
+          <textarea id="guestNotes" class="spa-textarea" placeholder="Any special requests, allergies, health conditions, or preferences…" maxlength="500"></textarea>
+          <div class="char-count-sm" id="charCountSm">0 / 500</div>
         </div>
-        <p class="down-note">A 25% down payment (₱300) is required to confirm your booking.</p>
+        <div class="total-card">
+          <div class="total-card-row">
+            <span class="total-card-label">Total Amount</span>
+            <span class="total-card-value" id="totalDisplay">₱0</span>
+          </div>
+          <div class="total-card-note" id="downPayNote" style="display:none;"></div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-prev" onclick="goToStep(2)">← Back</button>
+          <button class="btn-next" id="btnReview" disabled onclick="submitStep3()">Review Booking →</button>
+        </div>
+      </div>
 
-        <!-- Submit -->
-        <button type="submit" class="confirm-btn">
-          Confirm Booking
-        </button>
-      </form>
-    </div>
+    </div><!-- /booking-container -->
   </section>
 
-  <!-- Booking Summary Modal -->
-<div id="summaryModal" class="summary-modal">
-  <div class="summary-container" style="max-height: 90vh; display: flex; flex-direction: column;">
-    <div class="summary-header">
-      <h2>Review Your Booking</h2>
-      <p>Please review your booking details before confirming</p>
-    </div>
-
-    <div class="summary-content" style="flex: 1; overflow-y: auto; padding: 20px; max-height: calc(90vh - 200px);">
-      <!-- Service Details -->
-      <div class="summary-section">
-        <h3>Service Details</h3>
-        <div class="summary-row">
-          <span class="label">Service:</span>
-          <span class="value" id="summary-service">-</span>
+  <!-- BOOKING SUMMARY MODAL -->
+  <div id="summaryModal" class="summary-modal">
+    <div class="summary-container" style="max-height:90vh;display:flex;flex-direction:column;">
+      <div class="summary-header">
+        <h2>Review Your Booking</h2>
+        <p>Please review your booking details before confirming</p>
+      </div>
+      <div class="summary-content" style="flex:1;overflow-y:auto;padding:20px;max-height:calc(90vh - 200px);">
+        <div class="summary-section">
+          <h3>Service Details</h3>
+          <div class="summary-row"><span class="label">Category:</span><span class="value" id="summary-category">-</span></div>
+          <div class="summary-row"><span class="label">Service:</span><span class="value" id="summary-service">-</span></div>
+          <div class="summary-row"><span class="label">Duration:</span><span class="value" id="summary-duration">-</span></div>
+          <div class="summary-row"><span class="label">Number of Clients:</span><span class="value" id="summary-clients">-</span></div>
         </div>
-        <div class="summary-row">
-          <span class="label">Duration:</span>
-          <span class="value" id="summary-duration">-</span>
+        <div class="summary-section">
+          <h3>Therapist Selection</h3>
+          <div class="summary-row"><span class="label">Therapist(s):</span><span class="value" id="summary-therapists">-</span></div>
         </div>
-        <div class="summary-row">
-          <span class="label">Number of Clients:</span>
-          <span class="value" id="summary-clients">-</span>
+        <div class="summary-section">
+          <h3>Schedule</h3>
+          <div class="summary-row"><span class="label">Date:</span><span class="value" id="summary-date">-</span></div>
+          <div class="summary-row"><span class="label">Time:</span><span class="value" id="summary-time">-</span></div>
+          <div class="summary-row"><span class="label">End Time:</span><span class="value" id="summary-endtime">-</span></div>
+        </div>
+        <div class="summary-section">
+          <h3>Contact Information</h3>
+          <div class="summary-row"><span class="label">Name:</span><span class="value" id="summary-name">-</span></div>
+          <div class="summary-row"><span class="label">Phone:</span><span class="value" id="summary-phone">-</span></div>
+        </div>
+        <div class="summary-section" id="notes-section" style="display:none;">
+          <h3>Special Requests</h3>
+          <div class="summary-notes" id="summary-notes">-</div>
+        </div>
+        <div class="summary-section price-summary">
+          <div class="summary-row total">
+            <span class="label">Total Amount:</span>
+            <span class="value" id="summary-total">₱0</span>
+          </div>
+        </div>
+        <div class="terms-section" style="margin-top:30px;padding:20px;background:#fff8e6;border-radius:8px;border:2px solid #ffc107;">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <input type="checkbox" id="termsCheckbox" style="margin-top:4px;cursor:pointer;width:20px;height:20px;flex-shrink:0;">
+            <label for="termsCheckbox" style="cursor:pointer;line-height:1.6;color:#333;font-size:0.95rem;">
+              I have read and agree to the
+              <a href="#" onclick="showTermsModal(event)" style="color:#d84315;text-decoration:underline;font-weight:700;">Terms and Conditions</a>
+              <span style="color:red;margin-left:4px;font-weight:bold;">*</span>
+            </label>
+          </div>
         </div>
       </div>
-
-      <!-- Therapist Details -->
-      <div class="summary-section">
-        <h3>Therapist Selection</h3>
-        <div class="summary-row">
-          <span class="label">Therapist(s):</span>
-          <span class="value" id="summary-therapists">-</span>
-        </div>
+      <div class="summary-actions" style="padding:20px;border-top:2px solid #e0e0e0;background:white;flex-shrink:0;">
+        <button type="button" id="backToEdit" class="btn-back">← Back to Edit</button>
+        <button type="button" id="confirmBookingBtn" class="btn-confirm-final" disabled>Confirm Booking →</button>
       </div>
-
-      <!-- Schedule Details -->
-      <div class="summary-section">
-        <h3>Schedule</h3>
-        <div class="summary-row">
-          <span class="label">Date:</span>
-          <span class="value" id="summary-date">-</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Time:</span>
-          <span class="value" id="summary-time">-</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">End Time:</span>
-          <span class="value" id="summary-endtime">-</span>
-        </div>
-      </div>
-
-      <!-- Personal Details -->
-      <div class="summary-section">
-        <h3>Contact Information</h3>
-        <div class="summary-row">
-          <span class="label">Name:</span>
-          <span class="value" id="summary-name">-</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Phone:</span>
-          <span class="value" id="summary-phone">-</span>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="summary-section" id="notes-section" style="display: none;">
-        <h3>Special Requests</h3>
-        <div class="summary-notes" id="summary-notes">-</div>
-      </div>
-
-      <!-- Price Summary -->
-      <div class="summary-section price-summary">
-        <div class="summary-row total">
-          <span class="label">Total Amount:</span>
-          <span class="value" id="summary-total">₱0</span>
-        </div>
-        <div class="summary-row down-payment">
-          <span class="label">Down Payment (25%):</span>
-          <span class="value" id="summary-downpayment">₱0</span>
-        </div>
-      </div>
-
-      <!-- Terms and Conditions -->
-      <div class="terms-section" style="margin-top: 30px; padding: 20px; background: #fff8e6; border-radius: 8px; border: 2px solid #ffc107;">
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <input type="checkbox" id="termsCheckbox" style="margin-top: 4px; cursor: pointer; width: 20px; height: 20px; flex-shrink: 0;">
-          <label for="termsCheckbox" style="cursor: pointer; line-height: 1.6; color: #333; font-size: 0.95rem;">
-            I have read and agree to the <a href="#" onclick="showTermsModal(event)" style="color: #d84315; text-decoration: underline; font-weight: 700;">Terms and Conditions</a>
-            <span style="color: red; margin-left: 4px; font-weight: bold;">*</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Payment Method Selection -->
-      <div class="payment-section" style="margin-top: 20px; padding: 20px; background: #f0f4ff; border-radius: 8px; border: 2px solid #2196f3;">
-        <h3 style="margin-bottom: 15px; color: #1565c0; font-size: 1.1rem;">
-          Select Payment Method <span style="color: red; font-weight: bold;">*</span>
-        </h3>
-        <div class="payment-options" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-          <label class="payment-option" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s; background: white;">
-            <input type="radio" name="paymentMethod" value="GCash" style="width: 18px; height: 18px; cursor: pointer;">
-            <span style="font-weight: 600; font-size: 0.9rem; color: #333;">📱 GCash</span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="summary-actions" style="padding: 20px; border-top: 2px solid #e0e0e0; background: white; flex-shrink: 0;">
-      <button type="button" id="backToEdit" class="btn-back">
-        ← Back to Edit
-      </button>
-      <button type="button" id="confirmBookingBtn" class="btn-confirm-final">
-        Confirm Booking →
-      </button>
     </div>
   </div>
-</div>
 
-<!-- Terms and Conditions Modal -->
-<div id="termsModal" class="summary-modal" style="display: none; z-index: 10000;">
-  <div class="summary-container" style="max-width: 700px; max-height: 90vh; display: flex; flex-direction: column;">
-    <div class="summary-header" style="position: relative; flex-shrink: 0;">
-      <h2>Terms and Conditions</h2>
-      <button onclick="closeTermsModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 32px; cursor: pointer; color: #666; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
-    </div>
-    
-    <div style="padding: 30px; flex: 1; overflow-y: auto; line-height: 1.8; color: #333;">
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">1. Booking Policy</h3>
-      <p style="margin-bottom: 20px;">All bookings require a 25% down payment to confirm your reservation. The remaining balance must be paid upon arrival or service completion.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">2. Cancellation Policy</h3>
-      <p style="margin-bottom: 20px;">Cancellations made at least 24 hours before your appointment will receive a full refund. Cancellations made within 24 hours may forfeit the down payment.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">3. Late Arrival</h3>
-      <p style="margin-bottom: 20px;">Please arrive 10 minutes before your scheduled appointment. Late arrivals may result in reduced service time to accommodate other clients.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">4. Health Conditions</h3>
-      <p style="margin-bottom: 20px;">Please inform us of any health conditions, allergies, or injuries before your service. Certain conditions may require medical clearance.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">5. Privacy Policy</h3>
-      <p style="margin-bottom: 20px;">Your personal information will be kept confidential and used only for booking and service purposes.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">6. Therapist Assignment</h3>
-      <p style="margin-bottom: 20px;">If you select "Any Available Therapist", our admin will assign a qualified therapist based on availability and expertise.</p>
-      
-      <h3 style="color: #4b2e1e; margin-bottom: 15px; font-size: 1.2rem;">7. Payment Terms</h3>
-      <p style="margin-bottom: 20px;">We accept Cash on Delivery (COD), PayPal, GCash, and Credit Card. Payment method must be selected during booking confirmation.</p>
-    </div>
-    
-    <div style="padding: 20px 30px; border-top: 2px solid #e0e0e0; background: white; flex-shrink: 0;">
-      <button onclick="acceptTerms()" class="btn-confirm-final" style="width: 100%; padding: 15px; font-size: 1rem;">
-        ✓ I Accept the Terms and Conditions
-      </button>
+  <!-- Terms Modal -->
+  <div id="termsModal" class="summary-modal" style="display:none;z-index:10000;">
+    <div class="summary-container" style="max-width:700px;max-height:90vh;display:flex;flex-direction:column;">
+      <div class="summary-header" style="position:relative;flex-shrink:0;">
+        <h2>Terms and Conditions</h2>
+        <button onclick="closeTermsModal()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:32px;cursor:pointer;color:#666;">&times;</button>
+      </div>
+      <div style="padding:30px;flex:1;overflow-y:auto;line-height:1.8;color:#333;">
+
+        <p style="margin-bottom:24px;font-style:italic;color:#555;">
+          Please read the following Terms and Conditions carefully before booking an appointment through the zentraX system for Nagomi Wellness Spa. By proceeding with your booking, you agree to comply with the policies stated below.
+        </p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">1. Booking Summary</h3>
+        <p style="margin-bottom:20px;">Please review and double-check your selected service, number of client/s, preferred therapist/s, date, time, and personal information before confirming your booking. You will be updated once your booking has been approved or updated through the Booking ID (policy #2).</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">2. Booking ID</h3>
+        <p style="margin-bottom:8px;">A Booking ID is automatically generated for every booking request submitted through the system. Please keep your Booking ID to track booking updates and manage your appointment.</p>
+        <p style="margin-bottom:4px;font-weight:600;">To check your booking details:</p>
+        <ol style="margin:0 0 8px 20px;padding:0;">
+          <li>Go to Home</li>
+          <li>Click <strong>Manage Booking</strong></li>
+          <li>Select <strong>Transaction ID</strong></li>
+          <li>Enter your Booking ID</li>
+        </ol>
+        <p style="margin-bottom:20px;">If you forgot your Booking ID, you may search your booking by entering the Name and Phone Number used during the booking process.</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">3. Rescheduling or Cancelling a Booking</h3>
+        <p style="margin-bottom:8px;">Clients may reschedule or cancel their booking in case of emergencies, schedule changes, or therapist/s unavailability.</p>
+        <p style="margin-bottom:4px;font-weight:600;">To reschedule or cancel your booking:</p>
+        <ol style="margin:0 0 12px 20px;padding:0;">
+          <li>Go to Home</li>
+          <li>Click <strong>Manage Booking</strong></li>
+          <li>Enter your Booking ID or Name and Phone Number</li>
+          <li>Below the booking details, you will find the <strong>Reschedule</strong> and <strong>Cancel</strong> options.</li>
+        </ol>
+        <p style="margin-bottom:4px;font-weight:600;">Rescheduling Policy</p>
+        <ul style="margin:0 0 12px 20px;padding:0;">
+          <li>You may only modify the date and time of your appointment.</li>
+          <li>Each booking is allowed only one (1) reschedule request to prevent scheduling conflicts.</li>
+          <li>Rescheduling is subject to therapist availability and spa schedule.</li>
+        </ul>
+        <p style="margin-bottom:4px;font-weight:600;">Cancellation Policy</p>
+        <ul style="margin:0 0 20px 20px;padding:0;">
+          <li>If you cancel your booking, you will be asked to provide the reason for cancellation.</li>
+          <li>Cancellation should be done 1–2 hours before the scheduled appointment time to avoid inconvenience to other clients.</li>
+        </ul>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">4. Booking Appointment Day</h3>
+        <ul style="margin:0 0 20px 20px;padding:0;">
+          <li>Clients are advised to arrive <strong>10–15 minutes</strong> before their scheduled appointment time.</li>
+          <li>Late arrivals may result in shortened service time to accommodate other scheduled clients.</li>
+          <li>Late clients who booked <strong>30 minutes</strong> are only given <strong>5–10 minutes</strong> to arrive. Failure to show up will result in cancellation.</li>
+          <li>Late clients who booked <strong>1 hour or 2 hours</strong> are only given <strong>15–20 minutes</strong> to arrive. Failure to show up will result in cancellation.</li>
+          <li>Service extensions are not allowed if they conflict with the next booking schedule.</li>
+        </ul>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">5. Therapist Availability</h3>
+        <p style="margin-bottom:8px;">While the spa strives to provide your preferred therapist, assignments may change due to unforeseen circumstances. The spa will assign another qualified therapist to ensure your service proceeds as scheduled.</p>
+        <p style="margin-bottom:20px;">If your chosen therapist is unavailable and you don't want another therapist, you may reschedule (policy #3).</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">6. Health Conditions</h3>
+        <p style="margin-bottom:20px;">Clients are required to inform the spa of any health conditions, allergies, injuries, or medical concerns before receiving any service. The spa reserves the right to decline or adjust services if a condition may pose health risks.</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">7. Payment Methods</h3>
+        <ul style="margin:0 0 8px 20px;padding:0;">
+          <li>Cash</li><li>GCash</li><li>Maya</li><li>Credit/Debit Card</li>
+        </ul>
+        <p style="margin-bottom:20px;">All payments are collected at the spa after the service has been completed.</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">8. Feedback and Reviews</h3>
+        <p style="margin-bottom:8px;">Clients are encouraged to leave a review after their appointment.</p>
+        <ol style="margin:0 0 8px 20px;padding:0;">
+          <li>Go to Home</li>
+          <li>Click <strong>Reviews</strong> at the upper corner of the page</li>
+          <li>Select <strong>Write a Review</strong></li>
+          <li>Fill in the required information and submit</li>
+        </ol>
+        <p style="margin-bottom:20px;">Please ensure all reviews are honest, respectful, and appropriate, as they are publicly displayed on the homepage.</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">9. Privacy Policy</h3>
+        <p style="margin-bottom:20px;">All personal information collected through the zentraX booking system will remain strictly confidential. Nagomi Wellness Spa will not share, sell, or disclose personal information to third parties without the client's consent.</p>
+
+        <h3 style="color:#4b2e1e;margin-bottom:8px;">10. Agreement to Terms</h3>
+        <p>By submitting a booking through the zentraX system, you acknowledge that you have read, understood, and agreed to these Terms and Conditions.</p>
+
+      </div>
+      <div style="padding:20px 30px;border-top:2px solid #e0e0e0;background:white;flex-shrink:0;">
+        <button onclick="acceptTerms()" class="btn-confirm-final" style="width:100%;padding:15px;font-size:1rem;">
+          ✓ I Accept the Terms and Conditions
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
+  <script>
+    if (typeof AOS === "undefined") {
+      window.AOS = { init: function(){}, refresh: function(){}, refreshHard: function(){} };
+    }
+  </script>
   <script src="js/booking.js"></script>
+  <script src="js/booking-fix.js"></script>
+  <script src="js/booking-autoselect.js"></script>
+  <script src="js/enhanced-features.js"></script>
 </body>
 </html>

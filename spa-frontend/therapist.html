@@ -8,6 +8,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Mobile Navbar (hidden on desktop, visible on mobile) -->
+  <nav class="therapist-navbar" id="therapistNavbar">
+    <span class="logo">zentraX | Nagomi Wellness Spa - Therapist</span>
+    <div class="hamburger" id="therapistHamburger">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="therapist-mobile-menu" id="therapistMobileMenu">
+      <div class="mobile-menu-header">
+        <span id="mobileWelcome">Welcome!</span>
+      </div>
+      <button onclick="document.getElementById('logoutBtn').click()" class="mobile-logout-btn">
+        🚪 Logout
+      </button>
+    </div>
+  </nav>
+
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-content">
@@ -21,7 +37,7 @@
   <section class="stats-section">
     <div class="stat-card">
       <div class="stat-content">
-        <div class="stat-number" id="todayAppointments">5</div>
+        <div class="stat-number" id="todayAppointments">0</div>
         <div class="stat-label">Today's Appointments</div>
       </div>
       <div class="stat-icon" style="background: #c8e6c9;">✅</div>
@@ -29,7 +45,7 @@
 
     <div class="stat-card">
       <div class="stat-content">
-        <div class="stat-number" id="upcomingCount">3</div>
+        <div class="stat-number" id="upcomingCount">0</div>
         <div class="stat-label">Upcoming</div>
       </div>
       <div class="stat-icon" style="background: #bbdefb;">⏰</div>
@@ -37,62 +53,84 @@
 
     <div class="stat-card">
       <div class="stat-content">
-        <div class="stat-number" id="completedCount">2</div>
+        <div class="stat-number" id="completedCount">0</div>
         <div class="stat-label">Completed</div>
       </div>
       <div class="stat-icon" style="background: #c8e6c9;">✓</div>
     </div>
 
-    <div class="stat-card">
+    <!-- ✅ CHANGED: "Today's Revenue" → "Commission Earned" -->
+    <div class="stat-card" id="commissionCard" onclick="showPayrollPanel()" style="cursor:pointer;"
+      title="Click to view commission & payroll history">
       <div class="stat-content">
-        <div class="stat-number" id="todayRevenue">P2,500</div>
-        <div class="stat-label">Todays Revenue</div>
+        <div class="stat-number" id="todayRevenue">₱0</div>
+        <div class="stat-label">Commission Earned</div>
+        <div id="commissionPeriodLabel" style="
+          font-size: 0.72rem;
+          color: #888;
+          margin-top: 4px;
+          font-weight: 400;
+          line-height: 1.3;
+        "></div>
       </div>
       <div class="stat-icon" style="background: #e1bee7;">💰</div>
     </div>
   </section>
 
+  <!-- ✅ NEW: Payroll Panel (hidden by default, shown when stat card is clicked) -->
+  <div id="payrollPanel" style="display:none; padding: 0 20px; max-width: 900px; margin: 0 auto;"></div>
+
+  <!-- ✅ NEW: Commission button (visible below stats) -->
+  <div style="text-align:center; margin: 8px 0 0 0;">
+    <button onclick="showPayrollPanel()" style="
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 4px 8px;
+    ">💰 View full commission & payroll history</button>
+  </div>
+
   <!-- Main Content -->
   <section class="main-content">
     <!-- Calendar Section -->
-<div class="calendar-section">
-  <h2 class="section-title">Today's Schedule</h2>
-  
-  <div class="legend">
-    <div class="legend-item">
-      <span class="legend-dot booked"></span>
-      <span>booked client/s</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-dot day-off"></span>
-      <span>day off</span>
-    </div>
-  </div>
-
-  <div class="calendar-container">
-    <div class="calendar-header">
-      <button id="prevMonth" class="nav-btn">▲</button>
-      <h3 id="currentMonth">October 2025</h3>
-      <button id="nextMonth" class="nav-btn">▼</button>
-    </div>
-
-    <div class="calendar-wrapper">
-      <!-- Day labels -->
-      <div class="calendar-days-header">
-        <div class="day-label">Sun</div>
-        <div class="day-label">Mon</div>
-        <div class="day-label">Tue</div>
-        <div class="day-label">Wed</div>
-        <div class="day-label">Thur</div>
-        <div class="day-label">Fri</div>
-        <div class="day-label">Sat</div>
-      </div>
+    <div class="calendar-section">
+      <h2 class="section-title">Today's Schedule</h2>
       
-      <!-- Calendar days grid -->
-      <div class="calendar-grid" id="calendarDays"></div>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-dot booked"></span>
+          <span>booked client/s</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot day-off"></span>
+          <span>day off</span>
+        </div>
+      </div>
+
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button id="prevMonth" class="nav-btn">▲</button>
+          <h3 id="currentMonth">October 2025</h3>
+          <button id="nextMonth" class="nav-btn">▼</button>
+        </div>
+
+        <div class="calendar-wrapper">
+          <div class="calendar-days-header">
+            <div class="day-label">Sun</div>
+            <div class="day-label">Mon</div>
+            <div class="day-label">Tue</div>
+            <div class="day-label">Wed</div>
+            <div class="day-label">Thur</div>
+            <div class="day-label">Fri</div>
+            <div class="day-label">Sat</div>
+          </div>
+          <div class="calendar-grid" id="calendarDays"></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <!-- Appointments List -->
     <div class="appointments-section">
@@ -118,6 +156,23 @@
     </div>
   </div>
 
+  <script>
+    // ── Therapist Mobile Navbar Hamburger ─────────────────────────────────────
+    const therapistHamburger  = document.getElementById('therapistHamburger');
+    const therapistMobileMenu = document.getElementById('therapistMobileMenu');
+    therapistHamburger?.addEventListener('click', () => {
+      therapistHamburger.classList.toggle('active');
+      therapistMobileMenu.classList.toggle('open');
+    });
+    // Sync welcome name to mobile menu
+    const observer = new MutationObserver(() => {
+      const name = document.getElementById('welcomeMessage')?.textContent?.replace('Welcome back, ', '').replace('!','') || '';
+      const mw = document.getElementById('mobileWelcome');
+      if (mw && name) mw.textContent = `Welcome, ${name}!`;
+    });
+    const wm = document.getElementById('welcomeMessage');
+    if (wm) observer.observe(wm, { childList: true, subtree: true, characterData: true });
+  </script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="js/therapist.js"></script>
 </body>

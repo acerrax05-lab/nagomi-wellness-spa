@@ -55,7 +55,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -69,7 +69,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
@@ -83,10 +83,13 @@ router.get('/users', auth, roles(['admin']), async (req, res) => {
 
 
 // Get all therapists (public - for booking form)
+// ✅ FIX: Added gender, expertise, weeklySchedule to select fields
 router.get('/therapists', async (req, res) => {
   try {
-    const therapists = await User.find({ role: 'therapist' }, 'name email phone')
-      .sort({ name: 1 });
+    const therapists = await User.find(
+      { role: 'therapist', isActive: true },
+      'name email phone gender expertise weeklySchedule'
+    ).sort({ name: 1 });
     res.json(therapists);
   } catch (err) {
     console.error(err);
@@ -113,20 +116,21 @@ router.get('/stats', auth, roles(['admin']), async (req, res) => {
   }
 });
 
+// ✅ FIX: Added gender to PUT /users/:id so admin edits save gender
 router.put('/users/:id', auth, roles(['admin']), async (req, res) => {
   try {
-    const { name, email, phone, role } = req.body;
+    const { name, email, phone, role, gender } = req.body;
     
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
     
-    // Update fields
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (phone) user.phone = phone;
-    if (role) user.role = role;
+    if (name)   user.name   = name;
+    if (email)  user.email  = email;
+    if (phone)  user.phone  = phone;
+    if (role)   user.role   = role;
+    if (gender) user.gender = gender;
     
     await user.save();
     
@@ -164,6 +168,7 @@ router.get('/debug/all-users', async (req, res) => {
         name: t.name,
         role: t.role,
         isActive: t.isActive,
+        gender: t.gender,
         hasWeeklySchedule: !!(t.weeklySchedule && t.weeklySchedule.length > 0),
         weeklySchedule: t.weeklySchedule
       }))

@@ -362,8 +362,8 @@ h1, h2, h3 {
 
 .promo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto 60px;
 }
@@ -566,6 +566,126 @@ footer {
   position: relative;
 }
 
+.nav-links li a[href="login.html"]:not(.staff-login) {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  padding: 3px 8px;
+  color: #f7c6a5 !important;
+}
+
+.navbar.scrolled .nav-links li a[href="login.html"]:not(.staff-login) {
+  color: #999 !important;
+}
+
+.nav-links li a[href="login.html"]:not(.staff-login):hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Make "Manage Booking" more prominent */
+.staff-login {
+  font-weight: 600 !important;
+}
+
+/* Review Modal Styles */
+.btn-write-review {
+  background: var(--primary-brown);
+  color: white;
+  padding: 15px 35px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px auto;
+}
+
+.btn-write-review:hover {
+  background: var(--light-brown);
+  transform: translateY(-2px);
+}
+
+.write-review-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.star-rating-input {
+  display: flex;
+  gap: 10px;
+  font-size: 2rem;
+  margin-top: 10px;
+}
+
+.star-rating-input i {
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.star-rating-input i:hover {
+  color: #ffc107;
+  transform: scale(1.2);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #4b2e1e;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-brown);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.success-message {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .nav-links li a[href="login.html"]:not(.staff-login) {
+    font-size: 0.9rem;
+  }
+}
+
 /* ====================================
    RESPONSIVE DESIGN
    ==================================== */
@@ -704,5 +824,641 @@ footer {
   
   .btn {
     padding: 10px 25px;
+  }
+}
+
+/* ===========================================
+   ENHANCED SERVICE CATALOG DESIGN
+   =========================================== */
+
+/* Modal Container */
+.catalog-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.catalog-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Catalog Container - Shop Style */
+.catalog-container-shop {
+  width: 95%;
+  max-width: 1600px;
+  height: 90vh;
+  background: linear-gradient(135deg, #fdfbf7 0%, #f8f5f0 100%);
+  border-radius: 24px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Close Button */
+.close-catalog {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.close-catalog:hover {
+  background: #4b2e1e;
+  color: white;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 6px 20px rgba(75, 46, 30, 0.3);
+}
+
+.close-catalog i {
+  font-size: 1.4rem;
+}
+
+/* Left Sidebar - Categories */
+.catalog-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%);
+  padding: 50px 0;
+  border-right: 2px solid rgba(139, 69, 19, 0.08);
+  overflow-y: auto;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.03);
+}
+
+.catalog-sidebar h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #4b2e1e;
+  padding: 0 35px 25px;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #c9a882;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.catalog-categories {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.catalog-categories li {
+  margin: 0;
+}
+
+.catalog-categories a,
+.catalog-categories button {
+  display: block;
+  width: 100%;
+  padding: 18px 35px;
+  color: #555;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  position: relative;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.catalog-categories a:hover,
+.catalog-categories button:hover,
+.catalog-categories a.active,
+.catalog-categories button.active {
+  background: linear-gradient(90deg, rgba(201, 168, 130, 0.12) 0%, transparent 100%);
+  color: #4b2e1e;
+  border-left-color: #c9a882;
+  font-weight: 600;
+  padding-left: 40px;
+}
+
+.catalog-categories a.active::after,
+.catalog-categories button.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 30px;
+  background: #c9a882;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Right Content Area */
+.catalog-content {
+  padding: 50px 60px;
+  overflow-y: auto;
+  background: transparent;
+}
+
+/* Catalog Header */
+.catalog-header-shop {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.catalog-header-shop h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  color: #4b2e1e;
+  margin-bottom: 15px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.catalog-subtitle {
+  font-size: 1.15rem;
+  color: #8b4513;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Search Bar */
+.catalog-search {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.catalog-search input {
+  flex: 1;
+  padding: 16px 24px;
+  border: 2px solid #e5e5e5;
+  border-radius: 50px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.catalog-search input:focus {
+  outline: none;
+  border-color: #c9a882;
+  box-shadow: 0 4px 20px rgba(201, 168, 130, 0.15);
+}
+
+.catalog-search button {
+  padding: 16px 35px;
+  background: linear-gradient(135deg, #c9a882 0%, #8b4513 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 69, 19, 0.25);
+}
+
+.catalog-search button:hover {
+  background: linear-gradient(135deg, #8b4513 0%, #6d3610 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(139, 69, 19, 0.35);
+}
+
+/* Services Grid - Enhanced Layout */
+.services-grid-shop {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 35px;
+  padding-bottom: 40px;
+}
+
+/* Service Card - Premium Design */
+.service-card-shop {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.service-card-shop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #c9a882 0%, #8b4513 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.service-card-shop:hover::before {
+  transform: scaleX(1);
+}
+
+.service-card-shop:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(139, 69, 19, 0.15);
+  border-color: rgba(201, 168, 130, 0.3);
+}
+
+/* Service Image Container */
+.service-image-shop {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f9f6f3 0%, #f0ebe5 100%);
+}
+
+.service-image-shop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-card-shop:hover .service-image-shop img {
+  transform: scale(1.08);
+}
+
+/* Service Content */
+.service-content-shop {
+  padding: 30px;
+}
+
+.service-title-shop {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: #4b2e1e;
+  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.service-category-shop {
+  font-size: 0.85rem;
+  color: #c9a882;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 18px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.service-description-shop {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 25px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+/* Price Display - Enhanced */
+.service-price-shop {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #8b4513;
+  font-weight: 700;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.service-price-shop::before {
+  content: 'Starting from';
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+/* Book Now Button - Premium Design */
+.btn-book-service {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #4b2e1e 0%, #8b4513 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-book-service::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-book-service:hover::before {
+  left: 100%;
+}
+
+.btn-book-service:hover {
+  background: linear-gradient(135deg, #623e2a 0%, #a15d2a 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(75, 46, 30, 0.35);
+}
+
+.btn-book-service:active {
+  transform: translateY(-1px);
+}
+
+/* Loading State */
+.catalog-loading {
+  text-align: center;
+  padding: 120px 20px;
+  color: #999;
+  grid-column: 1 / -1;
+}
+
+.catalog-loading i {
+  font-size: 4rem;
+  margin-bottom: 25px;
+  color: #c9a882;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.catalog-loading p {
+  font-size: 1.1rem;
+  font-family: 'Poppins', sans-serif;
+  color: #8b4513;
+  font-weight: 500;
+}
+
+/* No Services Message */
+.no-services-shop {
+  text-align: center;
+  padding: 100px 20px;
+  grid-column: 1 / -1;
+}
+
+.no-services-shop p {
+  font-size: 1.2rem;
+  color: #999;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+/* Scrollbar Styling */
+.catalog-sidebar::-webkit-scrollbar,
+.catalog-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.catalog-sidebar::-webkit-scrollbar-track,
+.catalog-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+.catalog-sidebar::-webkit-scrollbar-thumb,
+.catalog-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c9a882 0%, #8b4513 100%);
+  border-radius: 10px;
+}
+
+.catalog-sidebar::-webkit-scrollbar-thumb:hover,
+.catalog-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8b4513 0%, #6d3610 100%);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Large Tablets */
+@media (max-width: 1200px) {
+  .catalog-container-shop {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .services-grid-shop {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 30px;
+  }
+
+  .catalog-header-shop h2 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .catalog-container-shop {
+    grid-template-columns: 1fr;
+    height: 95vh;
+  }
+
+  .catalog-sidebar {
+    display: none;
+  }
+
+  .catalog-content {
+    padding: 40px 30px;
+  }
+
+  .services-grid-shop {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+  }
+
+  .catalog-header-shop h2 {
+    font-size: 2.2rem;
+  }
+}
+
+/* Mobile Landscape */
+@media (max-width: 768px) {
+  .catalog-container-shop {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .catalog-content {
+    padding: 30px 20px;
+  }
+
+  .catalog-header-shop h2 {
+    font-size: 2rem;
+  }
+
+  .catalog-subtitle {
+    font-size: 1rem;
+  }
+
+  .services-grid-shop {
+    grid-template-columns: 1fr;
+  }
+
+  .service-image-shop {
+    height: 240px;
+  }
+
+  .close-catalog {
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+
+  .catalog-search {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .catalog-search button {
+    width: 100%;
+  }
+}
+
+/* Mobile Portrait */
+@media (max-width: 480px) {
+  .catalog-content {
+    padding: 20px 15px;
+  }
+
+  .catalog-header-shop {
+    margin-bottom: 30px;
+  }
+
+  .catalog-header-shop h2 {
+    font-size: 1.8rem;
+  }
+
+  .catalog-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .service-content-shop {
+    padding: 25px 20px;
+  }
+
+  .service-title-shop {
+    font-size: 1.4rem;
+  }
+
+  .service-image-shop {
+    height: 220px;
+  }
+
+  .service-price-shop {
+    font-size: 1.6rem;
+  }
+
+  .btn-book-service {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .catalog-modal {
+    display: none !important;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .catalog-container-shop {
+    border: 3px solid #000;
+  }
+
+  .service-card-shop {
+    border: 2px solid #000;
+  }
+
+  .btn-book-service {
+    border: 2px solid #000;
   }
 }

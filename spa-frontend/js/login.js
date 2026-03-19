@@ -14,15 +14,17 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const data = await response.json(); // ✅ Fixed: was 'res'
 
-    if (!res.ok) {
+    if (!response.ok) { // ✅ Fixed: was 'res'
       msg.textContent = `❌ ${data.msg || "Invalid credentials"}`;
       return;
     }

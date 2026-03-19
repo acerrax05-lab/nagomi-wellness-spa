@@ -1,59 +1,79 @@
 // src/models/User.js
+// ─────────────────────────────────────────────────────────────────────────
+// Added fields (NEW — won't break existing data):
+//   paySchedule   : 'semi-monthly' (every 15 days, default) | 'weekly'
+//   commissionRate: 0-100 (% of service price, default 60)
+//   payrollNotes  : free-text (e.g. "weekly - supporting children")
+// ─────────────────────────────────────────────────────────────────────────
 const mongoose = require('mongoose');
 
-const WeeklyScheduleSchema = new mongoose.Schema({
-  dayOfWeek: { 
-    type: String, 
-    enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    required: true 
-  },
+const ShiftSchema = new mongoose.Schema({
+  startTime: String,
+  endTime:   String,
+}, { _id: false });
+
+const DayScheduleSchema = new mongoose.Schema({
+  dayOfWeek: { type: String, enum: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] },
   isWorking: { type: Boolean, default: true },
-  shifts: [{
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true }
-  }],
-  // CRITICAL: Add breaks here
-  breaks: [{
-    label: { type: String, default: 'Break' },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true }
-  }]
+  shifts:    [ShiftSchema],
+  breaks:    [ShiftSchema],
 }, { _id: false });
 
 const DateOverrideSchema = new mongoose.Schema({
-  date: { type: Date, required: true },
+  date:      { type: Date, required: true },
   isWorking: { type: Boolean, default: false },
-  shifts: [{
-    startTime: String,
-    endTime: String
-  }],
-  // Breaks for date overrides
-  breaks: [{
-    label: { type: String, default: 'Break' },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true }
-  }],
-  reason: String
-}, { _id: false });
+  shifts:    [ShiftSchema],
+  reason:    { type: String, default: 'Unavailable' },
+});
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  name:         { type: String, required: true },
+  email:        { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'client', 'therapist'], default: 'client' },
-  phone: String,
-  
-  expertise: [{ type: String }],
-  weeklySchedule: [WeeklyScheduleSchema],
-  dateOverrides: [DateOverrideSchema],
-  
-  defaultShift: {
-    startTime: { type: String, default: "9:00 AM" },
-    endTime: { type: String, default: "8:00 PM" }
+
+  role: {
+    type:    String,
+    enum:    ['admin', 'therapist'],
+    default: 'therapist',
   },
-  
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-});
+
+  // ── Therapist-specific fields ──────────────────────────────────────
+  expertise:     [{ type: String }],
+  defaultShift:  { startTime: String, endTime: String },
+  weeklySchedule: [DayScheduleSchema],
+  dateOverrides:  [DateOverrideSchema],
+
+  // ── ✅ NEW: Pay & commission settings ──────────────────────────────
+  paySchedule: {
+    type:    String,
+    enum:    ['semi-monthly', 'weekly'],
+    default: 'semi-monthly',
+    // 'semi-monthly' = paid on the 15th and last day of each month
+    // 'weekly'       = paid every Friday (for therapists supporting children)
+  },
+
+  commissionRate: {
+    type:    Number,
+    default: 60,      // 60% of service price goes to the therapist
+    min:     0,
+    max:     100,
+  },
+
+  payrollNotes: {
+    type:    String,
+    default: '',
+    // e.g. "Weekly pay — supporting children"
+  },
+  // ── ──────────────────────────────────────────────────────────────
+
+  gender: {
+    type:    String,
+    enum:    ['male', 'female'],
+    default: 'female',
+  },
+
+  isActive:  { type: Boolean, default: true },
+  createdAt: { type: Date,    default: Date.now },
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

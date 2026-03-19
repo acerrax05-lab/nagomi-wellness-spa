@@ -179,3 +179,13 @@ h1, h2, h3 {
 .login-footer a:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .login-container {
+    width: 95%;
+    padding: 30px 24px;
+    border-radius: 12px;
+  }
+  .navbar { padding: 15px 20px; }
+  .nav-links { display: none; } /* no nav needed on login page */
+}

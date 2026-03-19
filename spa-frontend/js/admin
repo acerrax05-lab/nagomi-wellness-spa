@@ -2778,3 +2778,14 @@ window.saveTherapistSchedule = saveTherapistSchedule;
 window.addBreak = addBreak;
 window.removeBreak = removeBreak;
 
+
+
+  <!-- AOS Animation Library -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="js/homepage.js"></script>
+<script src="js/enhanced-features.js"></script>
+<script src="js/service-catalog-simple.js"></script>
+<script src="js/guest-reviews.js"></script>
+<script src="js/homepage-dynamic.js"></script>
+</body>
+</html>

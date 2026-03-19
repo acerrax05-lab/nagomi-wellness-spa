@@ -1,0 +1,534 @@
+.service-card .badge-container {
+  position: static !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0 8px 0;
+  background: transparent;
+  z-index: auto;
+  /* Remove the right:15px spread from enhanced-features.css */
+  right: auto;
+  left: auto;
+  top: auto;
+}
+
+/* ── 2. Badge pill styles ────────────────────────────────────────────────── */
+.service-card .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  /* undo the justify-content: space-between from enhanced-features.css */
+  flex: none;
+}
+
+.service-card .badge.most-booked {
+  background: linear-gradient(135deg, #f4a435, #d4710a);
+  color: #fff;
+}
+
+.service-card .badge.trending {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+}
+
+.service-card .badge.rating {
+  background: #fff;
+  color: #4b2e1e;
+  border: 1.5px solid rgba(75,46,30,0.15);
+}
+
+.service-card .badge.rating i {
+  color: #f4a435;
+}
+
+.badge-review-count {
+  font-size: 0.68rem;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* ── 3. Star row (below service name) ────────────────────────────────────── */
+.service-card .service-star-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 2px 0 8px;
+  flex-wrap: wrap;
+}
+
+.service-card .service-star-row .star-row {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.service-card .service-star-row .star-row i {
+  color: #f4a435;
+  font-size: 0.82rem;
+}
+
+.service-card .service-star-row .star-count {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 500;
+}
+
+/* ── 4. "Good for" benefit tags ─────────────────────────────────────────── */
+.service-card .service-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 8px 0 12px;
+}
+
+.service-card .benefit-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f5f1eb;
+  color: #4b2e1e;
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid #e0d5c8;
+  transition: background 0.2s;
+}
+
+.service-card .benefit-tag:hover { background: #e8ddd2; }
+.service-card .benefit-tag i     { color: #8b6f47; font-size: 0.72rem; }
+
+/* ── 5. Booking count sub-label ─────────────────────────────────────────── */
+.service-card .service-book-count {
+  font-size: 0.72rem;
+  color: #8b6f47;
+  font-weight: 600;
+  margin: 0 0 6px;
+  letter-spacing: 0.01em;
+}
+
+/* ── 6. Review cards grid ────────────────────────────────────────────────── */
+#reviews .reviews-container,
+.reviews-section .reviews-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 24px;
+  padding: 10px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.review-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  transition: transform 0.25s, box-shadow 0.25s;
+  border-top: 4px solid #c8a882;
+  /* Reset the elaborate styles from enhanced-features.css */
+  position: relative;
+}
+
+.review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.reviewer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b6f47, #4b2e1e);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Playfair Display', serif;
+  /* Override large size from enhanced-features.css */
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reviewer-info  { flex: 1; min-width: 0; }
+
+.reviewer-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #4b2e1e;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Poppins', sans-serif;
+}
+
+.reviewer-service {
+  font-size: 0.75rem;
+  color: #8b6f47;
+  margin: 0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.review-rating-stars { font-size: 0.8rem; flex-shrink: 0; }
+
+.review-comment {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.65;
+  font-style: italic;
+  margin: 0 0 10px;
+}
+
+.review-date {
+  font-size: 0.72rem;
+  color: #bbb;
+  display: block;
+  text-align: right;
+}
+
+/* ── 7. Rating breakdown bars ────────────────────────────────────────────── */
+#reviews .rating-bar,
+.reviews-section .rating-bar {
+  flex: 1;
+  height: 8px;
+  background: #f0ebe4;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#reviews .rating-fill,
+.reviews-section .rating-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f4a435, #e67e22);
+  border-radius: 4px;
+  transition: width 1.2s ease;
+  width: 0%;
+}
+
+/* ── 8. Stats section ────────────────────────────────────────────────────── */
+.stats-section    { padding: 80px 40px; background: #623e2a; }
+.stats-container  { display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
+.stat-item        { text-align: center; color: #fff; }
+.stat-icon        { font-size: 2rem; margin-bottom: 12px; opacity: 0.85; }
+
+/* Override the white color enhanced-features.css sets on .stat-number */
+.stat-number {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 3rem !important;
+  font-weight: 700 !important;
+  color: #f7c6a5 !important;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-item p { font-size: 0.9rem; opacity: 0.85; color: #fff; font-weight: 500; }
+
+/* ── 9. Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #reviews .reviews-container,
+  .reviews-section .reviews-container {
+    padding: 10px 20px 30px;
+    grid-template-columns: 1fr;
+  }
+  .stats-container { gap: 40px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ALL REVIEWS MODAL  (prefix: arm-)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────────────────── */
+.arm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 15, 5, 0.72);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.arm-overlay.arm-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────── */
+.arm-panel {
+  background: #faf6f1;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(20px);
+  transition: transform 0.28s ease;
+  max-height: calc(100vh - 48px);
+}
+
+.arm-overlay.arm-visible .arm-panel {
+  transform: translateY(0);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.arm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid #ede5da;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.arm-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  color: #4b2e1e;
+  margin: 0 0 4px;
+}
+
+.arm-subtitle {
+  font-size: 0.85rem;
+  color: #8b6f47;
+  margin: 0;
+}
+
+.arm-close {
+  background: #f0ebe4;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #4b2e1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.arm-close:hover { background: #e0d5c8; }
+
+/* ── Summary row (avg + breakdown) ──────────────────────────────────── */
+.arm-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 24px 32px;
+  background: #fff;
+  border-bottom: 1px solid #ede5da;
+  flex-shrink: 0;
+}
+
+.arm-avg-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 110px;
+}
+
+.arm-avg-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: #4b2e1e;
+  line-height: 1;
+}
+
+.arm-avg-stars {
+  display: flex;
+  gap: 3px;
+  font-size: 1.1rem;
+  color: #f4a435;
+}
+
+.arm-avg-label {
+  font-size: 0.75rem;
+  color: #8b6f47;
+  text-align: center;
+}
+
+/* Breakdown bars */
+.arm-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.arm-bd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arm-bd-label {
+  font-size: 0.82rem;
+  color: #8b6f47;
+  min-width: 38px;
+  text-align: right;
+}
+.arm-bd-label i { color: #f4a435; font-size: 0.72rem; }
+
+.arm-bd-bar {
+  flex: 1;
+  height: 8px;
+  background: #ede5da;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.arm-bd-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f4a435, #e67e22);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+.arm-bd-count {
+  font-size: 0.78rem;
+  color: #888;
+  min-width: 36px;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+.arm-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 16px 32px;
+  background: #faf6f1;
+  border-bottom: 1px solid #ede5da;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.arm-tabs::-webkit-scrollbar { display: none; }
+
+.arm-tab {
+  background: #fff;
+  border: 1.5px solid #ddd3c5;
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b5040;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.arm-tab:hover {
+  background: #f0ebe4;
+  border-color: #c8a882;
+}
+
+.arm-tab.active {
+  background: #623e2a;
+  border-color: #623e2a;
+  color: #fff;
+}
+
+.arm-tab-count {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+/* ── Body (review grid) ──────────────────────────────────────────────── */
+.arm-body {
+  overflow-y: auto;
+  padding: 24px 32px 32px;
+  flex: 1;
+}
+
+.arm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Reuse existing .review-card styles — no overrides needed */
+
+.arm-empty {
+  text-align: center;
+  color: #8b6f47;
+  padding: 48px 0;
+  font-size: 0.95rem;
+}
+
+.arm-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+  color: #8b6f47;
+  font-size: 1.5rem;
+}
+
+.arm-load-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 0;
+}
+
+.arm-load-btn {
+  background: #623e2a;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 36px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.02em;
+}
+.arm-load-btn:hover {
+  background: #4b2e1e;
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .arm-panel         { border-radius: 16px; }
+  .arm-header        { padding: 20px 20px 16px; }
+  .arm-summary-row   { flex-direction: column; padding: 18px 20px; gap: 18px; }
+  .arm-avg-block     { flex-direction: row; gap: 14px; min-width: auto; }
+  .arm-avg-number    { font-size: 2.4rem; }
+  .arm-tabs          { padding: 12px 16px; }
+  .arm-body          { padding: 16px 16px 24px; }
+  .arm-grid          { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,7 @@
+<div class="filter-group">
+    <label for="categoryFilter">Category:</label>
+    <select id="categoryFilter" class="filter-select">
+      <option value="all">All Categories</option>
+      <!-- Categories will be loaded dynamically -->
+    </select>
+  </div>

@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nagomi Wellness Spa</title>
+  <title>Nagomi Wellness Spa - Your Journey to Tranquility</title>
   <link rel="stylesheet" href="css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/enhanced-features.css">
+  <link rel="stylesheet" href="css/homepage-dynamic.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Stars -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <!-- Navbar -->
   <header>
     <nav class="navbar" id="navbar">
-      <h1 class="logo">Nagomi Wellness Spa</h1>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <h1 class="logo">zentraX | Nagomi Wellness Spa</h1>
+      </div>
       
-      <!-- Hamburger Menu Icon -->
       <div class="hamburger" id="hamburger">
         <span></span>
         <span></span>
@@ -25,9 +30,9 @@
         <li><a href="booking.html">Book Now</a></li>
         <li><a href="#services">Services</a></li>
         <li><a href="#promos">Our Spa</a></li>
-        <li><a href="#therapists">Therapists</a></li>
+        <li><a href="#reviews">Reviews</a></li>
         <li><a href="#contact">Contact Us</a></li>
-        <li><a href="login.html" class="staff-login">Staff Login</a></li>
+        <li><a href="manage-booking.html" class="staff-login">Manage Booking</a></li>
       </ul>
     </nav>
   </header>
@@ -39,64 +44,215 @@
       Your browser does not support the video tag.
     </video>
     <div class="overlay">
-      <div class="hero-text">
+      <div class="hero-text" data-aos="fade-up">
         <h2>Welcome to</h2>
         <h1>Nagomi Wellness Spa</h1>
         <p>Everyone needs time to unwind, refresh, revitalize, and recharge.</p>
-        <a href="booking.html" class="btn">Book Appointment</a>
+        <div class="hero-buttons">
+          <a href="booking.html" class="btn btn-primary">Book Appointment</a>
+          <a href="#services" class="btn btn-secondary">Explore Services</a>
+        </div>
+        
+        <!-- Trust Indicators -->
+        <div class="trust-indicators" id="trustIndicators">
+  <!-- Will be populated by JavaScript -->
+</div>
       </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+      <span>Scroll to Explore</span>
+      <i class="fas fa-chevron-down"></i>
     </div>
   </section>
 
-  <!-- Services Section -->
+  <!-- Services Section with Most Booked Labels -->
   <section id="services" class="services">
-    <h2>Services</h2>
+    <div class="section-header" data-aos="fade-up">
+      <h2>Our Premium Services</h2>
+      <p class="section-subtitle">Curated treatments for your wellness journey</p>
+    </div>
+
     <div class="service-grid">
-      <div class="service-card">
-        <img src="img/service1.jpg" alt="Massage Services">
+      <!-- Service Card 1 - Most Booked -->
+      <div class="service-card featured" data-aos="fade-up" data-aos-delay="100">
+        <div class="badge-container">
+          <span class="badge most-booked">⭐ Most Booked</span>
+          <span class="badge rating">
+            <i class="fas fa-star"></i> 4.9
+          </span>
+        </div>
+        <img src="img/service1.jpg" alt="Nagomi Massage">
         <div class="service-info">
           <h3>The Nagomi Massage</h3>
-          <p class="subtitle">Massage Services</p>
-          <small>60 mins | 90 mins | 120 mins</small>
+          <p class="subtitle">Signature Massage Services</p>
+          <p class="service-description">
+            Perfect for relieving stress, muscle tension, and promoting deep relaxation.
+          </p>
+          <div class="service-benefits">
+            <span class="benefit-tag"><i class="fas fa-check"></i> Stress Relief</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Muscle Relaxation</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Better Sleep</span>
+          </div>
+          <div class="service-footer">
+            <small>60 mins | 90 mins | 120 mins</small>
+            <a href="booking.html?service=Nagomi+Massage&category=Massage+Services" class="btn-quick-book">Book Now</a>
+          </div>
         </div>
       </div>
 
-      <div class="service-card">
-        <img src="img/service2.jpg" alt="Package Deals">
+      <!-- Service Card 2 -->
+      <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="badge-container">
+          <span class="badge rating">
+            <i class="fas fa-star"></i> 4.8
+          </span>
+        </div>
+        <img src="img/service2.jpg" alt="Nagomi Packages">
         <div class="service-info">
           <h3>The Nagomi Packages</h3>
-          <p class="subtitle">Package Deals</p>
-          <small>Package 1 - 14</small>
+          <p class="subtitle">Complete Wellness Packages</p>
+          <p class="service-description">
+            Ideal for full-body rejuvenation, detoxification, and enhanced wellness.
+          </p>
+          <div class="service-benefits">
+            <span class="benefit-tag"><i class="fas fa-check"></i> Full Body Care</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Detoxification</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Skin Glow</span>
+          </div>
+          <div class="service-footer">
+            <small>Package 1 - 14</small>
+            <a href="booking.html?service=Package+1&category=Packages" class="btn-quick-book">Book Now</a>
+          </div>
         </div>
       </div>
 
-      <div class="service-card">
+      <!-- Service Card 3 - Trending -->
+      <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="badge-container">
+          <span class="badge trending">🔥 Trending</span>
+          <span class="badge rating">
+            <i class="fas fa-star"></i> 5.0
+          </span>
+        </div>
         <img src="img/service3.jpg" alt="Dual Delight Packages">
         <div class="service-info">
-          <h3>The Nagomi Packages</h3>
-          <p class="subtitle">Dual Delight Packages</p>
-          <small>For Couples</small>
+          <h3>Dual Delight Packages</h3>
+          <p class="subtitle">Romantic Couples Experience</p>
+          <p class="service-description">
+            Best for bonding, romance, and shared moments of tranquility and connection.
+          </p>
+          <div class="service-benefits">
+            <span class="benefit-tag"><i class="fas fa-check"></i> Couples Bonding</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Romance</span>
+            <span class="benefit-tag"><i class="fas fa-check"></i> Private Suite</span>
+          </div>
+          <div class="service-footer">
+            <small>For Couples</small>
+            <a href="booking.html?category=Couples+Packages" class="btn-quick-book">Book Now</a>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="center-btn">
-      <a href="#" class="btn-outline">View All Services →</a>
+    <div class="center-btn" data-aos="fade-up">
+      <a href="#" class="btn-outline" onclick="openServiceCatalog(event)">
+        <i class="fas fa-book-open"></i> View Complete Service Catalog
+      </a>
     </div>
   </section>
 
-  <!-- Promos Section -->
+  <!-- Service Catalog Modal (Magazine Style) -->
+  <div id="serviceCatalogModal" class="catalog-modal">
+  <div class="catalog-container-shop">
+    
+    <!-- Close Button -->
+    <button class="close-catalog" onclick="closeCatalog()" aria-label="Close catalog">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <!-- Left Sidebar - Categories -->
+    <div class="catalog-sidebar">
+      <h3>Categories</h3>
+      <ul class="catalog-categories" id="categoryList">
+        <!-- Categories will be populated by JavaScript -->
+      </ul>
+    </div>
+    
+    <!-- Right Content Area -->
+    <div class="catalog-content">
+      
+      <!-- Header -->
+      <div class="catalog-header-shop">
+        <h2>Nagomi Wellness Spa</h2>
+        <p class="catalog-subtitle">Choose the perfect treatment for your wellness journey</p>
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="catalog-search">
+        <input 
+          type="text" 
+          id="catalogSearch" 
+          placeholder="Search services..." 
+          aria-label="Search services"
+          oninput="searchServices()">
+        <button type="button" onclick="searchServices()" aria-label="Search">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      
+      <!-- Services Grid -->
+      <div class="services-grid-shop" id="servicesGrid">
+        <!-- Services will be populated by JavaScript -->
+        <div class="catalog-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading services...</p>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+  <!-- Statistics Section -->
+  <section class="stats-section">
+    <div class="stats-container" data-aos="fade-up">
+      <div class="stat-item">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <h3 class="stat-number" data-target="500">0</h3>
+        <p>Happy Clients</p>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon"><i class="fas fa-spa"></i></div>
+        <h3 class="stat-number" data-target="1200">0</h3>
+        <p>Treatments Done</p>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon"><i class="fas fa-award"></i></div>
+        <h3 class="stat-number" data-target="15">0</h3>
+        <p>Years Experience</p>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon"><i class="fas fa-star"></i></div>
+        <h3 class="stat-number" data-target="4.9">0</h3>
+        <p>Average Rating</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promos Section (unchanged structure, enhanced styling) -->
   <section id="promos" class="promos">
-    <h2>Rejuvenate, Relax, and Rediscover Your Inner Peace</h2>
-    <p class="promo-intro">
+    <h2 data-aos="fade-up">Rejuvenate, Relax, and Rediscover Your Inner Peace</h2>
+    <p class="promo-intro" data-aos="fade-up">
       At Nagomi Wellness Spa, we believe self-care is not a luxury—it's a necessity. 
       Nestled in the heart of Baguio City, our spa offers a tranquil escape where you can unwind, recharge, and achieve holistic wellness.
     </p>
     
-    <h2 class="promo-subtitle">Why Choose Nagomi Wellness Spa?</h2>
+    <h2 class="promo-subtitle" data-aos="fade-up">Why Choose Nagomi Wellness Spa?</h2>
     
     <div class="promo-grid">
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="100">
         <img src="img/Holistic.png" alt="Holistic Wellness Experience">
         <div class="promo-info">
           <h3>Holistic Wellness Experience</h3>
@@ -104,7 +260,7 @@
         </div>
       </div>
 
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="200">
         <img src="img/Packages.png" alt="All-Inclusive Packages">
         <div class="promo-info">
           <h3>All-Inclusive Packages</h3>
@@ -112,7 +268,7 @@
         </div>
       </div>
 
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="300">
         <img src="img/Luxurious.png" alt="Luxurious Amenities">
         <div class="promo-info">
           <h3>Luxurious Amenities</h3>
@@ -120,7 +276,7 @@
         </div>
       </div>
 
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="400">
         <img src="img/Skilled Therapists.png" alt="Skilled Therapists">
         <div class="promo-info">
           <h3>Skilled Therapists</h3>
@@ -128,7 +284,7 @@
         </div>
       </div>
 
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="500">
         <img src="img/Family-Friendly.png" alt="Family-Friendly Atmosphere">
         <div class="promo-info">
           <h3>Family-Friendly Atmosphere</h3>
@@ -136,7 +292,7 @@
         </div>
       </div>
 
-      <div class="promo-card">
+      <div class="promo-card" data-aos="zoom-in" data-aos-delay="600">
         <img src="img/comfort.png" alt="Indulgent Comfort">
         <div class="promo-info">
           <h3>Indulgent Comfort</h3>
@@ -145,63 +301,91 @@
       </div>
     </div>
 
-    <h2 class="promo-closing">Pamper Yourself Today!</h2>
-    <p class="promo-closing-text">
+    <h2 class="promo-closing" data-aos="fade-up">Pamper Yourself Today!</h2>
+    <p class="promo-closing-text" data-aos="fade-up">
       Your well-being is our priority. Discover the art of relaxation at Nagomi Wellness Spa—where stress melts away, and tranquility begins.
     </p>
   </section>
+  <!-- Reviews Section -->
+  <section id="reviews" class="reviews-section">
+    <div class="section-header" data-aos="fade-up">
+      <h2>What Our Clients Say</h2>
+      <p class="section-subtitle">Real experiences from real people</p>
+    </div>
 
-  <!-- Therapists Section -->
-  <section id="therapists" class="therapists">
-    <h2>Meet Our Therapists</h2>
+    <div class="reviews-container">
+      <!-- Review Cards -->
+    </div>
 
-    <div class="therapist-grid">
-      <div class="therapist-card">
-        <img src="img/therapists1.jpg" alt="Therapist 1">
-        <div class="therapist-info">
-          <h3>Sarah Johnson</h3>
-          <p class="role">Aromatherapy Expert</p>
-          <p class="bio">
-            Certified aromatherapist with expertise in essential oil treatments and relaxation techniques.
-          </p>
+    <!-- Review Summary -->
+    <div class="review-summary" data-aos="fade-up">
+      <div class="summary-item">
+        <h3>4.9</h3>
+        <div class="stars-large">
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star-half-alt"></i>
         </div>
+        <p>Based on 247 reviews</p>
       </div>
-
-      <div class="therapist-card">
-        <img src="img/therepists2.jpg" alt="Therapist 2">
-        <div class="therapist-info">
-          <h3>Lisa Thompson</h3>
-          <p class="role">Deep Tissue Specialist</p>
-          <p class="bio">
-            Licensed massage therapist with advanced training in deep tissue and sports massage.
-          </p>
+      
+      <div class="rating-breakdown">
+        <div class="rating-row">
+          <span>5 stars</span>
+          <div class="rating-bar">
+            <div class="rating-fill" style="width: 85%"></div>
+          </div>
+          <span>85%</span>
         </div>
-      </div>
-
-      <div class="therapist-card">
-        <img src="img/therepists3.jpg" alt="Therapist 3">
-        <div class="therapist-info">
-          <h3>Michelle Rodriguez</h3>
-          <p class="role">Hot Stone Therapy Expert</p>
-          <p class="bio">
-            Certified in hot stone massage and thermal therapy techniques for deep relaxation.
-          </p>
+        <div class="rating-row">
+          <span>4 stars</span>
+          <div class="rating-bar">
+            <div class="rating-fill" style="width: 12%"></div>
+          </div>
+          <span>12%</span>
+        </div>
+        <div class="rating-row">
+          <span>3 stars</span>
+          <div class="rating-bar">
+            <div class="rating-fill" style="width: 2%"></div>
+          </div>
+          <span>2%</span>
+        </div>
+        <div class="rating-row">
+          <span>2 stars</span>
+          <div class="rating-bar">
+            <div class="rating-fill" style="width: 1%"></div>
+          </div>
+          <span>1%</span>
+        </div>
+        <div class="rating-row">
+          <span>1 star</span>
+          <div class="rating-bar">
+            <div class="rating-fill" style="width: 0%"></div>
+          </div>
+          <span>0%</span>
         </div>
       </div>
     </div>
+
+    <div class="center-btn" data-aos="fade-up" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+  <a href="#" class="btn-outline">Read All Reviews</a>
+  <a href="#" class="btn-outline" onclick="event.preventDefault(); window.openReviewModal()">✍️ Write a Review</a>
+</div>
   </section>
 
-  <!-- Contact Section -->
+  <!-- Contact Section (unchanged) -->
   <section id="contact" class="contact">
-    <h2>Contact Us!</h2>
+    <h2 data-aos="fade-up">Contact Us!</h2>
 
     <div class="contact-container">
-      <div class="contact-info">
+      <div class="contact-info" data-aos="fade-right">
         <div class="contact-box">
           <h3>Reservations Office</h3>
           <p>Legarda Burnham, 25 Kisad Rd, Baguio City</p>
           <p>📞 0947 921 5131</p>
-          <p>📧 nagomiwellness@gmail.com</p>
         </div>
 
         <div class="contact-box">
@@ -219,17 +403,23 @@
         </div>
       </div>
 
-      <div class="contact-image">
+      <div class="contact-image" data-aos="fade-left">
         <img src="img/spa.jpg" alt="Nagomi Spa Interior">
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer>
-    <p>© 2025 Nagomi Wellness Spa | All Rights Reserved</p>
+  <footer style="text-align:center;padding:1.5rem;background:#3b1f10;color:rgba(255,255,255,0.6);font-size:0.85rem;margin-top:2rem;">
+    <p>© 2026 Nagomi Wellness Spa | All Rights Reserved | zentraX</p>
   </footer>
 
-  <script src="js/homepage.js"></script>
+  <!-- AOS Animation Library -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="js/homepage.js"></script>
+<script src="js/enhanced-features.js"></script>
+<script src="js/service-catalog-simple.js"></script>
+<script src="js/guest-reviews.js"></script>
+<script src="js/homepage-dynamic.js"></script>
 </body>
 </html>

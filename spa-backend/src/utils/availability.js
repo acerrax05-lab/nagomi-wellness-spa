@@ -1,4 +1,4 @@
-// src/utils/availability.js - WITH CONFIGURABLE POST-SERVICE REST
+// src/utils/availability.js
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const GracePeriod = require('../models/GracePeriod');

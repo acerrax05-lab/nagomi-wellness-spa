@@ -16,6 +16,7 @@ body {
   background: url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200') center/cover;
   position: relative;
   padding: 60px 40px;
+  padding-top: 100px; /* account for fixed navbar on desktop */
   color: white;
   display: flex;
   justify-content: space-between;
@@ -235,25 +236,47 @@ body {
   min-height: 350px;
 }
 
+/* ── Calendar day cell ── */
 .calendar-day {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;        /* ✅ stack number + badge vertically */
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s;
   position: relative;
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid transparent;
   color: rgba(255, 255, 255, 0.4);
+  overflow: hidden;              /* ✅ keep badge inside rounded cell */
+  padding: 4px 2px;
 }
 
 .calendar-day:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: scale(1.05);
+}
+
+/* Day number sits at top of the cell */
+.calendar-day .day-number {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* "Day Off" badge sits below the number */
+.day-off-badge {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #fff;
+  margin-top: 3px;
+  letter-spacing: 0.01em;
+  pointer-events: none;
 }
 
 .calendar-day.current-month {
@@ -294,6 +317,12 @@ body {
   background: #e57373;
   color: white;
   font-weight: 700;
+  cursor: not-allowed;
+}
+
+.calendar-day.day-off:hover {
+  background: #ef5350;   /* slightly brighter on hover so it feels interactive */
+  transform: none;
 }
 
 .calendar-day.selected {
@@ -564,7 +593,7 @@ body {
   .main-content {
     grid-template-columns: 1fr;
   }
-  
+
   .calendar-section {
     max-width: 600px;
     margin: 0 auto;
@@ -577,17 +606,110 @@ body {
     gap: 20px;
     padding: 40px 20px;
   }
-  
+
   .hero-content h1 {
     font-size: 2rem;
   }
-  
+
   .stats-section {
     padding: 20px;
     grid-template-columns: 1fr;
   }
-  
+
   .main-content {
     padding: 0 20px 20px;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THERAPIST MOBILE NAVBAR
+   ═══════════════════════════════════════════════════════════════ */
+
+.therapist-navbar {
+  display: flex; /* visible on both desktop and mobile */
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(75, 46, 30, 0.97);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.therapist-navbar .logo {
+  color: #f7c6a5;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Hamburger */
+.therapist-navbar .hamburger {
+  display: none; /* hidden on desktop */
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px;
+}
+.therapist-navbar .hamburger span {
+  display: block;
+  width: 22px;
+  height: 2.5px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.therapist-navbar .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
+.therapist-navbar .hamburger.active span:nth-child(2) { opacity: 0; }
+.therapist-navbar .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
+
+/* Dropdown menu */
+.therapist-mobile-menu {
+  display: none;
+  position: fixed;
+  top: 56px; right: 0;
+  width: 220px;
+  background: rgba(75, 46, 30, 0.98);
+  border-radius: 0 0 0 12px;
+  box-shadow: -4px 4px 16px rgba(0,0,0,0.3);
+  flex-direction: column;
+  overflow: hidden;
+}
+.therapist-mobile-menu.open { display: flex; }
+
+.mobile-menu-header {
+  padding: 16px 20px 10px;
+  color: #f7c6a5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.mobile-logout-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 14px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.2s;
+}
+.mobile-logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+@media (max-width: 768px) {
+  .therapist-navbar { display: flex; }
+  .therapist-navbar .hamburger { display: flex; } /* show hamburger on mobile */
+
+  /* Push content below the fixed navbar */
+  .hero-section { padding-top: 80px; }
+  .stats-section { margin-top: 0; }
+
+  /* Hide the desktop logout inside hero on mobile — navbar has it */
+  #logoutBtn { display: none; }
 }
