@@ -38,7 +38,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
 
   document.getElementById("adminName").textContent = user.name;
 
-  const socket = io(`${window.location.origin}`, {
+  const socket = io('https://nagomi-backend.onrender.com', {
     transports: ['websocket', 'polling']
   });
 

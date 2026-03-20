@@ -18,7 +18,7 @@ let selectedDate = new Date().toDateString();
 let timeUpdateInterval = null;
 
 // Socket.IO connection
-const socket = io(`${window.location.origin}`, {
+const socket = io('https://nagomi-backend.onrender.com', {
   transports: ['websocket', 'polling']
 });
 
