@@ -6714,74 +6714,109 @@ async function confirmAssignTherapist() {
     document.getElementById('archiveTherapistModal').classList.add('active');
   }
 
+  let _archiveInProgress = false; // guard against double-clicks
+
   async function confirmArchiveTherapist() {
+    // ── Guard: prevent double-submit ──────────────────────────────────────────
+    if (_archiveInProgress) return;
+
     const reason = document.getElementById('archiveReason').value.trim();
     if (!reason) {
       showNotification('Please enter a reason for archiving.', 'error');
       return;
     }
 
+    // ── Disable button + show loading state ───────────────────────────────────
+    _archiveInProgress = true;
+    const confirmBtn = document.getElementById('confirmArchiveBtn');
+    const originalText = confirmBtn ? confirmBtn.textContent : '';
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Archiving...';
+      confirmBtn.style.opacity = '0.6';
+      confirmBtn.style.cursor = 'not-allowed';
+    }
+
     try {
-      // 1. Fetch therapist details
+      // 1. Fetch therapist details only (no more fetching ALL bookings)
       const tRes = await fetch(`${apiBase}/therapists/${_archivePendingId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!tRes.ok) throw new Error('Could not load therapist details');
       const therapist = await tRes.json();
 
-      // 2. Fetch ALL bookings to compute lifetime stats
-      const bRes = await fetch(`${apiBase}/bookings`, {
-        headers: { Authorization: `Bearer ${token}` }
+      // 2. Use already-loaded bookings from memory instead of re-fetching all
+      const cachedBookings = allBookings || [];
+      const myBookings = cachedBookings.filter(b => {
+        const tid = b.therapist?._id || b.therapist;
+        const inArray = Array.isArray(b.therapists) && b.therapists.some(t => (t._id || t) === _archivePendingId);
+        return tid === _archivePendingId || inArray;
       });
-      const allBookings = await bRes.json();
-
-      const myBookings = allBookings.filter(b =>
-        b.therapist && (b.therapist._id || b.therapist) === _archivePendingId
-      );
-      const completed  = myBookings.filter(b => b.status === 'completed');
-      const cancelled  = myBookings.filter(b => b.status === 'cancelled');
-      const totalRev   = completed.reduce((s, b) => s + (b.price || 0), 0);
-      const commission = Math.round(totalRev * (commissionSettings.rate / 100));
+      const completed   = myBookings.filter(b => b.status === 'completed');
+      const cancelled   = myBookings.filter(b => b.status === 'cancelled');
+      const totalRev    = completed.reduce((s, b) => s + (b.price || 0), 0);
+      const commission  = Math.round(totalRev * ((commissionSettings?.rate || 60) / 100));
       const successRate = myBookings.length
         ? Math.round((completed.length / myBookings.length) * 100) : 0;
 
-      // 3. Save archive record to localStorage
+      // 3. Check if already archived (prevent duplicate entries)
       const archives = JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]');
-      archives.push({
-        id:            _archivePendingId,
-        name:          therapist.name  || _archivePendingName,
-        email:         therapist.email || '',
-        phone:         therapist.phone || '',
-        expertise:     therapist.expertise || [],
-        archiveReason: reason,
-        archiveDate:   new Date().toISOString(),
-        stats: {
-          totalBookings:     myBookings.length,
-          completedServices: completed.length,
-          cancelledBookings: cancelled.length,
-          totalRevenue:      totalRev,
-          commissionEarned:  commission,
-          successRate
-        }
-      });
-      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
+      const alreadyArchived = archives.some(a => a.id === _archivePendingId);
+      if (!alreadyArchived) {
+        archives.push({
+          id:            _archivePendingId,
+          name:          therapist.name  || _archivePendingName,
+          email:         therapist.email || '',
+          phone:         therapist.phone || '',
+          expertise:     therapist.expertise || [],
+          archiveReason: reason,
+          archiveDate:   new Date().toISOString(),
+          stats: {
+            totalBookings:     myBookings.length,
+            completedServices: completed.length,
+            cancelledBookings: cancelled.length,
+            totalRevenue:      totalRev,
+            commissionEarned:  commission,
+            successRate
+          }
+        });
+        localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
+      }
 
-      // 4. Mark therapist inactive in DB (keeps booking records intact)
-      await fetch(`${apiBase}/auth/users/${_archivePendingId}`, {
+      // 4. Mark therapist inactive in DB
+      const updateRes = await fetch(`${apiBase}/auth/users/${_archivePendingId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ isActive: false, name: therapist.name, email: therapist.email, phone: therapist.phone, role: 'therapist' })
+        body: JSON.stringify({
+          isActive: false,
+          name:  therapist.name,
+          email: therapist.email,
+          phone: therapist.phone,
+          role:  'therapist'
+        })
       });
 
+      if (!updateRes.ok) throw new Error('Failed to update therapist status in database');
+
       document.getElementById('archiveTherapistModal').classList.remove('active');
-      showNotification(`${_archivePendingName} has been archived.`, 'success');
+      showNotification(`${_archivePendingName} has been archived successfully.`, 'success');
       loadTherapists();
 
     } catch (err) {
       console.error(err);
-      showNotification('Failed to archive therapist', 'error');
+      showNotification(`Failed to archive therapist: ${err.message}`, 'error');
+    } finally {
+      // ── Always re-enable button ───────────────────────────────────────────
+      _archiveInProgress = false;
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+        confirmBtn.style.opacity = '1';
+        confirmBtn.style.cursor = 'pointer';
+      }
     }
   }
 
