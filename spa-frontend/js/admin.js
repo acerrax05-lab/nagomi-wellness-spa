@@ -61,15 +61,22 @@ socket.on('bookingStatusUpdated', () => {
   else if (activeTab === 'bookings-tab') loadBookingsCalendar();
 });
 
+  // Debounce helper — prevents search firing on every single keystroke
+  let searchDebounceTimer = null;
+
   document.getElementById('bookingSearchInput')?.addEventListener('input', (e) => {
     searchTerm = e.target.value.toLowerCase().trim();
     const clearBtn = document.getElementById('clearSearchBtn');
     
     if (searchTerm) {
       clearBtn.style.display = 'block';
-      performBookingSearch();
+      // Wait 300ms after user stops typing before searching
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        performBookingSearch();
+      }, 300);
     } else {
-      clearBtn.style.display = 'none';
+      clearTimeout(searchDebounceTimer);
       clearBookingSearch();
     }
   });
@@ -4830,12 +4837,12 @@ function formatBookingDate(b) {
 
   return `
     <tr style="${type === 'walk-in' ? 'background:#fffbf0;' : ''}" data-booking-id="${b._id}">
-      <td>
+      <td style="word-wrap:break-word;overflow-wrap:break-word;">
         <div style="font-weight:600;font-size:1rem;">${clientName}${typeBadge} ${numClients > 1 ? `(${numClients} clients)` : ''}</div>
         ${genderBreakdown ? `<div style="margin-top:3px;">${genderBreakdown}</div>` : ''}
         <div style="font-size:0.85rem;color:#666;margin-top:4px;">📞 ${b.guestPhone || 'No phone'}</div>
         <div style="font-size:0.85rem;color:#666;">
-          🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;">
+          🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:0.75rem;">
             ${b.transactionNumber || 'N/A'}
           </span>
         </div>
@@ -4843,10 +4850,10 @@ function formatBookingDate(b) {
       <td style="white-space:nowrap;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
-      <td>${serviceName}</td>
-      <td>${therapistDisplay}</td>
-      <td>${duration} mins</td>
-      <td>₱${(b.price || 0).toLocaleString()}</td>
+      <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>
+      <td style="word-wrap:break-word;overflow-wrap:break-word;">${therapistDisplay}</td>
+      <td style="text-align:center;">${duration} mins</td>
+      <td style="text-align:right;">₱${(b.price || 0).toLocaleString()}</td>
       <td><span class="status-badge status-${b.status}">${b.status}</span></td>
       <td class="action-buttons">${actions || '-'}</td>
     </tr>

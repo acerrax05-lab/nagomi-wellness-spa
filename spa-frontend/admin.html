@@ -15,7 +15,7 @@
         <button class="hamburger" id="adminMenuBtn" aria-label="Toggle menu">
           <span></span><span></span><span></span>
         </button>
-        <h1 class="logo">zentraX | Nagomi Wellness Spa - Admin</h1>
+        <h1 class="logo">Nagomi Wellness Spa - Admin</h1>
       </div>
       <div class="user-info">
         <span id="adminName">Admin</span>
@@ -212,7 +212,19 @@
 
       <div class="bookings-table-section">
         <h3 id="selectedDateTitle">Select a date to view bookings</h3>
-        <table id="bookingsTable" class="bookings-table">
+        <table id="bookingsTable" class="bookings-table" style="table-layout:fixed;width:100%;">
+          <colgroup>
+            <col style="width:18%"> <!-- Client -->
+            <col style="width:9%">  <!-- Date -->
+            <col style="width:8%">  <!-- Start Time -->
+            <col style="width:8%">  <!-- End Time -->
+            <col style="width:18%"> <!-- Service -->
+            <col style="width:12%"> <!-- Therapist -->
+            <col style="width:7%">  <!-- Duration -->
+            <col style="width:7%">  <!-- Price -->
+            <col style="width:7%">  <!-- Status -->
+            <col style="width:6%">  <!-- Actions -->
+          </colgroup>
           <thead>
             <tr>
               <th>Client</th>
@@ -522,18 +534,6 @@
         
         <label>Phone</label>
         <input type="text" id="therapistPhone">
-
-        <label>Gender</label>
-        <div style="display:flex;gap:1rem;margin-top:4px;">
-          <label style="display:flex;align-items:center;gap:6px;font-weight:400;text-transform:none;cursor:pointer;">
-            <input type="radio" name="therapistGender" id="genderFemale" value="female" checked>
-            ♀ Female
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;font-weight:400;text-transform:none;cursor:pointer;">
-            <input type="radio" name="therapistGender" id="genderMale" value="male">
-            ♂ Male
-          </label>
-        </div>
         
         <div class="modal-actions">
           <button type="submit" class="btn-success">Save</button>
