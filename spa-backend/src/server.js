@@ -172,7 +172,7 @@ app.use(cors({
     return callback(new Error('CORS not allowed: ' + origin));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   credentials: true,
 }));
 
