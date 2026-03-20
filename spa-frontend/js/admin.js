@@ -1402,8 +1402,11 @@ function buildServicesChartForecast(labels, serviceCounts) {
     statCard.querySelector('.stat-details').appendChild(insightDiv);
   }
 
+  const bgColor = color === '#28a745' ? '#e8f5e9' : color === '#dc3545' ? '#ffebee' : '#f5f5f5';
+
   insightDiv.innerHTML = `
     <div style="margin-top:8px;padding:8px 12px;
+      background:${bgColor};
       border-radius:6px;border-left:3px solid ${color};">
       <div style="font-size:0.75rem;color:${color};font-weight:700;margin-bottom:4px;">
         ${label}
