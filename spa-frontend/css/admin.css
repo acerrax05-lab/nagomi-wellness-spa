@@ -4367,3 +4367,210 @@ input:checked + .toggle-slider:before {
 }
 
 /* End mobile improvements */
+
+/* ============================================================
+   MOBILE BOOKING CARD STYLES
+   ============================================================ */
+
+/* Hide mobile list on desktop */
+.mobile-booking-list { display: none; }
+
+@media (max-width: 768px) {
+  /* Hide the desktop table */
+  #bookingsTable { display: none !important; }
+
+  /* Show mobile list */
+  .mobile-booking-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ── Group headers ── */
+  .mobile-group-header {
+    padding: 11px 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 10px 10px 0 0;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mobile-group-header:first-child { margin-top: 0; }
+
+  .mobile-group-online {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-top: 3px solid #2196f3;
+  }
+  .mobile-group-walkin {
+    background: #fff3e0;
+    color: #e65100;
+    border-top: 3px solid #ff9800;
+  }
+
+  /* ── Individual card ── */
+  .mobile-booking-card {
+    background: #fff;
+    border: 1px solid #e8e0d8;
+    border-top: none;
+    padding: 12px 14px 10px;
+  }
+  .mobile-booking-card:last-child {
+    border-radius: 0 0 10px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #e8e0d8;
+  }
+  /* Separate cards that follow a group header directly from another group */
+  .mobile-group-walkin + .mobile-booking-card,
+  .mobile-group-online + .mobile-booking-card {
+    border-top: none;
+  }
+
+  /* Row 1 — name + badge */
+  .mc-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+  .mc-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #4b2e1e;
+  }
+  .mc-clients {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #777;
+  }
+
+  /* Type badges */
+  .mc-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1px solid;
+  }
+  .mc-online  { background:#e3f2fd; color:#1565c0; border-color:#2196f3; }
+  .mc-walkin  { background:#fff3e0; color:#e65100; border-color:#ff9800; }
+
+  /* Row 2 — gender */
+  .mc-gender-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .mc-gender { font-size: 0.8rem; font-weight: 700; }
+  .mc-female { color: #be185d; }
+  .mc-male   { color: #1d4ed8; }
+
+  /* Row 3 — time pill + service */
+  .mc-time-service {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .mc-time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f5f1eb;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4b2e1e;
+    white-space: nowrap;
+  }
+  .mc-service {
+    font-size: 0.82rem;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* Row 4 — meta (therapist · duration · price) */
+  .mc-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 5px;
+  }
+  .mc-sep { color: #ccc; margin: 0 1px; }
+  .mc-price { font-weight: 700; color: #4b2e1e; }
+
+  /* Row 5 — contact */
+  .mc-contact {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+  }
+  .mc-txn {
+    font-family: 'Courier New', monospace;
+    background: #f5f5f5;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+  }
+
+  /* Row 6 — reassign */
+  .mc-reassign-btn {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: #4b2e1e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .mc-assign-note {
+    font-size: 0.72rem;
+    color: #888;
+    font-style: italic;
+    margin-left: 6px;
+  }
+
+  /* Row 7 — footer: status + actions */
+  .mc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0ece6;
+  }
+  .mc-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .mc-btn {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mc-btn-confirm  { background: #28a745; color: white; }
+  .mc-btn-cancel   { background: #dc3545; color: white; }
+  .mc-btn-complete { background: #17a2b8; color: white; }
+}
+
+/* End mobile booking card styles */
