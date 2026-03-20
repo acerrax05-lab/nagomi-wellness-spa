@@ -189,6 +189,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ── Health check — used by keep-alive ping ────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ERROR HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -219,6 +224,40 @@ io.on('connection', (socket) => {
     console.log(`👤 User ${userId} joined ${role} room`);
   });
 });
+
+const Booking = require('./models/Booking');
+const mongoose = require('mongoose');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-ARCHIVE — runs daily at 2 AM PH time
+// Moves bookings older than 2 years to archivedBookings collection
+// ─────────────────────────────────────────────────────────────────────────────
+function scheduleArchive() {
+  const now      = new Date();
+  const next2AM  = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
+  const msUntil2AM = next2AM - now;
+
+  console.log(`🗃️  Auto-archive scheduled — next run in ${Math.round(msUntil2AM / 3600000)}h`);
+
+  setTimeout(async () => {
+    try {
+      const cutoff = new Date();
+      cutoff.setFullYear(cutoff.getFullYear() - 2);
+      const old = await Booking.find({ date: { $lt: cutoff } }).lean();
+      if (old.length > 0) {
+        const db = mongoose.connection.db;
+        await db.collection('archivedBookings').insertMany(old);
+        await Booking.deleteMany({ date: { $lt: cutoff } });
+        console.log(`✅ Auto-archive: moved ${old.length} bookings → archivedBookings`);
+      } else {
+        console.log(`🗃️  Auto-archive: no bookings older than 2 years found`);
+      }
+    } catch (err) {
+      console.error('❌ Auto-archive error:', err.message);
+    }
+    scheduleArchive(); // reschedule for next day
+  }, msUntil2AM);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // START SERVER
