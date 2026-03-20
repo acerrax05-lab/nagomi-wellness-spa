@@ -4737,7 +4737,7 @@ window.getBookingRowActions = getBookingRowActions;
     tbody.innerHTML = '';
     const mobileList = document.getElementById('mobileBookingList');
     if (mobileList) mobileList.innerHTML = '';
-    
+
     // ✅ Display Online Bookings First
     if (onlineBookings.length > 0) {
       tbody.innerHTML += `
@@ -4750,14 +4750,11 @@ window.getBookingRowActions = getBookingRowActions;
       tbody.innerHTML += onlineBookings.map(b => generateBookingRow(b, 'online')).join('');
 
       if (mobileList) {
-        mobileList.innerHTML += `
-          <div class="mobile-group-header mobile-group-online">
-            💻 ONLINE BOOKINGS (${onlineBookings.length})
-          </div>`;
+        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-online">💻 ONLINE BOOKINGS (${onlineBookings.length})</div>`;
         mobileList.innerHTML += onlineBookings.map(b => generateMobileBookingCard(b, 'online')).join('');
       }
     }
-    
+
     // ✅ Display Walk-in Bookings
     if (walkInBookings.length > 0) {
       tbody.innerHTML += `
@@ -4770,16 +4767,13 @@ window.getBookingRowActions = getBookingRowActions;
       tbody.innerHTML += walkInBookings.map(b => generateBookingRow(b, 'walk-in')).join('');
 
       if (mobileList) {
-        mobileList.innerHTML += `
-          <div class="mobile-group-header mobile-group-walkin">
-            🚶 WALK-IN BOOKINGS (${walkInBookings.length})
-          </div>`;
+        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-walkin">🚶 WALK-IN BOOKINGS (${walkInBookings.length})</div>`;
         mobileList.innerHTML += walkInBookings.map(b => generateMobileBookingCard(b, 'walk-in')).join('');
       }
     }
   }
 
-  // ── Mobile card renderer ──────────────────────────────────────────
+  /* ── Mobile card renderer ── */
   function generateMobileBookingCard(b, type) {
     const clientName  = b.guestName || 'Guest';
     const serviceName = b.service ? b.service.name : 'N/A';
@@ -4790,8 +4784,8 @@ window.getBookingRowActions = getBookingRowActions;
     const endTime     = b.endTime
       ? new Date(b.endTime).toLocaleTimeString('en-US', { timeZone:'Asia/Manila', hour:'2-digit', minute:'2-digit' })
       : '—';
-    const phone       = b.guestPhone || 'No phone';
-    const txn         = b.transactionNumber || 'N/A';
+    const phone = b.guestPhone || 'No phone';
+    const txn   = b.transactionNumber || 'N/A';
 
     const femaleCount = b.femaleClients ?? null;
     const maleCount   = b.maleClients   ?? null;
@@ -4800,11 +4794,8 @@ window.getBookingRowActions = getBookingRowActions;
       : '';
 
     let therapistName = 'Any Available';
-    if (b.therapists && b.therapists.length > 0) {
-      therapistName = b.therapists.map(t => t.name).join(', ');
-    } else if (b.therapist) {
-      therapistName = b.therapist.name || b.therapist;
-    }
+    if (b.therapists && b.therapists.length > 0) therapistName = b.therapists.map(t => t.name).join(', ');
+    else if (b.therapist) therapistName = b.therapist.name || b.therapist;
 
     const typeBadge = type === 'walk-in'
       ? `<span class="mc-type-badge mc-walkin">🚶 WALK-IN</span>`
@@ -4817,29 +4808,25 @@ window.getBookingRowActions = getBookingRowActions;
         <button class="mc-btn mc-btn-cancel"  onclick="cancelBooking('${b._id}')">Cancel</button>`;
     } else {
       const raw = getBookingRowActions(b);
-      // Strip the desktop buttons and recreate as mobile-sized
-      actionsHtml = raw
-        ? raw.replace(/class="btn-confirm"/g,         'class="mc-btn mc-btn-confirm"')
-             .replace(/class="btn-cancel-booking"/g,   'class="mc-btn mc-btn-cancel"')
-             .replace(/class="btn-complete"/g,         'class="mc-btn mc-btn-complete"')
-        : '';
+      if (raw && raw !== '-') {
+        actionsHtml = raw
+          .replace(/class="btn-confirm"/g,       'class="mc-btn mc-btn-confirm"')
+          .replace(/class="btn-cancel-booking"/g, 'class="mc-btn mc-btn-cancel"')
+          .replace(/class="btn-complete"/g,       'class="mc-btn mc-btn-complete"');
+      }
     }
 
     return `
       <div class="mobile-booking-card" data-booking-id="${b._id}">
-        <!-- Row 1: name + badge -->
         <div class="mc-header">
           <span class="mc-name">${clientName}${numClients > 1 ? ` <span class="mc-clients">(${numClients} clients)</span>` : ''}</span>
           ${typeBadge}
         </div>
-        <!-- Row 2: gender -->
         ${genderHtml ? `<div class="mc-gender-row">${genderHtml}</div>` : ''}
-        <!-- Row 3: time pill + service -->
         <div class="mc-time-service">
           <span class="mc-time-pill">🕐 ${startTime}${endTime !== '—' ? ` – ${endTime}` : ''}</span>
           <span class="mc-service">${serviceName}</span>
         </div>
-        <!-- Row 4: therapist + duration + price -->
         <div class="mc-meta">
           <span>👤 ${therapistName}</span>
           <span class="mc-sep">·</span>
@@ -4847,26 +4834,21 @@ window.getBookingRowActions = getBookingRowActions;
           <span class="mc-sep">·</span>
           <span class="mc-price">₱${price}</span>
         </div>
-        <!-- Row 5: contact + txn -->
         <div class="mc-contact">
           <span>📞 ${phone}</span>
           <span class="mc-sep">·</span>
           <span class="mc-txn">🎫 ${txn}</span>
         </div>
-        <!-- Row 6: reassign -->
-        <div style="margin:6px 0 4px;">
-          <button onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g,"\\'")}')"
-            class="mc-reassign-btn">👤 Reassign</button>
+        <div style="margin:5px 0 3px;">
+          <button class="mc-reassign-btn" onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g,"\\'")}')">👤 Reassign</button>
           ${b.assignNote ? `<span class="mc-assign-note">${b.assignNote}</span>` : ''}
         </div>
-        <!-- Row 7: status + actions -->
         <div class="mc-footer">
           <span class="status-badge status-${b.status}">${b.status}</span>
-          <div class="mc-actions">${actionsHtml || ''}</div>
+          <div class="mc-actions">${actionsHtml}</div>
         </div>
       </div>`;
   }
-  // ─────────────────────────────────────────────────────────────────
 
   function parseTimeToMinutes(timeStr) {
     if (!timeStr) return 0;
