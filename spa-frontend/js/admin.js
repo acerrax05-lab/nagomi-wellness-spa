@@ -4291,7 +4291,7 @@ function renderPendingRequestCard(booking) {
         : 'Unknown time');
 
   const bookingDate = new Date(booking.date).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric'
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
   });
 
   return `
@@ -4818,7 +4818,7 @@ function formatBookingDate(b) {
   const bookingDateStr = b.date
     ? new Date(b.date).toLocaleDateString('en-US', {
         timeZone: 'Asia/Manila',
-        month: 'short', day: 'numeric', year: 'numeric'
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
       })
     : '—';
 
@@ -4847,7 +4847,7 @@ function formatBookingDate(b) {
           </span>
         </div>
       </td>
-      <td style="white-space:normal;word-wrap:break-word;">${bookingDateStr}</td>
+      <td style="white-space:nowrap;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>
@@ -6867,12 +6867,42 @@ async function confirmAssignTherapist() {
     document.getElementById('archivedTherapistsModal').classList.remove('active');
   }
 
-  function permanentlyDeleteArchive(index) {
-    if (!confirm('Permanently remove this archive record? This cannot be undone.')) return;
+  async function permanentlyDeleteArchive(index) {
+    if (!confirm('Permanently delete this therapist from the database? This cannot be undone.')) return;
+
     const archives = JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]');
-    archives.splice(index, 1);
-    localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
-    openArchivedTherapists(); // re-render
+    const t = archives[index];
+    if (!t || !t.id) {
+      // No DB id — just remove from localStorage
+      archives.splice(index, 1);
+      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
+      openArchivedTherapists();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiBase}/auth/users/${t.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.msg || `Server error ${res.status}`);
+      }
+
+      // Remove from localStorage too
+      archives.splice(index, 1);
+      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
+
+      showNotification(`${t.name} has been permanently deleted.`, 'success');
+      openArchivedTherapists();
+      try { await loadTherapists(); } catch(e) {}
+
+    } catch (err) {
+      console.error('Delete error:', err);
+      showNotification(`Failed to delete: ${err.message}`, 'error');
+    }
   }
 
   async function unarchiveTherapist(index) {
