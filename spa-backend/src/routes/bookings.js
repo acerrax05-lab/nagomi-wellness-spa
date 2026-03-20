@@ -1329,11 +1329,17 @@ booking = updatedBooking;
 
     router.get('/therapist-status', async (req, res) => {
       try {
+        // Always use Philippine Time (UTC+8) regardless of server timezone
         const now = new Date();
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+        const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        const currentTime = phTime.getHours() * 60 + phTime.getMinutes();
+        const currentDay = phTime.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Manila' });
         
-        console.log('🔍 Checking therapist status for:', currentDay, 'at', now.toLocaleTimeString());
+        console.log('🔍 Checking therapist status:');
+        console.log(`   UTC time: ${now.toISOString()}`);
+        console.log(`   PH time:  ${phTime.toLocaleTimeString('en-PH')} (${phTime.getHours()}:${phTime.getMinutes()})`);
+        console.log(`   PH day:   ${currentDay}`);
+        console.log(`   Minutes since midnight: ${currentTime}`);
         
         // ✅ CORRECTED: Use "Settings" (plural) to match your model
         let postServiceRestMinutes = 60;
@@ -1369,9 +1375,9 @@ booking = updatedBooking;
         
         console.log(`📊 Found ${therapists.length} active therapists`);
         
-        // Get all bookings for today
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        // Get all bookings for today using Philippine date
+        const todayStart = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate());
+        const todayEnd   = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate(), 23, 59, 59);
         
         const todaysBookings = await Booking.find({
           date: {
@@ -1421,6 +1427,7 @@ booking = updatedBooking;
             console.log(`   ✅ Has schedule for ${currentDay}`);
             
             const shifts = todaySchedule.shifts || [];
+            console.log(`   📋 Shifts: ${JSON.stringify(shifts)}`);
             if (shifts.length === 0) {
               console.log(`   ⚠️ Schedule exists but no shifts defined`);
               return {
@@ -1438,7 +1445,8 @@ booking = updatedBooking;
             
             for (const shift of shifts) {
               const workStart = parseTimeToMinutes(shift.startTime);
-              const workEnd = parseTimeToMinutes(shift.endTime);
+              const workEnd   = parseTimeToMinutes(shift.endTime);
+              console.log(`   ⏰ Shift: ${shift.startTime}(${workStart}) - ${shift.endTime}(${workEnd}) | Now: ${currentTime}`);
               
               if (currentTime >= workStart && currentTime < workEnd) {
                 isWithinWorkHours = true;
