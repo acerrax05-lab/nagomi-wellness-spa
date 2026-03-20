@@ -12,18 +12,10 @@ const reviewsRouter = require('./routes/reviews');
 const app    = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
-  'https://nagomi-wellness-spa.vercel.app',
-];
-
 const io = socketIO(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
+    origin:  "*",
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"]
   }
 });
 
@@ -165,18 +157,7 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS not allowed: ' + origin));
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
-
-// Handle preflight requests for ALL routes
+app.use(cors());
 app.use(express.json());
 app.set('socketio', io);
 
@@ -201,6 +182,11 @@ app.use('/api/payroll',       require('./routes/payroll'));
 
 app.get('/', (req, res) => {
   res.send('Nagomi Wellness Spa backend running');
+});
+
+// ── Health check — used by keep-alive ping ────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,46 +220,6 @@ io.on('connection', (socket) => {
   });
 });
 
-const Booking = require('./models/Booking');
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTO-ARCHIVE — runs daily at 2 AM
-// Moves bookings older than 2 years to archivedBookings collection
-// Keeps the active collection lean and fast without manual DB intervention
-// ─────────────────────────────────────────────────────────────────────────────
-
-const mongoose = require('mongoose');
-
-function scheduleArchive() {
-  const now        = new Date();
-  const next2AM    = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-  const msUntil2AM = next2AM - now;
-
-  console.log(`🗃️  Auto-archive scheduled — next run at 2:00 AM (in ${Math.round(msUntil2AM / 3600000)}h)`);
-
-  setTimeout(async () => {
-    try {
-      const cutoff = new Date();
-      cutoff.setFullYear(cutoff.getFullYear() - 2);
-
-      const old = await Booking.find({ date: { $lt: cutoff } }).lean();
-
-      if (old.length > 0) {
-        const db = mongoose.connection.db;
-        await db.collection('archivedBookings').insertMany(old);
-        await Booking.deleteMany({ date: { $lt: cutoff } });
-        console.log(`✅ Auto-archive: moved ${old.length} bookings older than ${cutoff.toDateString()} → archivedBookings`);
-      } else {
-        console.log(`🗃️  Auto-archive: no bookings older than 2 years found`);
-      }
-    } catch (err) {
-      console.error('❌ Auto-archive error:', err.message);
-    }
-
-    scheduleArchive(); // reschedule for next day
-  }, msUntil2AM);
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // START SERVER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -287,7 +233,21 @@ server.listen(PORT, () => {
 
   startSarimaService();
   setTimeout(() => pingSarimaHealth(), 5000);
-  scheduleArchive(); // ← auto-archive old bookings daily at 2 AM
+  scheduleArchive();
+
+  // ── Keep Render free tier awake ─────────────────────────────────────────────
+  // Render spins down after 15 min of inactivity — ping every 10 min to prevent it
+  if (process.env.NODE_ENV === 'production') {
+    const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://nagomi-backend.onrender.com';
+    setInterval(() => {
+      http.get(`${SELF_URL}/health`, (res) => {
+        console.log(`🏓 Keep-alive ping → ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.warn('⚠️  Keep-alive ping failed:', err.message);
+      });
+    }, 10 * 60 * 1000); // every 10 minutes
+    console.log(`🏓 Keep-alive enabled → pinging every 10 min`);
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

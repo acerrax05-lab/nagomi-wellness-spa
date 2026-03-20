@@ -169,7 +169,20 @@
     // Get all bookings (Admin only)
     router.get('/', auth, roles(['admin']), async (req, res) => {
       try {
-        let bookings = await Booking.find()
+        const { from, to } = req.query;
+        let query = {};
+        
+        if (from || to) {
+          query.date = {};
+          if (from) query.date.$gte = new Date(from);
+          if (to) {
+            const toDate = new Date(to);
+            toDate.setHours(23, 59, 59, 999);
+            query.date.$lte = toDate;
+          }
+        }
+
+        let bookings = await Booking.find(query)
           .populate('service', 'name price pricing durationMinutes allowedDurations')
           .populate('client', 'name email phone')
           .populate('therapist therapists', 'name email')
