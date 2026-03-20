@@ -435,7 +435,21 @@ function normalizeDate(date) {
   return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
 }
 
-  // TAB SWITCHING
+  // TAB SWITCHING — with cache to avoid reloading on every click
+  // Each tab only reloads if it hasn't been loaded yet, or if data is stale (>5 min)
+  const TAB_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  const tabLastLoaded = {};
+
+  function isTabStale(tabName) {
+    const last = tabLastLoaded[tabName];
+    if (!last) return true;
+    return (Date.now() - last) > TAB_CACHE_TTL;
+  }
+
+  function markTabLoaded(tabName) {
+    tabLastLoaded[tabName] = Date.now();
+  }
+
   document.querySelectorAll('.sidebar .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
@@ -446,27 +460,38 @@ function normalizeDate(date) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       const tabEl = document.getElementById(`${tab}-tab`);
       if (tabEl) tabEl.classList.add('active');
+
+      // Only reload if stale — prevents unnecessary re-fetching on tab switch
+      if (!isTabStale(tab)) {
+        console.log(`⚡ Tab "${tab}" cached — skipping reload`);
+        return;
+      }
       
       switch(tab) {
         case 'overview':
           loadOverviewData();
+          markTabLoaded('overview');
           break;
         case 'bookings':
           loadBookingsCalendar();
           loadPendingRequests();
+          markTabLoaded('bookings');
           break;
         case 'services':
           loadServices();
+          markTabLoaded('services');
           break;
         case 'therapists':
-          // ✅ NEW: Load everything when Therapists tab opens
           loadTherapistsWithAnalytics();
+          markTabLoaded('therapists');
           break;
         case 'grace-periods':
           loadGracePeriods();
+          markTabLoaded('grace-periods');
           break;
-        case 'reviews':  // ✅ ADD THIS CASE
+        case 'reviews':
           loadReviewsManagement();
+          markTabLoaded('reviews');
           break;
       }
     });
@@ -476,16 +501,15 @@ function normalizeDate(date) {
     try {
       console.log('📊 Loading therapists tab with analytics...');
       
-      // Load therapist cards for management
+      // Load therapist cards first (most important — show immediately)
       await loadTherapists();
-      
-      // Load real-time status dashboard
-      await loadTherapistPerformance();
 
-      await loadCommissionSettings(); 
-      
-      // Load income/commission data
-      await loadIncomeData();
+      // Load the rest in parallel — no need to wait for each one
+      await Promise.allSettled([
+        loadTherapistPerformance(),
+        loadCommissionSettings(),
+        loadIncomeData(),
+      ]);
       
       // Start auto-refresh for status (every 30 seconds)
       startStatusAutoRefresh();
@@ -850,12 +874,16 @@ function buildServicesChartForecast(labels, serviceCounts) {
       updateLastUpdatedTimestamp();
     }, 10000);
     
-    // Auto-refresh data every 5 minutes
+    // Auto-refresh data every 10 minutes (was 5 — reduces server load on free tier)
     setInterval(() => {
-      console.log('🔄 Auto-refreshing analytics data...');
-      loadOverviewData();
-      loadComprehensiveAnalytics();
-    }, 300000); // 5 minutes
+      // Only refresh if overview tab is active
+      const overviewTab = document.getElementById('overview-tab');
+      if (overviewTab && overviewTab.classList.contains('active')) {
+        console.log('🔄 Auto-refreshing analytics data...');
+        loadOverviewData();
+        loadComprehensiveAnalytics();
+      }
+    }, 600000); // 10 minutes
   }
 
   // Show forecast/analytics modal for each chart
@@ -6714,109 +6742,74 @@ async function confirmAssignTherapist() {
     document.getElementById('archiveTherapistModal').classList.add('active');
   }
 
-  let _archiveInProgress = false; // guard against double-clicks
-
   async function confirmArchiveTherapist() {
-    // ── Guard: prevent double-submit ──────────────────────────────────────────
-    if (_archiveInProgress) return;
-
     const reason = document.getElementById('archiveReason').value.trim();
     if (!reason) {
       showNotification('Please enter a reason for archiving.', 'error');
       return;
     }
 
-    // ── Disable button + show loading state ───────────────────────────────────
-    _archiveInProgress = true;
-    const confirmBtn = document.getElementById('confirmArchiveBtn');
-    const originalText = confirmBtn ? confirmBtn.textContent : '';
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.textContent = 'Archiving...';
-      confirmBtn.style.opacity = '0.6';
-      confirmBtn.style.cursor = 'not-allowed';
-    }
-
     try {
-      // 1. Fetch therapist details only (no more fetching ALL bookings)
+      // 1. Fetch therapist details
       const tRes = await fetch(`${apiBase}/therapists/${_archivePendingId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!tRes.ok) throw new Error('Could not load therapist details');
       const therapist = await tRes.json();
 
-      // 2. Use already-loaded bookings from memory instead of re-fetching all
-      const cachedBookings = allBookings || [];
-      const myBookings = cachedBookings.filter(b => {
-        const tid = b.therapist?._id || b.therapist;
-        const inArray = Array.isArray(b.therapists) && b.therapists.some(t => (t._id || t) === _archivePendingId);
-        return tid === _archivePendingId || inArray;
+      // 2. Fetch ALL bookings to compute lifetime stats
+      const bRes = await fetch(`${apiBase}/bookings`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const completed   = myBookings.filter(b => b.status === 'completed');
-      const cancelled   = myBookings.filter(b => b.status === 'cancelled');
-      const totalRev    = completed.reduce((s, b) => s + (b.price || 0), 0);
-      const commission  = Math.round(totalRev * ((commissionSettings?.rate || 60) / 100));
+      const allBookings = await bRes.json();
+
+      const myBookings = allBookings.filter(b =>
+        b.therapist && (b.therapist._id || b.therapist) === _archivePendingId
+      );
+      const completed  = myBookings.filter(b => b.status === 'completed');
+      const cancelled  = myBookings.filter(b => b.status === 'cancelled');
+      const totalRev   = completed.reduce((s, b) => s + (b.price || 0), 0);
+      const commission = Math.round(totalRev * (commissionSettings.rate / 100));
       const successRate = myBookings.length
         ? Math.round((completed.length / myBookings.length) * 100) : 0;
 
-      // 3. Check if already archived (prevent duplicate entries)
+      // 3. Save archive record to localStorage
       const archives = JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]');
-      const alreadyArchived = archives.some(a => a.id === _archivePendingId);
-      if (!alreadyArchived) {
-        archives.push({
-          id:            _archivePendingId,
-          name:          therapist.name  || _archivePendingName,
-          email:         therapist.email || '',
-          phone:         therapist.phone || '',
-          expertise:     therapist.expertise || [],
-          archiveReason: reason,
-          archiveDate:   new Date().toISOString(),
-          stats: {
-            totalBookings:     myBookings.length,
-            completedServices: completed.length,
-            cancelledBookings: cancelled.length,
-            totalRevenue:      totalRev,
-            commissionEarned:  commission,
-            successRate
-          }
-        });
-        localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
-      }
+      archives.push({
+        id:            _archivePendingId,
+        name:          therapist.name  || _archivePendingName,
+        email:         therapist.email || '',
+        phone:         therapist.phone || '',
+        expertise:     therapist.expertise || [],
+        archiveReason: reason,
+        archiveDate:   new Date().toISOString(),
+        stats: {
+          totalBookings:     myBookings.length,
+          completedServices: completed.length,
+          cancelledBookings: cancelled.length,
+          totalRevenue:      totalRev,
+          commissionEarned:  commission,
+          successRate
+        }
+      });
+      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
 
-      // 4. Mark therapist inactive in DB
-      const updateRes = await fetch(`${apiBase}/auth/users/${_archivePendingId}`, {
+      // 4. Mark therapist inactive in DB (keeps booking records intact)
+      await fetch(`${apiBase}/auth/users/${_archivePendingId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          isActive: false,
-          name:  therapist.name,
-          email: therapist.email,
-          phone: therapist.phone,
-          role:  'therapist'
-        })
+        body: JSON.stringify({ isActive: false, name: therapist.name, email: therapist.email, phone: therapist.phone, role: 'therapist' })
       });
 
-      if (!updateRes.ok) throw new Error('Failed to update therapist status in database');
-
       document.getElementById('archiveTherapistModal').classList.remove('active');
-      showNotification(`${_archivePendingName} has been archived successfully.`, 'success');
+      showNotification(`${_archivePendingName} has been archived.`, 'success');
       loadTherapists();
 
     } catch (err) {
       console.error(err);
-      showNotification(`Failed to archive therapist: ${err.message}`, 'error');
-    } finally {
-      // ── Always re-enable button ───────────────────────────────────────────
-      _archiveInProgress = false;
-      if (confirmBtn) {
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = originalText;
-        confirmBtn.style.opacity = '1';
-        confirmBtn.style.cursor = 'pointer';
-      }
+      showNotification('Failed to archive therapist', 'error');
     }
   }
 
@@ -6902,42 +6895,12 @@ async function confirmAssignTherapist() {
     document.getElementById('archivedTherapistsModal').classList.remove('active');
   }
 
-  async function permanentlyDeleteArchive(index) {
-    if (!confirm('Permanently delete this therapist from the database? This cannot be undone.')) return;
-
+  function permanentlyDeleteArchive(index) {
+    if (!confirm('Permanently remove this archive record? This cannot be undone.')) return;
     const archives = JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]');
-    const t = archives[index];
-    if (!t || !t.id) {
-      // No DB id — just remove from localStorage
-      archives.splice(index, 1);
-      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
-      openArchivedTherapists();
-      return;
-    }
-
-    try {
-      const res = await fetch(`${apiBase}/auth/users/${t.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.msg || `Server error ${res.status}`);
-      }
-
-      // Remove from localStorage too
-      archives.splice(index, 1);
-      localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
-
-      showNotification(`${t.name} has been permanently deleted.`, 'success');
-      openArchivedTherapists();
-      try { await loadTherapists(); } catch(e) {}
-
-    } catch (err) {
-      console.error('Delete error:', err);
-      showNotification(`Failed to delete: ${err.message}`, 'error');
-    }
+    archives.splice(index, 1);
+    localStorage.setItem('nagomi_archivedTherapists', JSON.stringify(archives));
+    openArchivedTherapists(); // re-render
   }
 
   async function unarchiveTherapist(index) {
@@ -8048,30 +8011,34 @@ function updateCommissionDisplay(rate) {
     console.log('🔄 Starting auto-refresh for therapist status');
     
     window.therapistStatusInterval = setInterval(() => {
-      // ✅ CHANGED: Check if therapists tab is active (not therapist-analytics)
+      // Only refresh if therapists tab is visible
       const therapistsTab = document.getElementById('therapists-tab');
       if (therapistsTab && therapistsTab.classList.contains('active')) {
         console.log('🔄 Auto-refreshing therapist status...');
         loadTherapistPerformance();
       }
-    }, 30000); // Every 30 seconds
+    }, 120000); // Every 2 minutes (was 30s — reduces server load)
   }
 
-  // Load Income Data
+  // Load Income Data — uses cached allBookings to avoid re-fetching
   async function loadIncomeData() {
     try {
-      const now  = new Date();
-      const from = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
-      const to   = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
-      const res  = await fetch(`${apiBase}/bookings?from=${from}&to=${to}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch bookings');
+      // Use already-loaded bookings from memory if available
+      let incomeBookings = allBookings && allBookings.length > 0 ? allBookings : null;
+
+      if (!incomeBookings) {
+        const now  = new Date();
+        const from = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+        const to   = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
+        const res  = await fetch(`${apiBase}/bookings?from=${from}&to=${to}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch bookings');
+        incomeBookings = await res.json();
       }
-      
-      const allBookings = await res.json();
+
+      // Shadow the local var name used below in this function
+      const allBookings = incomeBookings;
       
       // Filter by period
       const filteredBookings = filterByPeriod(allBookings, currentIncomePeriod);

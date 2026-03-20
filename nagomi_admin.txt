@@ -1,0 +1,3 @@
+nagomi_admin
+4Nue2r4eJP2TNw3D
+mongodb+srv://nagomi_admin:4Nue2r4eJP2TNw3D@cluster0.d6g3q28.mongodb.net/spa_db
