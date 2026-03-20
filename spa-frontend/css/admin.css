@@ -368,19 +368,20 @@ body {
 .bookings-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
-  table-layout: fixed; /* locks column widths */
+  min-width: 1000px;
+  table-layout: fixed;
 }
 
 .bookings-table th,
 .bookings-table td {
-  padding: 0.75rem 0.6rem;
+  padding: 0.75rem 0.5rem;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
   vertical-align: top;
   overflow: hidden;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-size: 0.88rem;
 }
 
 .bookings-table th {
@@ -391,35 +392,45 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
+  font-size: 0.82rem;
 }
 
 .status-badge {
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-transform: capitalize;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .status-pending { background: #fff3e0; color: #ff9800; }
 .status-confirmed { background: #e3f2fd; color: #2196f3; }
 .status-completed { background: #e8f5e9; color: #4caf50; }
 .status-cancelled { background: #ffebee; color: #f44336; }
+.status-pending_cancellation { background: #ffebee; color: #dc3545; }
+.status-pending_reschedule { background: #f3e5f5; color: #9c27b0; }
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
 }
 
 .btn-confirm,
 .btn-cancel-booking {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.7rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  transition: 0.3s;
+  transition: 0.2s;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
 }
 
 .btn-confirm {
@@ -427,10 +438,14 @@ body {
   color: white;
 }
 
+.btn-confirm:hover { opacity: 0.85; }
+
 .btn-cancel-booking {
   background: var(--danger);
   color: white;
 }
+
+.btn-cancel-booking:hover { opacity: 0.85; }
 
 /* Services List */
 .services-list {
