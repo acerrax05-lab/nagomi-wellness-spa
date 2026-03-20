@@ -12,6 +12,13 @@ const reviewsRouter = require('./routes/reviews');
 const app    = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'https://nagomi-wellness-spa.vercel.app',
+];
+
 const io = socketIO(server, {
   cors: {
     origin: allowedOrigins,
@@ -157,13 +164,6 @@ require('./models/Settings');
 // ─────────────────────────────────────────────────────────────────────────────
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
-
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
-  'https://nagomi-wellness-spa.vercel.app',
-];
 
 app.use(cors({
   origin: function (origin, callback) {
