@@ -4291,7 +4291,7 @@ function renderPendingRequestCard(booking) {
         : 'Unknown time');
 
   const bookingDate = new Date(booking.date).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+    month: 'short', day: 'numeric', year: 'numeric'
   });
 
   return `
@@ -4818,7 +4818,7 @@ function formatBookingDate(b) {
   const bookingDateStr = b.date
     ? new Date(b.date).toLocaleDateString('en-US', {
         timeZone: 'Asia/Manila',
-        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+        month: 'short', day: 'numeric', year: 'numeric'
       })
     : '—';
 
@@ -4847,7 +4847,7 @@ function formatBookingDate(b) {
           </span>
         </div>
       </td>
-      <td style="white-space:nowrap;">${bookingDateStr}</td>
+      <td style="white-space:normal;word-wrap:break-word;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>

@@ -14,8 +14,9 @@ const server = http.createServer(app);
 
 const io = socketIO(server, {
   cors: {
-    origin:  "*",
-    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"]
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
   }
 });
 
@@ -157,15 +158,27 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'https://nagomi-wellness-spa.vercel.app',
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'https://nagomi-wellness-spa.vercel.app',  // ← add this
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS not allowed: ' + origin));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
+
+// Handle preflight requests for ALL routes
+app.options('*', cors());
 app.use(express.json());
 app.set('socketio', io);
 
