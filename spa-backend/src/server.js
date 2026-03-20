@@ -189,11 +189,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── Health check — used by keep-alive ping ────────────────────────────────────
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
 // ERROR HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -284,7 +279,7 @@ server.listen(PORT, () => {
       }).on('error', (err) => {
         console.warn('⚠️  Keep-alive ping failed:', err.message);
       });
-    }, 10 * 60 * 1000); // every 10 minutes
+    }, 5 * 60 * 1000); // every 5 minutes — prevents Render free tier sleep
     console.log(`🏓 Keep-alive enabled → pinging every 10 min`);
   }
 });
