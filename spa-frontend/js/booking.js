@@ -1,9 +1,8 @@
 const API_URL        = 'https://nagomi-backend.onrender.com/api';
 
-// Wrap fetch to always include ngrok-skip-browser-warning (safe to include in production too)
+// Standard fetch wrapper
 const apiFetch = (url, options = {}) => {
   options.headers = {
-    'ngrok-skip-browser-warning': 'true',
     ...(options.headers || {})
   };
   return fetch(url, options);
@@ -767,7 +766,7 @@ async function checkAvailability() {
   try {
     const res = await apiFetch(`${API_URL}/bookings/check-availability`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         service: selectedService.name,
         date: dateInputEl.value,
@@ -1526,7 +1525,7 @@ function setupConfirmBtn() {
         method:  'POST',
         headers: {
           'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+
         },
         body:    JSON.stringify(bookingData),
       });
