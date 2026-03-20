@@ -177,7 +177,6 @@ app.use(cors({
 }));
 
 // Handle preflight requests for ALL routes
-app.options('/(.*)', cors());
 app.use(express.json());
 app.set('socketio', io);
 
