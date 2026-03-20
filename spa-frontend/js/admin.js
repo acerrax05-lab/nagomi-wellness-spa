@@ -7186,22 +7186,47 @@ async function confirmAssignTherapist() {
       const period = currentIncomePeriod || 'today';
       console.log(`📊 Loading therapist performance for period: ${period}`);
       
-      const res = await fetch(`${apiBase}/analytics/therapist-performance?period=${period}`, {
+      // Use therapist-status endpoint (timezone-fixed) for live status
+      const statusRes = await fetch(`${apiBase}/bookings/therapist-status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      if (!res.ok) {
-        console.error('Failed to load therapist performance:', res.status);
+
+      if (!statusRes.ok) {
+        console.error('Failed to load therapist status:', statusRes.status);
         return;
       }
-      
-      const analytics = await res.json();
-      console.log('✅ Loaded analytics for', analytics.length, 'therapists');
-      displayTherapistPerformance(analytics);
+
+      const statusData = await statusRes.json();
+
+      // Also fetch analytics for booking stats
+      const analyticsRes = await fetch(`${apiBase}/analytics/therapist-performance?period=${period}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      let analytics = [];
+      if (analyticsRes.ok) {
+        analytics = await analyticsRes.json();
+      }
+
+      // Merge: use status from therapist-status, stats from analytics
+      const merged = statusData.map(t => {
+        const analytic = analytics.find(a => a.name?.toLowerCase() === t.name?.toLowerCase()) || {};
+        return {
+          ...t,
+          totalBookings:     analytic.totalBookings     || 0,
+          completedBookings: analytic.completedBookings || 0,
+          totalRevenue:      analytic.totalRevenue      || 0,
+          successRate:       analytic.successRate       || 0,
+          expertise:         analytic.expertise         || t.expertise || [],
+          workingHours:      analytic.workingHours      || t.workingHours || null,
+        };
+      });
+
+      console.log('✅ Loaded', merged.length, 'therapists with live status');
+      displayTherapistPerformance(merged);
       
     } catch (err) {
       console.error('❌ Error loading therapist performance:', err);
-      // Show error in the grid
       const grid = document.getElementById('therapistStatusGrid');
       if (grid) {
         grid.innerHTML = `
