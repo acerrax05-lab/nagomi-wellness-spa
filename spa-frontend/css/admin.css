@@ -369,19 +369,28 @@ body {
   width: 100%;
   border-collapse: collapse;
   min-width: 900px;
+  table-layout: fixed; /* locks column widths */
 }
 
 .bookings-table th,
 .bookings-table td {
-  padding: 1rem;
+  padding: 0.75rem 0.6rem;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
+  vertical-align: top;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .bookings-table th {
   background: var(--cream);
   font-weight: 600;
   color: var(--primary-brown);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .status-badge {
@@ -2888,6 +2897,7 @@ input:checked + .toggle-slider:before {
 }
 
 .stat-insight.warning {
+  background: #fff3e0;
   color: #ff9800;
 }
 
@@ -3100,12 +3110,13 @@ input:checked + .toggle-slider:before {
    ========================================== */
 
 #bookingsTable tbody tr[data-booking-id] {
-  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 #bookingsTable tbody tr[data-booking-id]:hover {
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #fdf8f5;
+  box-shadow: inset 4px 0 0 var(--primary-brown);
+  /* removed translateX — it breaks table column alignment */
 }
 
 /* Clickable row styling */
@@ -3149,7 +3160,7 @@ input:checked + .toggle-slider:before {
    ========================================== */
 
 #bookingsTable tbody tr td:first-child {
-  min-width: 250px;
+  /* removed min-width: 250px — conflicts with table-layout: fixed */
 }
 
 .client-info-cell {
@@ -3285,7 +3296,7 @@ input:checked + .toggle-slider:before {
 
 @media (max-width: 768px) {
   #bookingsTable tbody tr td:first-child {
-    min-width: 200px;
+    /* let table-layout: fixed control width on mobile too */
   }
   
   .booking-search-container input {
@@ -3657,143 +3668,4 @@ input:checked + .toggle-slider:before {
 @media (max-width: 480px) {
   .archived-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .archived-card-header { flex-wrap: wrap; }
-}
-
-/* ============================================================
-   ADMIN CALENDAR — MOBILE RESPONSIVE FIXES
-   ============================================================ */
-
-/* Tablet (≤768px) — compact calendar header */
-@media (max-width: 768px) {
-  .calendar-section {
-    padding: 1rem;
-  }
-
-  .calendar-header h3 {
-    font-size: 1rem;
-  }
-
-  .calendar-header button {
-    padding: 0.4rem 0.75rem;
-    font-size: 1rem;
-  }
-
-  #selectedDateTitle {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
-  }
-}
-
-/* Mobile portrait (≤480px) — full calendar shrink */
-@media (max-width: 480px) {
-  .calendar-section {
-    padding: 0.6rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .calendar-header {
-    margin-bottom: 0.6rem;
-  }
-
-  .calendar-header h3 {
-    font-size: 0.9rem;
-  }
-
-  .calendar-header button {
-    padding: 0.3rem 0.55rem;
-    font-size: 0.9rem;
-  }
-
-  .calendar-grid {
-    gap: 0.15rem;
-  }
-
-  /* Day-of-week header row labels: Sun Mon Tue … */
-  .calendar-grid > div:not(.calendar-day) {
-    padding: 4px 2px !important;
-    font-size: 0.65rem !important;
-    font-weight: 700 !important;
-  }
-
-  .calendar-day {
-    min-height: 38px;
-    padding: 0.15rem 0.1rem;
-    font-size: 0.72rem;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-  }
-
-  .calendar-day .day-number {
-    font-size: 0.75rem;
-    line-height: 1;
-  }
-
-  .closure-badge {
-    font-size: 0.48rem;
-    margin-top: 1px;
-    white-space: normal;
-    word-break: break-word;
-    text-align: center;
-    line-height: 1.1;
-  }
-
-  /* Bookings table section */
-  .bookings-table-section {
-    padding: 0.75rem 0.5rem;
-  }
-
-  #selectedDateTitle {
-    font-size: 0.88rem;
-    word-break: break-word;
-    margin-bottom: 0.75rem;
-  }
-}
-
-/* Very small screens (≤380px) — maximum compression */
-@media (max-width: 380px) {
-  .calendar-section {
-    padding: 0.4rem;
-  }
-
-  .calendar-header h3 {
-    font-size: 0.8rem;
-  }
-
-  .calendar-header button {
-    padding: 0.25rem 0.45rem;
-    font-size: 0.8rem;
-  }
-
-  .calendar-grid {
-    gap: 0.1rem;
-  }
-
-  .calendar-grid > div:not(.calendar-day) {
-    font-size: 0.58rem !important;
-    padding: 3px 1px !important;
-  }
-
-  .calendar-day {
-    min-height: 32px;
-    padding: 0.1rem;
-  }
-
-  .calendar-day .day-number {
-    font-size: 0.68rem;
-  }
-
-  /* Hide badge text at very small sizes — color coding still shows status */
-  .closure-badge {
-    display: none;
-  }
-
-  #selectedDateTitle {
-    font-size: 0.8rem;
-  }
-
-  .bookings-table-section {
-    padding: 0.5rem 0.25rem;
-  }
 }
