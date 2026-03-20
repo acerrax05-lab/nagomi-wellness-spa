@@ -211,7 +211,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   transition: 0.3s;
   position: relative;
@@ -245,6 +245,13 @@ body {
   font-size: 2.5rem;
   min-width: 60px;
   text-align: center;
+}
+
+.stat-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-details h3 {
@@ -2873,12 +2880,14 @@ input:checked + .toggle-slider:before {
 }
 
 .stat-insight {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
+  width: 100%;
+  box-sizing: border-box;
   border-left: 3px solid transparent;
 }
 
