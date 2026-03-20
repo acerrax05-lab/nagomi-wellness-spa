@@ -437,8 +437,10 @@ function normalizeDate(date) {
 
   // TAB SWITCHING — with cache to avoid reloading on every click
   // Each tab only reloads if it hasn't been loaded yet, or if data is stale (>5 min)
-  const TAB_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  const tabLastLoaded = {};
+  const TAB_CACHE_TTL       = 5 * 60 * 1000;  // 5 minutes for tabs
+  const ANALYTICS_CACHE_TTL = 3 * 60 * 1000;  // 3 minutes for analytics
+  const tabLastLoaded  = {};
+  const analyticsCache = {}; // keyed by period
 
   function isTabStale(tabName) {
     const last = tabLastLoaded[tabName];
@@ -446,8 +448,12 @@ function normalizeDate(date) {
     return (Date.now() - last) > TAB_CACHE_TTL;
   }
 
-  function markTabLoaded(tabName) {
-    tabLastLoaded[tabName] = Date.now();
+  function markTabLoaded(tabName) { tabLastLoaded[tabName] = Date.now(); }
+
+  function isAnalyticsCacheValid(period) {
+    const c = analyticsCache[period];
+    if (!c) return false;
+    return (Date.now() - c.timestamp) < ANALYTICS_CACHE_TTL;
   }
 
   document.querySelectorAll('.sidebar .tab-btn').forEach(btn => {
@@ -533,6 +539,9 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
     currentPeriod = btn.dataset.period;
     console.log('🔄 Period changed to:', currentPeriod);
+
+    // Invalidate overview cache so it reloads with new period
+    tabLastLoaded['overview'] = null;
 
     loadOverviewData();
     updateChartTitles();
@@ -641,27 +650,30 @@ if (currentPeriod === 'month' || currentPeriod === 'year') {
   //  Load comprehensive analytics
   async function loadComprehensiveAnalytics() {
     try {
+      // Return cached data if still valid
+      if (isAnalyticsCacheValid(currentPeriod)) {
+        console.log(`⚡ Analytics cache hit for period: ${currentPeriod}`);
+        comprehensiveAnalytics = analyticsCache[currentPeriod].data;
+        return comprehensiveAnalytics;
+      }
+
       console.log('📊 Loading comprehensive analytics...');
       
       const res = await fetch(`${apiBase}/analytics/comprehensive?period=${currentPeriod}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      if (!res.ok) {
-        throw new Error('Failed to load comprehensive analytics');
-      }
+      if (!res.ok) throw new Error('Failed to load comprehensive analytics');
       
       comprehensiveAnalytics = await res.json();
       lastDataUpdate = new Date(comprehensiveAnalytics.lastUpdated);
+
+      // Cache the result
+      analyticsCache[currentPeriod] = { data: comprehensiveAnalytics, timestamp: Date.now() };
       
-      console.log('✅ Comprehensive analytics loaded:', comprehensiveAnalytics);
-      
-      // Update the "last updated" timestamp display
+      console.log('✅ Comprehensive analytics loaded');
       updateLastUpdatedTimestamp();
-      
-      // Start auto-refresh timer
       startDataRefreshTimer();
-      
       return comprehensiveAnalytics;
       
     } catch (err) {
@@ -2093,34 +2105,41 @@ const percentChange = comparisonCount > 0
   async function loadEnhancedPredictions() {
     try {
       console.log('📈 Loading enhanced predictions for period:', currentPeriod);
+
+      // Check predictions cache
+      const cacheKey = `predictions_${currentPeriod}`;
+      const cached = analyticsCache[cacheKey];
+      if (cached && (Date.now() - cached.timestamp) < ANALYTICS_CACHE_TTL) {
+        console.log(`⚡ Predictions cache hit for: ${currentPeriod}`);
+        const data = cached.data;
+        predictionsData = data.predictions || [];
+        updatePredictionsStatCard(data);
+        if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
+          createCharts(filteredBookingsData || currentBookingsData);
+        }
+        if (forecastEnabled) displayEnhancedPredictionsChart(data);
+        return data;
+      }
       
       const res = await fetch(`${apiBase}/analytics/enhanced-predictions?period=${currentPeriod}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      if (!res.ok) {
-        console.error('Failed to load enhanced predictions');
-        return null;
-      }
+      if (!res.ok) { console.error('Failed to load enhanced predictions'); return null; }
       
       const data = await res.json();
-      console.log('✅ Loaded enhanced predictions:', data);
+      console.log('✅ Loaded enhanced predictions');
+
+      // Cache it
+      analyticsCache[cacheKey] = { data, timestamp: Date.now() };
       
       predictionsData = data.predictions || [];
+      updatePredictionsStatCard(data);
 
-// Update stat card
-updatePredictionsStatCard(data);
-
-// Re-render charts so forecasts appear even if charts loaded before predictions
-if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
-    createCharts(filteredBookingsData || currentBookingsData);
-}
-      
-      // Display predictions chart
-      if (forecastEnabled) {
-        displayEnhancedPredictionsChart(data);
+      if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
+        createCharts(filteredBookingsData || currentBookingsData);
       }
-      
+      if (forecastEnabled) displayEnhancedPredictionsChart(data);
       return data;
       
     } catch (err) {
@@ -2665,9 +2684,11 @@ if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
         updateAllStatCardsWithInsights()
           .catch(err => console.error('Stat cards error:', err));
       } else {
-        // Month/Year: full analytics + predictions
-        loadComprehensiveAnalytics()
-          .then(() => loadEnhancedPredictions())
+        // Month/Year: run analytics + predictions IN PARALLEL (not sequential)
+        Promise.all([
+          loadComprehensiveAnalytics(),
+          loadEnhancedPredictions()
+        ])
           .then(() => updateAllStatCardsWithInsights())
           .catch(err => console.error('Analytics load error:', err));
       }
