@@ -8023,10 +8023,11 @@ function updateCommissionDisplay(rate) {
   // Load Income Data — uses cached allBookings to avoid re-fetching
   async function loadIncomeData() {
     try {
-      // Use already-loaded bookings from memory if available
-      let incomeBookings = allBookings && allBookings.length > 0 ? allBookings : null;
-
-      if (!incomeBookings) {
+      // Use already-loaded bookings from memory if available, otherwise fetch
+      let incomeBookings;
+      if (allBookings && allBookings.length > 0) {
+        incomeBookings = allBookings;
+      } else {
         const now  = new Date();
         const from = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
         const to   = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
@@ -8037,18 +8038,15 @@ function updateCommissionDisplay(rate) {
         incomeBookings = await res.json();
       }
 
-      // Shadow the local var name used below in this function
-      const allBookings = incomeBookings;
-      
       // Filter by period
-      const filteredBookings = filterByPeriod(allBookings, currentIncomePeriod);
-      
+      const filteredBookings = filterByPeriod(incomeBookings, currentIncomePeriod);
+
       // Calculate income by therapist
       const incomeByTherapist = calculateTherapistIncome(filteredBookings);
-      
+
       // Display summary cards
       displayIncomeSummary(incomeByTherapist);
-      
+
       // Display detailed table
       displayIncomeTable(incomeByTherapist);
       
