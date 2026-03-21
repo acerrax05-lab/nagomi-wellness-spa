@@ -12,10 +12,18 @@ const reviewsRouter = require('./routes/reviews');
 const app    = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'https://nagomi-wellness-spa.vercel.app',
+];
+
 const io = socketIO(server, {
   cors: {
-    origin:  "*",
-    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"]
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
   }
 });
 
@@ -157,39 +165,30 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ✅ CORS — allows Vercel frontend + local dev + all methods including PATCH
 const corsOptions = {
   origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    const allowed = [
-      'https://nagomi-wellness-spa.vercel.app',
-      'http://localhost:3000',
-      'http://127.0.0.1:5500',
-      'http://localhost:5500',
-    ];
-    if (allowed.includes(origin)) return callback(null, true);
-    // Also allow any vercel preview deployments
-    if (origin.endsWith('.vercel.app')) return callback(null, true);
-    return callback(null, true); // allow all for now — tighten after go-live
+    if (!origin) return callback(null, true); // allow non-browser requests
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (origin.endsWith('.vercel.app')) return callback(null, true); // vercel previews
+    return callback(null, true); // allow all for now — tighten after stable
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   credentials: true,
-  optionsSuccessStatus: 200, // some browsers send OPTIONS preflight
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-// Handle preflight OPTIONS for ALL routes explicitly
+// ✅ Handle OPTIONS preflight for ALL routes (required for PATCH/DELETE from Vercel)
 app.options('/(.*)', cors(corsOptions));
 
 app.use(express.json());
 app.set('socketio', io);
 
 // ── Serve spa-frontend static files ───────────────────────────────────────────
-// This is what makes uploaded service images reachable at /img/services/<file>
-// Path: spa-backend/src/server.js → ../../spa-frontend → spa-frontend/
-app.use(express.static(path.join(__dirname, '../../spa-frontend')));   // ← ADDED
+app.use(express.static(path.join(__dirname, '../../spa-frontend')));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ROUTES
@@ -209,7 +208,7 @@ app.get('/', (req, res) => {
   res.send('Nagomi Wellness Spa backend running');
 });
 
-// ── Health check — used by keep-alive ping ────────────────────────────────────
+// ✅ Health check — used by keep-alive ping
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -245,16 +244,16 @@ io.on('connection', (socket) => {
   });
 });
 
-const Booking = require('./models/Booking');
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-ARCHIVE — runs daily at 2 AM
+// ─────────────────────────────────────────────────────────────────────────────
+
+const Booking  = require('./models/Booking');
 const mongoose = require('mongoose');
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTO-ARCHIVE — runs daily at 2 AM PH time
-// Moves bookings older than 2 years to archivedBookings collection
-// ─────────────────────────────────────────────────────────────────────────────
 function scheduleArchive() {
-  const now      = new Date();
-  const next2AM  = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
+  const now        = new Date();
+  const next2AM    = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
   const msUntil2AM = next2AM - now;
 
   console.log(`🗃️  Auto-archive scheduled — next run in ${Math.round(msUntil2AM / 3600000)}h`);
@@ -275,7 +274,7 @@ function scheduleArchive() {
     } catch (err) {
       console.error('❌ Auto-archive error:', err.message);
     }
-    scheduleArchive(); // reschedule for next day
+    scheduleArchive();
   }, msUntil2AM);
 }
 
@@ -294,8 +293,7 @@ server.listen(PORT, () => {
   setTimeout(() => pingSarimaHealth(), 5000);
   scheduleArchive();
 
-  // ── Keep Render free tier awake ─────────────────────────────────────────────
-  // Render spins down after 15 min of inactivity — ping every 10 min to prevent it
+  // ✅ Keep Render free tier awake — ping every 5 min to prevent sleep
   if (process.env.NODE_ENV === 'production') {
     const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://nagomi-backend.onrender.com';
     setInterval(() => {
@@ -304,8 +302,8 @@ server.listen(PORT, () => {
       }).on('error', (err) => {
         console.warn('⚠️  Keep-alive ping failed:', err.message);
       });
-    }, 5 * 60 * 1000); // every 5 minutes — prevents Render free tier sleep
-    console.log(`🏓 Keep-alive enabled → pinging every 10 min`);
+    }, 5 * 60 * 1000);
+    console.log(`🏓 Keep-alive enabled → pinging every 5 min`);
   }
 });
 
