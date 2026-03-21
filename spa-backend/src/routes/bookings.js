@@ -459,6 +459,8 @@ try {
           minutes,
           therapists: selectedTherapists,
           numberOfClients,
+          femaleClients,
+          maleClients,
           date,
           time,
           endTime,
