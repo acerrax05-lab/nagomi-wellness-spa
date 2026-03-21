@@ -770,7 +770,7 @@ async function checkAvailability() {
   try {
     const res = await apiFetch(`${API_URL}/bookings/check-availability`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         service: selectedService.name,
         date: dateInputEl.value,
@@ -1527,10 +1527,7 @@ function setupConfirmBtn() {
     try {
       const response = await apiFetch(`${API_URL}/bookings`, {
         method:  'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(bookingData),
       });
       const data = await response.json();
