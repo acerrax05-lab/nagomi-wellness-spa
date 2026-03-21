@@ -157,7 +157,32 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use(cors());
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    const allowed = [
+      'https://nagomi-wellness-spa.vercel.app',
+      'http://localhost:3000',
+      'http://127.0.0.1:5500',
+      'http://localhost:5500',
+    ];
+    if (allowed.includes(origin)) return callback(null, true);
+    // Also allow any vercel preview deployments
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    return callback(null, true); // allow all for now — tighten after go-live
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  credentials: true,
+  optionsSuccessStatus: 200, // some browsers send OPTIONS preflight
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight OPTIONS for ALL routes explicitly
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.set('socketio', io);
 
