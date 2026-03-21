@@ -53,7 +53,8 @@
   <header>
     <nav class="navbar" id="navbar">
       <div style="display:flex;flex-direction:column;gap:0;">
-        <h1 class="logo">zentraX | Nagomi Wellness Spa</h1>
+        <h1 class="logo">Nagomi Wellness Spa</h1>
+        <div style="font-size:0.65rem;opacity:0.5;letter-spacing:1px;text-transform:uppercase;margin-top:-4px;">zentraX</div>
       </div>
       <div class="hamburger" id="hamburger">
         <span></span><span></span><span></span>
@@ -61,6 +62,7 @@
       <ul class="nav-links" id="navLinks">
         <li><a href="index.html">Home</a></li>
         <li><a href="manage-booking.html" class="staff-login">Manage Booking</a></li>
+        <li><a href="login.html" style="color:#f7c6a5;font-size:0.85rem;opacity:0.8;">Staff</a></li>
       </ul>
     </nav>
   </header>
@@ -334,6 +336,19 @@
             </label>
           </div>
         </div>
+
+        <!-- Arrival Warning Notice -->
+        <div style="margin-top:16px;padding:16px 20px;background:#fff3e0;border-radius:10px;border-left:5px solid #ff6f00;display:flex;align-items:flex-start;gap:14px;">
+          <span style="font-size:1.6rem;flex-shrink:0;">⏰</span>
+          <div>
+            <strong style="color:#e65100;font-size:0.95rem;display:block;margin-bottom:4px;">Arrival Reminder</strong>
+            <p style="color:#bf360c;font-size:0.88rem;margin:0;line-height:1.6;">
+              Please arrive <strong>at least 5–10 minutes before</strong> your scheduled time.
+              Clients who have not arrived within <strong>15 minutes</strong> of their appointment time
+              may have their session <strong>automatically cancelled</strong> to accommodate other guests.
+            </p>
+          </div>
+        </div>
       </div>
       <div class="summary-actions" style="padding:20px;border-top:2px solid #e0e0e0;background:white;flex-shrink:0;">
         <button type="button" id="backToEdit" class="btn-back">← Back to Edit</button>
@@ -446,5 +461,10 @@
   <script src="js/booking-fix.js"></script>
   <script src="js/booking-autoselect.js"></script>
   <script src="js/enhanced-features.js"></script>
+
+  <footer style="text-align:center;padding:1.5rem;background:#3b1f10;color:rgba(255,255,255,0.6);font-size:0.85rem;margin-top:2rem;">
+    <p>© 2026 Nagomi Wellness Spa | All Rights Reserved</p>
+    <p style="font-size:0.75rem;opacity:0.6;margin-top:4px;">Powered by <strong>zentraX</strong></p>
+  </footer>
 </body>
 </html>

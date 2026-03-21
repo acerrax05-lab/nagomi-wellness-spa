@@ -219,9 +219,15 @@ function renderBookingCard(booking, canModify) {
 
       ${canModify ? `
         <div class="booking-actions">
-          <button class="btn-action btn-reschedule" onclick="openRescheduleModal('${booking._id}')">
-            📅 Reschedule
-          </button>
+          ${!booking.rescheduledFrom?.date ? `
+            <button class="btn-action btn-reschedule" onclick="openRescheduleModal('${booking._id}')">
+              📅 Reschedule
+            </button>
+          ` : `
+            <div style="padding:10px;background:#f3e5f5;border-radius:8px;text-align:center;color:#6a1b9a;font-size:0.88rem;border:1px solid #ce93d8;">
+              🔒 Reschedule limit reached — only 1 reschedule is allowed per booking
+            </div>
+          `}
           <button class="btn-action btn-cancel" onclick="openCancelModal('${booking._id}')">
             ❌ Request Cancellation
           </button>
@@ -241,6 +247,13 @@ function renderBookingCard(booking, canModify) {
 function openRescheduleModal(bookingId) {
   selectedBooking = currentBookings.find(b => b._id === bookingId);
   if (!selectedBooking) return;
+
+  // Block if already rescheduled once
+  if (selectedBooking.rescheduledFrom?.date) {
+    showNotification('❌ You have already rescheduled this booking once. Only 1 reschedule is allowed.', 'error');
+    return;
+  }
+
   document.getElementById('rescheduleModal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
