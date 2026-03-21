@@ -1,9 +1,12 @@
 const API_URL        = 'https://nagomi-backend.onrender.com/api';
 
-// Wrap fetch to always include ngrok-skip-browser-warning (safe to include in production too)
+// Only add ngrok header when running locally via ngrok — not needed in production
+const isNgrok = window.location.hostname.endsWith('.ngrok-free.app') ||
+                window.location.hostname.endsWith('.ngrok.io');
+
 const apiFetch = (url, options = {}) => {
   options.headers = {
-    'ngrok-skip-browser-warning': 'true',
+    ...(isNgrok ? { 'ngrok-skip-browser-warning': 'true' } : {}),
     ...(options.headers || {})
   };
   return fetch(url, options);
