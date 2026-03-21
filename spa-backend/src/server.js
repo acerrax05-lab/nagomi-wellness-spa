@@ -12,18 +12,10 @@ const reviewsRouter = require('./routes/reviews');
 const app    = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
-  'https://nagomi-wellness-spa.vercel.app',
-];
-
 const io = socketIO(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
+    origin:  "*",
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"]
   }
 });
 
@@ -165,7 +157,7 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ✅ CORS — allows Vercel frontend + local dev + all methods including PATCH
+// ✅ CORS — allows Vercel + local dev + all methods including PATCH/DELETE
 const corsOptions = {
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
@@ -181,7 +173,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ Handle OPTIONS preflight manually — works with all Express/path-to-regexp versions
+// ✅ Handle OPTIONS preflight — required for PATCH/DELETE from Vercel
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     const origin = req.headers.origin;
@@ -189,7 +181,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '86400'); // cache preflight for 24h
+    res.setHeader('Access-Control-Max-Age', '86400');
     return res.sendStatus(200);
   }
   next();
@@ -199,7 +191,9 @@ app.use(express.json());
 app.set('socketio', io);
 
 // ── Serve spa-frontend static files ───────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../../spa-frontend')));
+// This is what makes uploaded service images reachable at /img/services/<file>
+// Path: spa-backend/src/server.js → ../../spa-frontend → spa-frontend/
+app.use(express.static(path.join(__dirname, '../../spa-frontend')));   // ← ADDED
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ROUTES
@@ -256,7 +250,7 @@ io.on('connection', (socket) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTO-ARCHIVE — runs daily at 2 AM
+// START SERVER
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Booking  = require('./models/Booking');
@@ -266,9 +260,7 @@ function scheduleArchive() {
   const now        = new Date();
   const next2AM    = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
   const msUntil2AM = next2AM - now;
-
   console.log(`🗃️  Auto-archive scheduled — next run in ${Math.round(msUntil2AM / 3600000)}h`);
-
   setTimeout(async () => {
     try {
       const cutoff = new Date();
@@ -280,18 +272,12 @@ function scheduleArchive() {
         await Booking.deleteMany({ date: { $lt: cutoff } });
         console.log(`✅ Auto-archive: moved ${old.length} bookings → archivedBookings`);
       } else {
-        console.log(`🗃️  Auto-archive: no bookings older than 2 years found`);
+        console.log(`🗃️  Auto-archive: no old bookings found`);
       }
-    } catch (err) {
-      console.error('❌ Auto-archive error:', err.message);
-    }
+    } catch (err) { console.error('❌ Auto-archive error:', err.message); }
     scheduleArchive();
   }, msUntil2AM);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// START SERVER
-// ─────────────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 5000;
 
@@ -304,7 +290,7 @@ server.listen(PORT, () => {
   setTimeout(() => pingSarimaHealth(), 5000);
   scheduleArchive();
 
-  // ✅ Keep Render free tier awake — ping every 5 min to prevent sleep
+  // ✅ Keep Render free tier awake — ping every 5 min
   if (process.env.NODE_ENV === 'production') {
     const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://nagomi-backend.onrender.com';
     setInterval(() => {
