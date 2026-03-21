@@ -168,10 +168,10 @@ require('./models/Settings');
 // ✅ CORS — allows Vercel frontend + local dev + all methods including PATCH
 const corsOptions = {
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (origin.endsWith('.vercel.app')) return callback(null, true); // vercel previews
-    return callback(null, true); // allow all for now — tighten after stable
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    return callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
@@ -181,8 +181,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ Handle OPTIONS preflight for ALL routes (required for PATCH/DELETE from Vercel)
-app.options('/(.*)', cors(corsOptions));
+// ✅ Handle OPTIONS preflight manually — works with all Express/path-to-regexp versions
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    const origin = req.headers.origin;
+    if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400'); // cache preflight for 24h
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
 app.set('socketio', io);
