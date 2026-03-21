@@ -272,7 +272,7 @@
         
         res.json({
           available: availableTherapists.map(t => ({
-            id: t._id.toString(),
+            id: t._id,
             name: t.name,
             email: t.email,
             expertise: t.expertise
@@ -459,8 +459,6 @@ try {
           minutes,
           therapists: selectedTherapists,
           numberOfClients,
-          femaleClients,
-          maleClients,
           date,
           time,
           endTime,
@@ -980,8 +978,6 @@ booking = updatedBooking;
         }
 
         const query = { guestPhone: phone };
-
-        // Only filter by name if provided
         if (name && name.trim()) {
           query.guestName = { $regex: new RegExp(name.trim(), 'i') };
         }
@@ -1382,7 +1378,7 @@ booking = updatedBooking;
         
         console.log(`📊 Found ${therapists.length} active therapists`);
         
-        // Get all bookings for today using Philippine date
+        // Get all bookings for today
         const todayStart = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate());
         const todayEnd   = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate(), 23, 59, 59);
         
@@ -1434,7 +1430,6 @@ booking = updatedBooking;
             console.log(`   ✅ Has schedule for ${currentDay}`);
             
             const shifts = todaySchedule.shifts || [];
-            console.log(`   📋 Shifts: ${JSON.stringify(shifts)}`);
             if (shifts.length === 0) {
               console.log(`   ⚠️ Schedule exists but no shifts defined`);
               return {
@@ -1452,8 +1447,7 @@ booking = updatedBooking;
             
             for (const shift of shifts) {
               const workStart = parseTimeToMinutes(shift.startTime);
-              const workEnd   = parseTimeToMinutes(shift.endTime);
-              console.log(`   ⏰ Shift: ${shift.startTime}(${workStart}) - ${shift.endTime}(${workEnd}) | Now: ${currentTime}`);
+              const workEnd = parseTimeToMinutes(shift.endTime);
               
               if (currentTime >= workStart && currentTime < workEnd) {
                 isWithinWorkHours = true;
