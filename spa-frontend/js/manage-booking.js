@@ -29,11 +29,10 @@ window.switchTab = switchTab;
 
 // ─── IDENTITY PROOF ───────────────────────────────────────────────────────────
 
+let storedIdentity = {}; // stores identity proof used during lookup
+
 function getIdentityProof() {
-  if (lookupMethod === 'id') {
-    return { transactionNumber: document.getElementById('lookupTransactionId').value.trim().toUpperCase() };
-  }
-  return { phone: document.getElementById('lookupPhone').value.trim().replace(/[\s\-\(\)]/g, '') };
+  return storedIdentity;
 }
 
 // ─── DATE RESTRICTIONS ────────────────────────────────────────────────────────
@@ -58,6 +57,10 @@ async function lookupByTransactionId() {
     const response = await fetch(`${API_URL}/bookings/lookup-by-id/${transactionId}`);
     const data = await response.json();
     if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+
+    // Store identity proof for reschedule/cancel calls
+    storedIdentity = { transactionNumber: transactionId };
+
     currentBookings = [data];
     displayBookings([data]);
   } catch (error) {
@@ -71,16 +74,20 @@ async function lookupBookings() {
   const phone    = rawPhone.replace(/[\s\-\(\)]/g, '');
   const name     = document.getElementById('lookupName').value.trim();
 
-  if (!rawPhone || !name) { showNotification('❌ Please enter both phone number and name', 'error'); return; }
+  if (!rawPhone) { showNotification('❌ Please enter your phone number', 'error'); return; }
 
   try {
     const response = await fetch(`${API_URL}/bookings/lookup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, name })
+      body: JSON.stringify({ phone, name }) // name is optional now
     });
     const data = await response.json();
     if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+
+    // Store identity proof for reschedule/cancel calls
+    storedIdentity = { phone };
+
     currentBookings = data;
     displayBookings(data);
   } catch (error) {
