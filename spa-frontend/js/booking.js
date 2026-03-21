@@ -1,1984 +1,1715 @@
-// src/routes/bookings.js - 
-    const express = require('express');
-    const router = express.Router();
-    const Booking = require('../models/Booking');
-    const Service = require('../models/Service');
-    const User = require('../models/User');
-    const auth = require('../middleware/auth');
-    const roles = require('../middleware/roles');
-    const {
-      calculateEndTimes,
-      isTherapistWorkingAt,
-      hasExpertise,
-      isTherapistAvailable,
-      getAvailableTherapists
-    } = require('../utils/availability');
-    const Review = require('../models/Review');
+const API_URL        = 'https://nagomi-backend.onrender.com/api';
 
-    function convertTimeToDate(baseDate, timeString) {
-      const [time, period] = timeString.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
-      
-      const dateObj = new Date(baseDate);
-      dateObj.setHours(hours, minutes, 0, 0);
-      
-      return dateObj;
-    }
+// Wrap fetch to always include ngrok-skip-browser-warning (safe to include in production too)
+const apiFetch = (url, options = {}) => {
+  options.headers = {
+    'ngrok-skip-browser-warning': 'true',
+    ...(options.headers || {})
+  };
+  return fetch(url, options);
+};
+const CLOSING_HOUR   = 23;   // 11 PM
+const CLOSING_MINS   = 0;
+const MAX_CLIENTS    = 6;
 
-    router.get('/most-booked', async (req, res) => {
-      try {
-        const limit = parseInt(req.query.limit) || 3;
-        const period = req.query.period || 'all'; // 'all', 'month', 'week'
+// ─── Category meta (icons + ordering) ────────────────────────────────────────
+const CAT_META = {
+  'Massage Services':  { icon: '💆', order: 1 },
+  'Foot Treatment':    { icon: '🦶', order: 2 },
+  'Spot Massage':      { icon: '✋', order: 3 },
+  'Body Scrub':        { icon: '🧖', order: 4 },
+  'Facial Treatment':  { icon: '✨', order: 5 },
+  'Packages':          { icon: '🎁', order: 6 },
+  'Couples Packages':  { icon: '👫', order: 7 },
+};
 
-        let dateFilter = {};
+// ─── Global state ─────────────────────────────────────────────────────────────
+let allServices      = [];      // Full service list from API
+let filteredServices = [];      // Currently displayed services
+let selectedCategory = null;    // Current category filter
+let selectedService  = null;    // Full service object
+let selectedMinutes  = null;    // Number (30, 60, 90, 120)
+let totalAmount      = 0;
+let numClients       = 1;
+let femaleClients    = 0;
+let maleClients      = 0;
+let selectedTherapists = [];
+let selectedFemaleTherapists = [];
+let selectedMaleTherapists   = [];
+let allTherapists    = [];
+let bookingType      = 'online';
+let dateSelected     = false;
+let therapistConfirmed = false;
+let femaleTherapistConfirmed = false;
+let maleTherapistConfirmed   = false;
+let lastAvailableList = null; // cache last availability result for dropdown open
+let currentSort      = 'name';
+let currentStep      = 1;
 
-        if (period === 'month') {
-          const startOfMonth = new Date();
-          startOfMonth.setDate(1);
-          startOfMonth.setHours(0, 0, 0, 0);
-          dateFilter = { createdAt: { $gte: startOfMonth } };
-        } else if (period === 'week') {
-          const startOfWeek = new Date();
-          startOfWeek.setDate(startOfWeek.getDate() - 7);
-          dateFilter = { createdAt: { $gte: startOfWeek } };
-        }
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+let categoryTabsEl, servicesGridEl, durationSectionEl, durationGridEl;
+let summaryBarEl, ssbServiceNameEl, ssbDurationEl, ssbPriceEl;
+let ccValueEl, ccMinusBtn, ccPlusBtn;
+let dateInputEl, timeSelectEl, endTimeBadgeEl;
+let dropdownDisplayEl, dropdownOptionsEl, therapistDropdownEl, maxSelectionsSpan;
+let totalDisplayEl, downPayNoteEl, charCountSmEl, guestNotesEl;
+let summaryModalEl, confirmBookingBtn, backToEditBtn;
+let btnStep1Next, btnStep2Next, btnReview;
+let couplesNoticeEl;
 
-        const mostBooked = await Booking.aggregate([
-          {
-            $match: {
-              status: { $in: ['confirmed', 'completed'] },
-              ...dateFilter
-            }
-          },
-          {
-            $group: {
-              _id: '$service',
-              count: { $sum: 1 }
-            }
-          },
-          {
-            $lookup: {
-              from: 'services',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'service'
-            }
-          },
-          {
-            $unwind: '$service'
-          },
-          {
-            $sort: { count: -1 }
-          },
-          {
-            $limit: limit
-          },
-          {
-            $project: {
-              _id: 1,
-              count: 1,
-              service: {
-                _id: 1,
-                name: 1,
-                category: 1,
-                image: 1
-              }
-            }
-          }
-        ]);
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  bindDOMRefs();
+  setupNavMobile();
+  setupDateRestrictions();
+  setupTimeListener();
+  setupTherapistDropdown();
+  setupCharCounter();
+  setupTermsCheckbox();
+  setupBackToEdit();
+  setupConfirmBtn();
 
-        res.json(mostBooked);
+  await loadServices();
+  await loadTherapists();
 
-      } catch (err) {
-        console.error('Error fetching most booked:', err);
-        res.status(500).json({ 
-          error: 'Failed to fetch most booked services',
-          message: err.message 
-        });
-      }
-    });
+  // Initialize gender counters: default 0 female, 0 male
+  femaleClients = 0;
+  maleClients   = 0;
+  numClients    = 0;
+  updateGenderCounterUI();
 
-    router.get('/trending', async (req, res) => {
-      try {
-        const daysAgo = parseInt(req.query.days) || 7;
-        const limit = parseInt(req.query.limit) || 3;
+  // Auto-select first category
+  if (allServices.length > 0) {
+    const firstCat = Object.keys(CAT_META)[0];
+    selectCategory(firstCat);
+  }
+});
 
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysAgo);
+// ─── DOM Binding ──────────────────────────────────────────────────────────────
+function bindDOMRefs() {
+  categoryTabsEl    = document.getElementById('categoryTabs');
+  servicesGridEl    = document.getElementById('servicesGrid');
+  durationSectionEl = document.getElementById('durationSection');
+  durationGridEl    = document.getElementById('durationGrid');
+  summaryBarEl      = document.getElementById('summaryBar');
+  ssbServiceNameEl  = document.getElementById('ssbServiceName');
+  ssbDurationEl     = document.getElementById('ssbDuration');
+  ssbPriceEl        = document.getElementById('ssbPrice');
+  ccValueEl         = document.getElementById('ccValue'); // kept for compat
+  ccMinusBtn        = document.getElementById('ccMinus');
+  ccPlusBtn         = document.getElementById('ccPlus');
+  dateInputEl       = document.getElementById('preferredDate');
+  timeSelectEl      = document.getElementById('preferredTime');
+  endTimeBadgeEl    = document.getElementById('endTimeBadge');
+  // Female dropdown refs
+  dropdownDisplayEl   = document.getElementById('femaleDropdownDisplay');
+  dropdownOptionsEl   = document.getElementById('femaleDropdownOptions');
+  therapistDropdownEl = document.getElementById('femaleTherapistDropdown');
+  maxSelectionsSpan   = document.getElementById('femaleMaxSelections');
+  totalDisplayEl    = document.getElementById('totalDisplay');
+  downPayNoteEl     = document.getElementById('downPayNote');
+  charCountSmEl     = document.getElementById('charCountSm');
+  guestNotesEl      = document.getElementById('guestNotes');
+  summaryModalEl    = document.getElementById('summaryModal');
+  confirmBookingBtn = document.getElementById('confirmBookingBtn');
+  backToEditBtn     = document.getElementById('backToEdit');
+  btnStep1Next      = document.getElementById('btnStep1Next');
+  btnStep2Next      = document.getElementById('btnStep2Next');
+  btnReview         = document.getElementById('btnReview');
+  couplesNoticeEl   = document.getElementById('couplesNotice');
+}
 
-        const trending = await Booking.aggregate([
-          {
-            $match: {
-              createdAt: { $gte: startDate },
-              status: { $in: ['confirmed', 'completed', 'pending'] }
-            }
-          },
-          {
-            $group: {
-              _id: '$service',
-              recentBookings: { $sum: 1 },
-              growthRate: {
-                $avg: {
-                  $cond: [
-                    { $gte: ['$createdAt', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)] },
-                    1.5, // Weight recent bookings higher
-                    1
-                  ]
-                }
-              }
-            }
-          },
-          {
-            $lookup: {
-              from: 'services',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'service'
-            }
-          },
-          {
-            $unwind: '$service'
-          },
-          {
-            $match: {
-              recentBookings: { $gte: 5 } // Minimum threshold for "trending"
-            }
-          },
-          {
-            $sort: { growthRate: -1, recentBookings: -1 }
-          },
-          {
-            $limit: limit
-          }
-        ]);
+// ─── Services ─────────────────────────────────────────────────────────────────
+async function loadServices() {
+  try {
+    servicesGridEl.innerHTML = '<div class="services-loading">Loading services…</div>';
+    const res = await apiFetch(`${API_URL}/services`);
+    allServices = await res.json();
+    buildCategoryTabs();
+  } catch (err) {
+    console.error('❌ Failed to load services:', err);
+    servicesGridEl.innerHTML = '<div class="services-loading" style="color:#e07b5a">Could not load services. Please refresh.</div>';
+  }
+}
 
-        res.json(trending);
-
-      } catch (err) {
-        console.error('Error fetching trending services:', err);
-        res.status(500).json({ 
-          error: 'Failed to fetch trending services',
-          message: err.message 
-        });
-      }
-    });
-
-    // Get all bookings (Admin only)
-    router.get('/', auth, roles(['admin']), async (req, res) => {
-      try {
-        let bookings = await Booking.find()
-          .populate('service', 'name price pricing durationMinutes allowedDurations')
-          .populate('client', 'name email phone')
-          .populate('therapist therapists', 'name email')
-          .sort({ date: -1 });
-
-        // Fix null services by checking serviceName field or price-based lookup
-        const services = await Service.find().select('name price pricing');
-        
-        bookings = bookings.map(b => {
-          const booking = b.toObject();
-          
-          // If service is null but we can infer from price
-          if (!booking.service && services.length > 0) {
-            // Try to match by price
-            const matched = services.find(s => {
-              const p = s.pricing?.toObject?.() || s.pricing || {};
-              return Object.values(p).includes(booking.price) || 
-                    s.price === booking.price;
-            });
-            if (matched) {
-              booking.service = { 
-                _id: matched._id, 
-                name: matched.name 
-              };
-            }
-          }
-          
-          return booking;
-        });
-        
-        res.json(bookings);
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    // Get therapist's appointments (MUST BE BEFORE /:id route)
-    router.get('/my-appointments', auth, async (req, res) => {
-      try {
-        if (req.user.role !== 'therapist') {
-          return res.status(403).json({ msg: 'Access denied. Therapists only.' });
-        }
-
-        console.log('📋 Fetching appointments for therapist:', req.user.id);
-
-        // ✅ Check BOTH therapist field AND therapists array
-        const bookings = await Booking.find({ 
-          $or: [
-            { therapist: req.user.id },      // Single therapist bookings
-            { therapists: req.user.id }      // Multi-therapist bookings
-          ],
-          status: { $ne: 'cancelled' }
-        })
-          .populate('client', 'name email phone')
-          .populate('service', 'name price durationMinutes')
-          .populate('therapist therapists', 'name email')  // ✅ Populate both fields
-          .sort({ date: 1, time: 1 });
-
-        console.log(`✅ Found ${bookings.length} appointments for ${req.user.id}`);
-        
-        res.json(bookings);
-      } catch (error) {
-        console.error('❌ Error fetching therapist appointments:', error);
-        res.status(500).json({ msg: 'Server error', error: error.message });
-      }
-    });
-
-    // Check availability
-    router.post('/check-availability', async (req, res) => {
-      try {
-        const { service, date, time, durationMinutes } = req.body;
-        
-        console.log('📥 Availability check request:', { service, date, time, durationMinutes });
-        
-        if (!service || !date || !time || !durationMinutes) {
-          console.log('❌ Missing required fields');
-          return res.status(400).json({ msg: 'Missing required fields' });
-        }
-        
-        const bookingDate = new Date(date);
-        
-        let availableTherapists;
-        try {
-          availableTherapists = await getAvailableTherapists(
-            service,
-            bookingDate,
-            time,
-            parseInt(durationMinutes)
-          );
-        } catch (availErr) {
-          console.error('❌ Error in getAvailableTherapists:', availErr);
-          return res.status(500).json({ 
-            msg: 'Error checking availability', 
-            error: availErr.message 
-          });
-        }
-        
-        console.log(`✅ Found ${availableTherapists.length} available therapists`);
-        
-        res.json({
-          available: availableTherapists.map(t => ({
-            id: t._id,
-            name: t.name,
-            email: t.email,
-            expertise: t.expertise
-          })),
-          totalAvailable: availableTherapists.length
-        });
-      } catch (err) {
-        console.error('❌ Availability check error:', err);
-        res.status(500).json({ msg: 'Server error', error: err.message });
-      }
-    });
-
-    // Get booked dates
-    router.get('/booked-dates', async (req, res) => {
-      try {
-        const { year, month } = req.query;
-        
-        const startDate = new Date(year, month, 1);
-        const endDate = new Date(year, parseInt(month) + 1, 0, 23, 59, 59);
-        
-        const bookings = await Booking.find({
-          date: {
-            $gte: startDate,
-            $lte: endDate
-          },
-          status: { $ne: 'cancelled' }
-        }).select('date');
-        
-        const bookedDates = [...new Set(bookings.map(b => 
-          b.date.toISOString().split('T')[0]
-        ))];
-        
-        res.json({ bookedDates });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-
-    router.get('/date-availability', async (req, res) => {
-      try {
-        const { date, duration } = req.query;
-        if (!date) return res.status(400).json({ msg: 'date is required' });
-
-        const durationMins = parseInt(duration) || 60;
-
-        // ── Block admin-set closures (holidays + vacation ranges) ─────────────────
-try {
-  const Settings = require('../models/Settings');
-  const closureSetting = await Settings.findOne({ key: 'closures' });
-  const closures = closureSetting?.value || [];
-
-  const checkDate = new Date(date + 'T00:00:00');
-
-  const matched = closures.find(c => {
-    const start = new Date(c.start + 'T00:00:00');
-    const end   = new Date(c.end   + 'T00:00:00');
-    return checkDate >= start && checkDate <= end;
+// ─── Category Tabs ────────────────────────────────────────────────────────────
+function buildCategoryTabs() {
+  // Derive categories from loaded services
+  const catSet = new Set(allServices.map(s => s.category).filter(Boolean));
+  const cats = [...catSet].sort((a, b) => {
+    const oa = CAT_META[a]?.order ?? 99;
+    const ob = CAT_META[b]?.order ?? 99;
+    return oa - ob;
   });
 
-  if (matched) {
-    const isSingleDay = matched.start === matched.end;
-    return res.json({
-      fullyBooked:    true,
-      blockedByAdmin: true,
-      blockReason:    isSingleDay ? 'holiday' : 'vacation',
-      blockLabel:     matched.label || (isSingleDay ? 'Store Holiday' : 'Store Closed'),
-      busySlots:      [],
-      slotAvailability: {},
-      availableCount: 0,
-      totalTherapists: 0,
-      date,
-    });
-  }
-} catch (blockErr) {
-  console.error('Error checking closures:', blockErr);
-  // Non-fatal — continue with normal availability check
+  categoryTabsEl.innerHTML = '';
+  cats.forEach(cat => {
+    const meta = CAT_META[cat] || { icon: '🌿' };
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cat-tab';
+    btn.dataset.cat = cat;
+    btn.innerHTML = `<span class="cat-icon">${meta.icon}</span> ${cat}`;
+    btn.addEventListener('click', () => selectCategory(cat));
+    categoryTabsEl.appendChild(btn);
+  });
 }
 
-        // ── 1. Get all active therapists ─────────────────────────────────────
-        const therapists = await User.find({ role: 'therapist', isActive: true }, '_id name');
-        const totalTherapists = therapists.length;
+function selectCategory(cat) {
+  selectedCategory = cat;
 
-        // ── 2. Get all non-cancelled bookings on this date ───────────────────
-        const dayStart = new Date(date + 'T00:00:00+08:00');
-        const dayEnd   = new Date(date + 'T23:59:59+08:00');
+  // Update tab highlight
+  categoryTabsEl.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.cat === cat);
+  });
 
-        const dayBookings = await Booking.find({
-          date:   { $gte: dayStart, $lte: dayEnd },
-          status: { $nin: ['cancelled'] },
-        }).select('therapists time durationMinutes availableAfter');
+  // Show couples notice if relevant
+  const isCouples = cat === 'Couples Packages';
+  couplesNoticeEl.classList.toggle('visible', isCouples);
 
-        // ── 3. Build a set of time slots (in 30-min increments) ──────────────
-        //    For each slot, count how many therapists are available
-        const allTimes = [
-          '9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM',
-          '12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM',
-          '2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM',
-          '5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM',
-          '7:30 PM','8:00 PM','8:30 PM','9:00 PM','9:30 PM',
-        ];
+  // Filter + render services
+  renderServices();
 
-        function parseTimeMins(t) {
-          const [tp, per] = t.split(' ');
-          let [h, m] = tp.split(':').map(Number);
-          if (per === 'PM' && h !== 12) h += 12;
-          if (per === 'AM' && h === 12) h = 0;
-          return h * 60 + m;
-        }
+  // Reset selection when category changes
+  clearServiceSelection();
+}
 
-        // Build a map: therapistId → array of [startMins, endMins] busy windows
-        const therapistBusy = {};
-        therapists.forEach(t => { therapistBusy[t._id.toString()] = []; });
+function renderServices() {
+  const sortVal = document.getElementById('sortFilter')?.value || 'name';
+  let list = allServices.filter(s => s.category === selectedCategory);
 
-        dayBookings.forEach(b => {
-  const startM = parseTimeMins(b.time);
-  const endM   = startM + b.durationMinutes + 15;
-  const assignedIds = (b.therapists || []).map(t => t.toString()).filter(Boolean);
+  list = sortServices(list, sortVal);
+  filteredServices = list;
 
-  if (assignedIds.length > 0) {
-    // Block only the assigned therapists
-    assignedIds.forEach(id => {
-      if (!therapistBusy[id]) therapistBusy[id] = [];
-      therapistBusy[id].push([startM, endM]);
-    });
+  servicesGridEl.innerHTML = '';
+
+  if (list.length === 0) {
+    servicesGridEl.innerHTML = '<div class="services-loading">No services in this category.</div>';
+    return;
+  }
+
+  list.forEach(svc => {
+    const card = buildServiceCard(svc);
+    servicesGridEl.appendChild(card);
+  });
+}
+
+function sortServices(list, sortVal) {
+  const copy = [...list];
+  switch (sortVal) {
+    case 'popular':  copy.sort((a, b) => (b.bookingCount || 0) - (a.bookingCount || 0)); break;
+    case 'rating':   copy.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0)); break;
+    case 'price-low': copy.sort((a, b) => getMinPrice(a) - getMinPrice(b)); break;
+    case 'price-high': copy.sort((a, b) => getMinPrice(b) - getMinPrice(a)); break;
+    default:         copy.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return copy;
+}
+
+function getMinPrice(svc) {
+  if (svc.price && svc.price > 0) return svc.price;
+  const pricing = svc.pricing;
+  if (!pricing) return 0;
+  const vals = typeof pricing.toObject === 'function'
+    ? Object.values(pricing.toObject())
+    : Object.values(pricing);
+  return vals.length ? Math.min(...vals) : 0;
+}
+
+function buildServiceCard(svc) {
+  const card = document.createElement('div');
+  card.className = 'service-card';
+  card.dataset.id = svc._id;
+
+  const ratingStr  = svc.averageRating > 0
+    ? `⭐ ${svc.averageRating.toFixed(1)}  ·  ${svc.bookingCount || 0} bookings`
+    : (svc.bookingCount > 0 ? `${svc.bookingCount} bookings` : '');
+
+  card.innerHTML = `
+    <div class="service-card-name">${svc.name}</div>
+    ${svc.description ? `<div class="service-card-desc">${svc.description}</div>` : ''}
+    ${ratingStr ? `<div class="service-card-ratings">${ratingStr}</div>` : ''}
+  `;
+
+  card.addEventListener('click', () => onServiceCardClick(svc, card));
+  return card;
+}
+
+function buildPriceLabel(svc) {
+  return 'Price may vary';
+}
+
+// ─── Service Selection ────────────────────────────────────────────────────────
+function onServiceCardClick(svc, card) {
+  // Highlight card
+  servicesGridEl.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+
+  selectedService = svc;
+  selectedMinutes = null;   // reset until user picks duration
+
+  // For Couples Packages, enforce min 2 clients
+if (svc.category === 'Couples Packages') {
+  // Couples: at least 1 female + 1 male
+  if (femaleClients < 1) femaleClients = 1;
+  if (maleClients < 1)   maleClients   = 1;
+  numClients = femaleClients + maleClients;
+  updateGenderCounterUI();
+} else {
+  // Reset to 0 for both when switching away from Couples
+  femaleClients = 0;
+  maleClients   = 0;
+  numClients    = 0;
+  updateGenderCounterUI();
+}
+updateTotal();
+
+  if (svc.isFixedPrice) {
+    // Auto-select the only duration
+    selectedMinutes = (svc.allowedDurations && svc.allowedDurations[0]) || 60;
+    hideDurationSection();
+    updateSummaryBar();
+    updateTotal();
+    enableStep1Next(true);
   } else {
-    // Unassigned booking — conservatively block ALL therapists for this slot
-    therapists.forEach(t => {
-      therapistBusy[t._id.toString()].push([startM, endM]);
-    });
-  }
-});
-
-        // For each time slot, count available therapists
-        const CLOSING = 23 * 60;
-        const slotAvailability = {};
-        let hasAnyAvailableSlot = false;
-        const busySlots = [];
-
-        allTimes.forEach(t => {
-          const sm = parseTimeMins(t);
-          if (sm + durationMins > CLOSING) return; // too late for this duration
-
-          let availCount = 0;
-          therapists.forEach(therapist => {
-            const busy = therapistBusy[therapist._id.toString()] || [];
-            const isBusy = busy.some(([s, e]) => sm < e && sm + durationMins > s);
-            if (!isBusy) availCount++;
-          });
-
-          slotAvailability[t] = availCount;
-          if (availCount > 0) hasAnyAvailableSlot = true;
-          if (availCount === 0) busySlots.push(t);
-        });
-
-        // Min available therapists across all valid slots
-        const minAvailable = Object.values(slotAvailability).length > 0
-          ? Math.min(...Object.values(slotAvailability))
-          : 0;
-
-        return res.json({
-          fullyBooked:      !hasAnyAvailableSlot,
-          busySlots,
-          slotAvailability,   // { "9:30 AM": 5, "10:00 AM": 3, ... }
-          availableCount:   hasAnyAvailableSlot
-            ? Math.max(...Object.values(slotAvailability))
-            : 0,
-          totalTherapists,
-          date,
-        });
-
-      } catch (err) {
-        console.error('Date availability error:', err);
-        res.status(500).json({ msg: 'Server error checking date availability' });
-      }
-    });
-    //  Create booking - NO AUTO-ASSIGNMENT if "Any Available"
-    //  Create booking with Walk-in/Online detection
-    router.post('/', async (req, res) => {
-      try {
-        const {
-          service: serviceName,
-          minutes,
-          therapists: selectedTherapists,
-          numberOfClients,
-          date,
-          time,
-          endTime,
-          notes,
-          name: guestName,
-          phone: guestPhone,
-          totalAmount,
-          paymentMethod,
-          termsAccepted,
-          bookingType
-        } = req.body;
-
-        console.log('📥 Booking request:', {
-          serviceName,
-          minutes,
-          therapists: selectedTherapists,
-          numberOfClients,
-          date,
-          time,
-          paymentMethod,
-          bookingType,
-          termsAccepted
-        });
-
-        // ── Validate booking type ──────────────────────────────────
-        if (!bookingType || !['online', 'walk-in'].includes(bookingType)) {
-          return res.status(400).json({ msg: 'Invalid booking type. Must be "online" or "walk-in"' });
-        }
-
-        if (bookingType === 'online' && !termsAccepted) {
-          return res.status(400).json({ msg: 'You must accept the terms and conditions to proceed' });
-        }
-
-        if (bookingType === 'walk-in') {
-          console.log('💼 Processing walk-in booking — payment collected at spa');
-        }
-
-        // ── Validate required fields ───────────────────────────────
-        if (!guestName || !guestPhone) {
-          return res.status(400).json({ msg: 'Name and phone are required' });
-        }
-
-        if (!serviceName || !minutes || !date || !time) {
-          return res.status(400).json({ msg: 'Please fill all required fields' });
-        }
-
-        // ── FIX 1: Allow 30-minute durations ──────────────────────
-        const durationMinutes = parseInt(minutes);
-        if (!durationMinutes || ![30, 60, 90, 120].includes(durationMinutes)) {
-          return res.status(400).json({ msg: 'Invalid duration. Must be 30, 60, 90, or 120 minutes.' });
-        }
-
-        // ── FIX 2: Service lookup with partial-match fallback ──────
-        // Try exact match first (case-insensitive)
-        let service = await Service.findOne({
-          name: { $regex: new RegExp(`^${serviceName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
-          active: true
-        });
-
-        // Fallback: match first 3 meaningful words of the name
-        if (!service) {
-          const words = serviceName.trim().split(/\s+/).slice(0, 3).join(' ');
-          service = await Service.findOne({
-            name: { $regex: new RegExp(words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
-            active: true
-          });
-          if (service) {
-            console.log(`⚠️  Exact match failed for "${serviceName}", using partial match: "${service.name}"`);
-          }
-        }
-
-        if (!service) {
-          console.error(`❌ Service not found: "${serviceName}"`);
-          return res.status(404).json({
-            msg: `Service "${serviceName}" not found. Run: node bulkCreateServices.js to seed services.`
-          });
-        }
-
-        // ── Check allowed durations for this service ───────────────
-        if (service.allowedDurations && service.allowedDurations.length > 0) {
-          if (!service.allowedDurations.includes(durationMinutes)) {
-            return res.status(400).json({
-              msg: `${serviceName} is not available for ${durationMinutes} minutes`
-            });
-          }
-        }
-
-        const bookingDate = new Date(date);
-
-        const {
-          endTime: calculatedEndTime,
-          availableAfter: availableAfterTime,
-          gracePeriodUsed
-        } = await calculateEndTimes(time, durationMinutes);
-
-        const endTimeDate        = convertTimeToDate(bookingDate, endTime || calculatedEndTime);
-        const availableAfterDate = convertTimeToDate(bookingDate, availableAfterTime);
-
-        // ── Calculate total clients (needed for price) ─────────────
-        const totalClients = (femaleClients || 0) + (maleClients || 0) || numberOfClients || 1;
-
-        // ── Calculate price ────────────────────────────────────────
-        let finalPrice = totalAmount;
-        if (service.pricing) {
-          const pricingObj = service.pricing.toObject
-            ? service.pricing.toObject()
-            : service.pricing;
-          const basePrice =
-            pricingObj[durationMinutes] ||
-            pricingObj[durationMinutes.toString()] ||
-            service.price ||
-            totalAmount;
-          finalPrice = basePrice * (totalClients || numberOfClients || 1);
-        }
-
-        console.log('💰 Final price:', finalPrice);
-
-        // ── Therapist assignments ──────────────────────────────────
-        const therapistIds       = [];
-        const requestedTherapists = selectedTherapists && selectedTherapists.length > 0
-          ? selectedTherapists
-          : [];
-
-        const wantsAny = requestedTherapists.length === 0 ||
-          requestedTherapists.some(t => t.name === 'Any available therapist');
-
-        if (wantsAny) {
-          console.log('⏳ Client chose "Any available therapist" — pending admin assignment');
-        } else {
-          for (const therapistData of requestedTherapists) {
-            if (therapistData.name && therapistData.name !== 'Any available therapist') {
-              const therapist = await User.findOne({
-                name: { $regex: new RegExp(`^${therapistData.name.trim()}$`, 'i') },
-                role: 'therapist',
-                isActive: true
-              });
-
-              if (!therapist) {
-                return res.status(400).json({
-                  msg: `Therapist "${therapistData.name}" not found or inactive`
-                });
-              }
-
-              if (!hasExpertise(therapist, serviceName)) {
-                return res.status(400).json({
-                  msg: `${therapist.name} is not qualified to perform ${serviceName}`
-                });
-              }
-
-              if (!isTherapistWorkingAt(therapist, bookingDate, time)) {
-                return res.status(400).json({
-                  msg: `${therapist.name} is not scheduled to work at ${time}`
-                });
-              }
-
-              const isAvailable = await isTherapistAvailable(
-                therapist._id,
-                bookingDate,
-                time,
-                durationMinutes
-              );
-
-              if (!isAvailable) {
-                return res.status(400).json({
-                  msg: `${therapist.name} is already booked at ${time}`
-                });
-              }
-
-              therapistIds.push(therapist._id);
-            }
-          }
-        }
-
-        // ── Set payment method ─────────────────────────────────────
-        const finalPaymentMethod = bookingType === 'walk-in'
-          ? 'Cash on Arrival'
-          : (paymentMethod || 'Not specified');
-
-        // ── Create booking ─────────────────────────────────────────
-        const bookingData = {
-          service:         service._id,
-          durationMinutes,
-          numberOfClients: totalClients,
-          femaleClients:   femaleClients || 0,
-          maleClients:     maleClients   || 0,
-          date:            bookingDate,
-          time,
-          endTime:         endTimeDate,
-          availableAfter:  availableAfterDate,
-          notes,
-          price:           finalPrice,
-          status:          'pending',
-          guestName,
-          guestPhone,
-          bookingType,
-          paymentMethod:   finalPaymentMethod,
-          therapists:      therapistIds.length > 0 ? therapistIds : [],
-          therapist:       therapistIds.length > 0 ? therapistIds[0] : null
-        };
-
-        const booking = await Booking.create(bookingData);
-        await booking.populate('service therapist therapists');
-
-        // Increment booking count on the service
-        try {
-          await service.incrementBookingCount();
-          console.log(`📊 Updated booking count for ${service.name}: ${service.bookingCount}`);
-        } catch (countErr) {
-          console.error('⚠️  Failed to update booking count:', countErr);
-        }
-
-        console.log('✅ Booking created:', booking._id);
-        console.log(`📋 Type: ${bookingType} | Payment: ${finalPaymentMethod}`);
-        console.log(`👤 Therapists: ${therapistIds.length > 0 ? therapistIds.length : 'None (pending admin)'}`);
-
-        // ── Socket emit ────────────────────────────────────────────
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('newBooking', {
-            message: `New ${bookingType} booking created`,
-            booking,
-            bookingType
-          });
-
-          therapistIds.forEach(therapistId => {
-            io.to(therapistId.toString()).emit('newAssignment', {
-              message: 'You have a new appointment!',
-              booking
-            });
-          });
-        }
-
-        res.status(201).json({
-          msg: `${bookingType === 'walk-in' ? 'Walk-in' : 'Online'} booking created successfully!`,
-          booking
-        });
-
-      } catch (err) {
-        console.error('❌ Booking error:', err);
-        res.status(500).json({ msg: 'Server error', error: err.message });
-      }
-    });
-
-    // Update booking status
-    router.patch('/:id/status', auth, async (req, res) => {
-      try {
-        const { status } = req.body;
-        
-        if (!['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
-          return res.status(400).json({ msg: 'Invalid status' });
-        }
-
-        let booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-        
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-
-        const isAdmin = req.user.role === 'admin';
-        const isTherapist = req.user.role === 'therapist' && booking.therapist?.toString() === req.user.id;
-
-        if (!isAdmin && !isTherapist) {
-          return res.status(403).json({ msg: 'Not authorized' });
-        }
-
-        //  THERAPIST-SPECIFIC RESTRICTIONS
-        if (isTherapist) {
-          // Therapists can only mark as completed
-          if (status !== 'completed') {
-            return res.status(403).json({ 
-              msg: 'Therapists can only mark appointments as completed. Contact admin for other status changes.' 
-            });
-          }
-
-          //  TIME RESTRICTIONS: Can only mark complete during or after appointment time
-          const now = new Date();
-          const bookingDate = new Date(booking.date);
-          
-          // Parse appointment start time
-          const [time, period] = booking.time.split(' ');
-          let [hours, minutes] = time.split(':').map(Number);
-          
-          if (period === 'PM' && hours !== 12) hours += 12;
-          if (period === 'AM' && hours === 12) hours = 0;
-          
-          const appointmentStart = new Date(bookingDate);
-          appointmentStart.setHours(hours, minutes, 0, 0);
-          
-          // Calculate appointment end time
-          const appointmentEnd = new Date(appointmentStart.getTime() + booking.durationMinutes * 60 * 1000);
-          
-          // Add 30-minute grace period after appointment ends
-          const gracePeriodEnd = new Date(appointmentEnd.getTime() + 30 * 60 * 1000);
-          
-          console.log('⏰ Time validation:', {
-            now: now.toLocaleString(),
-            appointmentStart: appointmentStart.toLocaleString(),
-            appointmentEnd: appointmentEnd.toLocaleString(),
-            gracePeriodEnd: gracePeriodEnd.toLocaleString()
-          });
-          
-          // Check if current time is before appointment start
-          if (now < appointmentStart) {
-            const minutesUntil = Math.round((appointmentStart - now) / (1000 * 60));
-            const hoursUntil = Math.floor(minutesUntil / 60);
-            const minsUntil = minutesUntil % 60;
-            
-            let timeUntilMsg = '';
-            if (hoursUntil > 0) {
-              timeUntilMsg = `${hoursUntil} hour${hoursUntil > 1 ? 's' : ''} and ${minsUntil} minute${minsUntil !== 1 ? 's' : ''}`;
-            } else {
-              timeUntilMsg = `${minutesUntil} minute${minutesUntil !== 1 ? 's' : ''}`;
-            }
-            
-            return res.status(400).json({ 
-              msg: `Cannot mark as complete yet. Appointment starts in ${timeUntilMsg} (at ${booking.time}).`,
-              appointmentStart: appointmentStart.toISOString(),
-              minutesUntilStart: minutesUntil
-            });
-          }
-          
-          // ✅ OPTIONAL: Prevent marking complete too long after appointment
-          // Uncomment if you want to enforce this restriction
-          /*
-          if (now > gracePeriodEnd) {
-            return res.status(400).json({ 
-              msg: 'Cannot mark as complete. Too much time has passed since the appointment ended. Please contact admin.',
-              appointmentEnd: appointmentEnd.toISOString()
-            });
-          }
-          */
-          
-          // Within valid time window
-          console.log('✅ Time validation passed - marking as complete');
-        }
-
-        const oldStatus = booking.status;
-
-// Build only the fields we're actually changing
-const updateFields = { status };
-
-if (status === 'completed' && oldStatus !== 'completed') {
-  updateFields.completedAt = new Date();
-  updateFields.completedBy = req.user.id;
-
-  // Attribute revenue to therapist
-  if (booking.therapist && booking.price) {
-    try {
-      const therapist = await User.findById(booking.therapist);
-      if (therapist && therapist.income) {
-        const commissionRate = therapist.commissionRate || 0.60;
-        const earning = booking.price * commissionRate;
-        therapist.income.total += earning;
-        await therapist.save();
-      }
-    } catch (incomeErr) {
-      console.error('⚠️ Failed to attribute revenue:', incomeErr);
-    }
+    // Show duration picker
+    buildDurationButtons(svc);
+    showDurationSection();
+    hideSummaryBar();
+    enableStep1Next(false);
   }
 }
 
-const updatedBooking = await Booking.findByIdAndUpdate(
-  booking._id,
-  { $set: updateFields },
-  { new: true, runValidators: false }
-).populate('service therapist');
+function clearServiceSelection() {
+  selectedService = null;
+  selectedMinutes = null;
+  servicesGridEl.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  hideDurationSection();
+  hideSummaryBar();
+  enableStep1Next(false);
+  totalDisplayEl.textContent = '₱0';
+}
 
-booking = updatedBooking;
+function buildDurationButtons(svc) {
+  durationGridEl.innerHTML = '';
+  const durations = svc.allowedDurations || [60, 90, 120];
+  let pricing = svc.pricing || {};
+  if (typeof pricing === 'string') { try { pricing = JSON.parse(pricing); } catch(e) { pricing = {}; } }
+  if (typeof pricing.toObject === 'function') pricing = pricing.toObject();
 
-        // Emit socket event
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('bookingStatusUpdated', {
-            message: `Booking status changed from ${oldStatus} to ${status}`,
-            booking: booking
-          });
+  durations.forEach(mins => {
+    const price = pricing[mins] || pricing[String(mins)] || pricing[Number(mins)] || svc.price || 0;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dur-btn';
+    btn.dataset.mins = mins;
 
-          if (booking.therapist) {
-            io.to(booking.therapist._id.toString()).emit('appointmentUpdated', {
-              message: `Appointment status updated to ${status}`,
-              booking: booking
-            });
-          }
-        }
+    let label = '';
+    if      (mins === 30)  label = '30 min';
+    else if (mins === 60)  label = '1 hour';
+    else if (mins === 90)  label = '1.5 hours';
+    else if (mins === 120) label = '2 hours';
+    else                   label = `${mins} min`;
 
-        res.json({ 
-          msg: `Status updated to ${status}`, 
-          booking,
-          completedAt: booking.completedAt 
-        });
-      } catch (err) {
-        console.error('❌ Error updating status:', err);
-        res.status(500).json({ msg: 'Server error', error: err.message });
+    btn.innerHTML = `<span class="dur-min">${label}</span>`;
+
+    btn.addEventListener('click', () => {
+      durationGridEl.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedMinutes = mins;
+
+      // Validate closing time
+      if (!validateClosingTime()) {
+        selectedMinutes = null;
+        btn.classList.remove('active');
+        return;
       }
+
+      updateSummaryBar();
+      updateTotal();
+      filterTimeOptions();
+      enableStep1Next(true);
     });
 
-    // Admin: Reassign therapist to booking
-    router.patch('/:id/reassign', auth, roles(['admin']), async (req, res) => {
-      try {
-        const { therapistId } = req.body;
-
-        const booking = await Booking.findById(req.params.id).populate('service');
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-
-        const oldTherapist = booking.therapist;
-        
-        if (therapistId) {
-          const therapist = await User.findOne({ _id: therapistId, role: 'therapist', isActive: true });
-          if (!therapist) {
-            return res.status(404).json({ msg: 'Therapist not found or inactive' });
-          }
-
-          if (!hasExpertise(therapist, booking.service.name)) {
-            return res.status(400).json({ 
-              msg: `${therapist.name} is not qualified for ${booking.service.name}` 
-            });
-          }
-
-          const bookingDate = new Date(booking.date);
-          if (!isTherapistWorkingAt(therapist, bookingDate, booking.time)) {
-            return res.status(400).json({ 
-              msg: `${therapist.name} is not working at ${booking.time}` 
-            });
-          }
-
-          const isAvailable = await isTherapistAvailable(
-            therapist._id,
-            bookingDate,
-            booking.time,
-            booking.durationMinutes
-          );
-
-          if (!isAvailable) {
-            return res.status(400).json({ 
-              msg: `${therapist.name} is already booked at this time` 
-            });
-          }
-
-          booking.therapist = therapistId;
-          booking.therapists = [therapistId];
-        } else {
-          booking.therapist = null;
-          booking.therapists = [];
-        }
-
-        await booking.save();
-        await booking.populate('service therapist');
-
-        const io = req.app.get('socketio');
-        if (io) {
-          if (oldTherapist) {
-            io.to(oldTherapist.toString()).emit('appointmentRemoved', {
-              message: 'An appointment was reassigned',
-              bookingId: booking._id
-            });
-          }
-
-          if (booking.therapist) {
-            io.to(booking.therapist._id.toString()).emit('newAssignment', {
-              message: 'You have been assigned a new appointment!',
-              booking: booking
-            });
-          }
-
-          io.emit('bookingUpdated', { booking });
-        }
-
-        res.json({ msg: 'Therapist reassigned', booking });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    router.get('/lookup-by-id/:transactionNumber', async (req, res) => {
-      try {
-        const { transactionNumber } = req.params;
-        
-        if (!transactionNumber) {
-          return res.status(400).json({ msg: 'Transaction number is required' });
-        }
-        
-        console.log('🔍 Looking up booking by transaction ID:', transactionNumber);
-        
-        // Find booking by transaction number
-        const booking = await Booking.findOne({
-          transactionNumber: transactionNumber.toUpperCase(),
-        })
-          .populate('service', 'name price pricing')
-          .populate('therapist', 'name');
-        
-        if (!booking) {
-          return res.status(404).json({ 
-            msg: 'Booking not found. Please check your transaction number or contact us for assistance.' 
-          });
-        }
-        
-        console.log('✅ Found booking:', booking._id);
-        
-        res.json(booking);
-      } catch (err) {
-        console.error('❌ Transaction lookup error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    // POST /lookup — find bookings by phone (name optional)
-    router.post('/lookup', async (req, res) => {
-      try {
-        const { phone, name } = req.body;
-        
-        if (!phone) {
-          return res.status(400).json({ msg: 'Phone number is required' });
-        }
-
-        const query = { guestPhone: phone };
-        if (name && name.trim()) {
-          query.guestName = { $regex: new RegExp(name.trim(), 'i') };
-        }
-        
-        const bookings = await Booking.find(query)
-          .populate('service', 'name price pricing')
-          .populate('therapist', 'name')
-          .sort({ date: -1 });
-
-        if (bookings.length === 0) {
-          return res.status(404).json({ msg: 'No bookings found with that phone number.' });
-        }
-        
-        res.json(bookings);
-      } catch (err) {
-        console.error('❌ Booking lookup error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    // PATCH /cancel/:id
-    router.patch('/cancel/:id', async (req, res) => {
-      try {
-        const { phone, reason, transactionNumber } = req.body;
-
-        // Reason is now REQUIRED
-        if (!reason || reason.trim().length < 10) {
-          return res.status(400).json({
-            msg: 'Please provide a valid reason for cancellation (at least 10 characters).'
-          });
-        }
-
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-
-        // Identity verification: phone OR transactionNumber
-        const phoneMatches = phone && booking.guestPhone === phone;
-        const txnMatches   = transactionNumber &&
-          booking.transactionNumber === transactionNumber.toUpperCase();
-
-        if (!phoneMatches && !txnMatches) {
-          return res.status(403).json({
-            msg: 'Could not verify booking identity. Please provide matching phone or transaction number.'
-          });
-        }
-
-        if (booking.status === 'cancelled') {
-          return res.status(400).json({ msg: 'Booking is already cancelled' });
-        }
-        if (booking.status === 'completed') {
-          return res.status(400).json({ msg: 'Cannot cancel a completed booking' });
-        }
-        if (booking.status === 'pending_cancellation') {
-          return res.status(400).json({ msg: 'A cancellation request is already pending admin approval.' });
-        }
-        if (booking.status === 'pending_reschedule') {
-          return res.status(400).json({ msg: 'A reschedule request is already pending. Please wait for admin review.' });
-        }
-
-        // Store the previous status so admin can restore it on rejection
-        booking.previousStatus         = booking.status;
-        booking.status                 = 'pending_cancellation';
-        booking.cancellationReason     = reason.trim();
-        booking.cancellationRequestedAt = new Date();
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('cancellationRequested', {
-            message: `Cancellation requested for booking ${booking.transactionNumber}`,
-            booking
-          });
-        }
-
-        res.json({
-          msg: 'Cancellation request submitted. An admin will review it shortly.',
-          booking
-        });
-
-      } catch (err) {
-        console.error('❌ Cancel request error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    // PATCH /reschedule/:id
-    router.patch('/reschedule/:id', async (req, res) => {
-      try {
-        const { phone, newDate, newTime, reason, transactionNumber } = req.body;
-
-        if (!newDate || !newTime) {
-          return res.status(400).json({ msg: 'New date and time are required' });
-        }
-
-        // Reason is now REQUIRED
-        if (!reason || reason.trim().length < 10) {
-          return res.status(400).json({
-            msg: 'Please provide a valid reason for rescheduling (at least 10 characters).'
-          });
-        }
-
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-
-        // Identity verification
-        const phoneMatches = phone && booking.guestPhone === phone;
-        const txnMatches   = transactionNumber &&
-          booking.transactionNumber === transactionNumber.toUpperCase();
-
-        if (!phoneMatches && !txnMatches) {
-          return res.status(403).json({
-            msg: 'Could not verify booking identity. Please provide matching phone or transaction number.'
-          });
-        }
-
-        if (booking.status === 'cancelled') {
-          return res.status(400).json({ msg: 'Cannot reschedule a cancelled booking' });
-        }
-        if (booking.status === 'completed') {
-          return res.status(400).json({ msg: 'Cannot reschedule a completed booking' });
-        }
-        if (booking.status === 'pending_reschedule') {
-          return res.status(400).json({ msg: 'A reschedule request is already pending admin approval.' });
-        }
-        if (booking.status === 'pending_cancellation') {
-          return res.status(400).json({ msg: 'A cancellation request is pending. Please wait for admin review.' });
-        }
-
-        const newBookingDate = new Date(newDate);
-        if (newBookingDate < new Date().setHours(0, 0, 0, 0)) {
-          return res.status(400).json({ msg: 'Cannot reschedule to a past date' });
-        }
-
-        // Store pending reschedule details; don't move the booking yet
-        booking.previousStatus          = booking.status;
-        booking.status                  = 'pending_reschedule';
-        booking.rescheduleReason        = reason.trim();
-        booking.rescheduleRequestedAt   = new Date();
-        booking.pendingRescheduleDate   = newBookingDate;
-        booking.pendingRescheduleTime   = newTime;
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('rescheduleRequested', {
-            message: `Reschedule requested for booking ${booking.transactionNumber}`,
-            booking
-          });
-        }
-
-        res.json({
-          msg: 'Reschedule request submitted. An admin will review it shortly.',
-          booking
-        });
-
-      } catch (err) {
-        console.error('❌ Reschedule request error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    router.patch('/cancel/:id/approve', auth, roles(['admin']), async (req, res) => {
-      try {
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-        if (booking.status !== 'pending_cancellation') {
-          return res.status(400).json({ msg: 'No pending cancellation request for this booking' });
-        }
-
-        booking.status      = 'cancelled';
-        booking.cancelledAt = new Date();
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('bookingCancelled', { bookingId: booking._id, booking });
-          if (booking.therapist) {
-            io.to(booking.therapist.toString()).emit('appointmentCancelled', {
-              message: 'An appointment was cancelled by admin',
-              booking
-            });
-          }
-        }
-
-        res.json({ msg: 'Cancellation approved. Booking has been cancelled.', booking });
-
-      } catch (err) {
-        console.error('❌ Approve cancel error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-
-    // PATCH /cancel/:id/reject  — ADMIN rejects cancellation request
-    router.patch('/cancel/:id/reject', auth, roles(['admin']), async (req, res) => {
-      try {
-        const { adminNote } = req.body;
-
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-        if (booking.status !== 'pending_cancellation') {
-          return res.status(400).json({ msg: 'No pending cancellation request for this booking' });
-        }
-
-        // Restore to previous status (confirmed / pending)
-        booking.status            = booking.previousStatus || 'confirmed';
-        booking.adminRejectionNote = adminNote || 'Cancellation request was not approved.';
-        booking.cancellationReason = null; // Clear the pending reason
-        booking.previousStatus    = null;
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('cancellationRejected', { bookingId: booking._id, booking });
-        }
-
-        res.json({ msg: 'Cancellation request rejected. Booking remains active.', booking });
-
-      } catch (err) {
-        console.error('❌ Reject cancel error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-
-    // PATCH /reschedule/:id/approve  — ADMIN approves reschedule request
-    router.patch('/reschedule/:id/approve', auth, roles(['admin']), async (req, res) => {
-      try {
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-        if (booking.status !== 'pending_reschedule') {
-          return res.status(400).json({ msg: 'No pending reschedule request for this booking' });
-        }
-
-        const newBookingDate = new Date(booking.pendingRescheduleDate);
-        const newTime        = booking.pendingRescheduleTime;
-
-        // Check therapist availability at the new slot
-        if (booking.therapist) {
-          const isAvailable = await isTherapistAvailable(
-            booking.therapist, newBookingDate, newTime, booking.durationMinutes
-          );
-          if (!isAvailable) {
-            return res.status(400).json({
-              msg: 'The requested therapist is not available at the new time. Reject and notify the client to choose another slot.'
-            });
-          }
-        }
-
-        const { endTime: calculatedEndTime, availableAfter: availableAfterTime } =
-          await calculateEndTimes(newTime, booking.durationMinutes);
-
-        const endTimeDate        = convertTimeToDate(newBookingDate, calculatedEndTime);
-        const availableAfterDate = convertTimeToDate(newBookingDate, availableAfterTime);
-
-        const oldDate = booking.date;
-        const oldTime = booking.time;
-
-        booking.date              = newBookingDate;
-        booking.time              = newTime;
-        booking.endTime           = endTimeDate;
-        booking.availableAfter    = availableAfterDate;
-        booking.rescheduledFrom   = { date: oldDate, time: oldTime, rescheduledAt: new Date() };
-        booking.status            = booking.previousStatus || 'confirmed';
-        booking.previousStatus    = null;
-        booking.pendingRescheduleDate = null;
-        booking.pendingRescheduleTime = null;
-        booking.rescheduleReason  = null;
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('bookingRescheduled', { booking });
-          if (booking.therapist) {
-            io.to(booking.therapist.toString()).emit('appointmentRescheduled', {
-              message: 'An appointment was rescheduled',
-              booking
-            });
-          }
-        }
-
-        res.json({ msg: 'Reschedule approved. Booking has been moved to the new date/time.', booking });
-
-      } catch (err) {
-        console.error('❌ Approve reschedule error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-
-    // PATCH /reschedule/:id/reject  — ADMIN rejects reschedule request
-    router.patch('/reschedule/:id/reject', auth, roles(['admin']), async (req, res) => {
-      try {
-        const { adminNote } = req.body;
-
-        const booking = await Booking.findById(req.params.id)
-          .populate('service', 'name');
-
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
-        if (booking.status !== 'pending_reschedule') {
-          return res.status(400).json({ msg: 'No pending reschedule request for this booking' });
-        }
-
-        booking.status              = booking.previousStatus || 'confirmed';
-        booking.adminRejectionNote  = adminNote || 'Reschedule request was not approved.';
-        booking.previousStatus      = null;
-        booking.pendingRescheduleDate = null;
-        booking.pendingRescheduleTime = null;
-        booking.rescheduleReason    = null;
-
-        await booking.save();
-
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('rescheduleRejected', { bookingId: booking._id, booking });
-        }
-
-        res.json({ msg: 'Reschedule request rejected. Booking remains at original date/time.', booking });
-
-      } catch (err) {
-        console.error('❌ Reject reschedule error:', err);
-        res.status(500).json({ msg: 'Server error' });
-      }
-    });
-
-    router.get('/therapist-status', async (req, res) => {
-      try {
-        // Always use Philippine Time (UTC+8) regardless of server timezone
-        const now = new Date();
-        const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-        const currentTime = phTime.getHours() * 60 + phTime.getMinutes();
-        const currentDay = phTime.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Manila' });
-        
-        console.log('🔍 Checking therapist status:');
-        console.log(`   UTC time: ${now.toISOString()}`);
-        console.log(`   PH time:  ${phTime.toLocaleTimeString('en-PH')} (${phTime.getHours()}:${phTime.getMinutes()})`);
-        console.log(`   PH day:   ${currentDay}`);
-        console.log(`   Minutes since midnight: ${currentTime}`);
-        
-        // ✅ CORRECTED: Use "Settings" (plural) to match your model
-        let postServiceRestMinutes = 60;
-        try {
-          const Settings = require('../models/Settings'); // ✅ Changed from Setting to Settings
-          const postServiceRestSetting = await Settings.findOne({ key: 'postServiceRest' });
-          if (postServiceRestSetting && postServiceRestSetting.value) {
-            postServiceRestMinutes = postServiceRestSetting.value;
-          }
-          console.log(`⏰ Post-service rest period: ${postServiceRestMinutes} minutes`);
-        } catch (settingErr) {
-          console.warn('⚠️ Could not load Settings, using default 60 minutes:', settingErr.message);
-        }
-        
-        // Load grace periods
-        let todayGracePeriods = null;
-        try {
-          const GracePeriod = require('../models/GracePeriod');
-          todayGracePeriods = await GracePeriod.findOne({ 
-            dayOfWeek: currentDay, 
-            isActive: true 
-          });
-          console.log(`📋 Grace periods for ${currentDay}:`, todayGracePeriods?.periods?.length || 0);
-        } catch (graceErr) {
-          console.warn('⚠️ Could not load GracePeriod model:', graceErr.message);
-        }
-        
-        // Get all active therapists
-        const therapists = await User.find({ 
-          role: 'therapist', 
-          isActive: true 
-        }).select('name weeklySchedule dateOverrides');
-        
-        console.log(`📊 Found ${therapists.length} active therapists`);
-        
-        // Get all bookings for today
-        const todayStart = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate());
-        const todayEnd   = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate(), 23, 59, 59);
-        
-        const todaysBookings = await Booking.find({
-          date: {
-            $gte: todayStart,
-            $lte: todayEnd
-          },
-          status: { $nin: ['cancelled'] }
-        }).populate('therapist service', 'name');
-        
-        console.log(`📅 Found ${todaysBookings.length} bookings today`);
-        
-        // Calculate status for each therapist
-        const statusData = await Promise.all(therapists.map(async (therapist) => {
-          try {
-            console.log(`\n👤 Checking ${therapist.name}:`);
-            
-            // Check schedule
-            if (!therapist.weeklySchedule || therapist.weeklySchedule.length === 0) {
-              console.log(`   ⚠️ No weeklySchedule defined`);
-              return {
-                name: therapist.name,
-                status: 'off',
-                statusMessage: 'Schedule not configured',
-                currentBooking: null,
-                breakUntil: null,
-                nextAvailable: 'Schedule not available'
-              };
-            }
-            
-            const todaySchedule = therapist.weeklySchedule.find(
-              schedule => schedule.dayOfWeek === currentDay && schedule.isWorking
-            );
-            
-            if (!todaySchedule) {
-              console.log(`   ❌ No schedule for ${currentDay}`);
-              const nextWorkDay = getNextWorkDay(therapist.weeklySchedule, currentDay);
-              return {
-                name: therapist.name,
-                status: 'off',
-                statusMessage: 'Off Duty',
-                currentBooking: null,
-                breakUntil: null,
-                nextAvailable: nextWorkDay
-              };
-            }
-            
-            console.log(`   ✅ Has schedule for ${currentDay}`);
-            
-            const shifts = todaySchedule.shifts || [];
-            if (shifts.length === 0) {
-              console.log(`   ⚠️ Schedule exists but no shifts defined`);
-              return {
-                name: therapist.name,
-                status: 'off',
-                statusMessage: 'Schedule incomplete',
-                currentBooking: null,
-                breakUntil: null,
-                nextAvailable: 'Schedule not configured'
-              };
-            }
-            
-            // Check if within ANY shift
-            let isWithinWorkHours = false;
-            
-            for (const shift of shifts) {
-              const workStart = parseTimeToMinutes(shift.startTime);
-              const workEnd = parseTimeToMinutes(shift.endTime);
-              
-              if (currentTime >= workStart && currentTime < workEnd) {
-                isWithinWorkHours = true;
-                console.log(`   ✅ Within working hours (${shift.startTime} - ${shift.endTime})`);
-                break;
-              }
-            }
-            
-            if (!isWithinWorkHours) {
-              console.log(`   ❌ Outside working hours`);
-              const firstShift = shifts[0];
-              
-              let nextAvailable;
-              if (currentTime < parseTimeToMinutes(firstShift.startTime)) {
-                nextAvailable = `today at ${firstShift.startTime}`;
-              } else {
-                nextAvailable = getNextWorkDay(therapist.weeklySchedule, currentDay);
-              }
-              
-              return {
-                name: therapist.name,
-                status: 'off',
-                statusMessage: 'Off Duty',
-                currentBooking: null,
-                breakUntil: null,
-                nextAvailable
-              };
-            }
-            
-            // Check if in active booking
-            const activeBooking = todaysBookings.find(booking => {
-  if (booking.status === 'completed') return false;
-
-  const tid = therapist._id.toString();
-  const assignedSingle = booking.therapist && booking.therapist._id.toString() === tid;
-  const assignedMulti  = Array.isArray(booking.therapists) &&
-    booking.therapists.some(t => t.toString() === tid);
-
-  if (!assignedSingle && !assignedMulti) return false;
-
-  const bookingStartMinutes = parseTimeToMinutes(booking.time);
-  const bookingEnd = bookingStartMinutes + booking.durationMinutes;
-  return currentTime >= bookingStartMinutes && currentTime < bookingEnd;
-});
-            
-            if (activeBooking) {
-              console.log(`   🔴 In session: ${activeBooking.service?.name || 'Service'}`);
-              
-              const bookingStartMinutes = parseTimeToMinutes(activeBooking.time);
-              const sessionEndMinutes = bookingStartMinutes + activeBooking.durationMinutes;
-              const sessionEndTime = formatTimeFromMinutes(sessionEndMinutes);
-              
-              const availableAfterMinutes = sessionEndMinutes + postServiceRestMinutes;
-              const availableAfterTime = formatTimeFromMinutes(availableAfterMinutes);
-              
-              return {
-                name: therapist.name,
-                status: 'busy',
-                statusMessage: 'In Session',
-                currentBooking: {
-                  service: activeBooking.service,
-                  endTime: sessionEndTime,
-                  availableAfter: availableAfterTime
-                },
-                breakUntil: null,
-                nextAvailable: null
-              };
-            }
-            
-            // Check post-service grace period
-            const recentlyCompletedBooking = todaysBookings.find(booking => {
-  if (booking.status !== 'completed') return false;
-
-  const tid = therapist._id.toString();
-  const assignedSingle = booking.therapist && booking.therapist._id.toString() === tid;
-  const assignedMulti  = Array.isArray(booking.therapists) &&
-    booking.therapists.some(t => t.toString() === tid);
-
-  if (!assignedSingle && !assignedMulti) return false;
-
-  const bookingStartMinutes = parseTimeToMinutes(booking.time);
-  const sessionEndMinutes = bookingStartMinutes + booking.durationMinutes;
-  const gracePeriodEndMinutes = sessionEndMinutes + postServiceRestMinutes;
-  return currentTime >= sessionEndMinutes && currentTime < gracePeriodEndMinutes;
-});
-            
-            if (recentlyCompletedBooking) {
-              const bookingStartMinutes = parseTimeToMinutes(recentlyCompletedBooking.time);
-              const sessionEndMinutes = bookingStartMinutes + recentlyCompletedBooking.durationMinutes;
-              const gracePeriodEndMinutes = sessionEndMinutes + postServiceRestMinutes;
-              const gracePeriodEndTime = formatTimeFromMinutes(gracePeriodEndMinutes);
-              
-              console.log(`   💆 In post-service rest until ${gracePeriodEndTime}`);
-              
-              return {
-                name: therapist.name,
-                status: 'break',
-                statusMessage: 'Post-Service Rest',
-                currentBooking: null,
-                breakUntil: gracePeriodEndTime,
-                nextAvailable: null
-              };
-            }
-            
-            // Check scheduled breaks
-            if (todaySchedule.breaks && todaySchedule.breaks.length > 0) {
-              const currentBreak = todaySchedule.breaks.find(breakTime => {
-                const breakStart = parseTimeToMinutes(breakTime.startTime);
-                const breakEnd = parseTimeToMinutes(breakTime.endTime);
-                
-                return currentTime >= breakStart && currentTime < breakEnd;
-              });
-              
-              if (currentBreak) {
-                console.log(`   🟡 On scheduled break until ${currentBreak.endTime}`);
-                
-                return {
-                  name: therapist.name,
-                  status: 'break',
-                  statusMessage: currentBreak.label || 'Scheduled Break',
-                  currentBooking: null,
-                  breakUntil: currentBreak.endTime,
-                  nextAvailable: null
-                };
-              }
-            }
-            
-            // Check global grace periods
-            if (todayGracePeriods && todayGracePeriods.periods && todayGracePeriods.periods.length > 0) {
-              const globalGracePeriod = todayGracePeriods.periods.find(period => {
-                const periodStart = parseTimeToMinutes(period.startTime);
-                const periodEnd = parseTimeToMinutes(period.endTime);
-                
-                return currentTime >= periodStart && currentTime < periodEnd;
-              });
-              
-              if (globalGracePeriod) {
-                console.log(`   🌍 In global grace period until ${globalGracePeriod.endTime}`);
-                
-                return {
-                  name: therapist.name,
-                  status: 'break',
-                  statusMessage: globalGracePeriod.label || 'Rest Period',
-                  currentBooking: null,
-                  breakUntil: globalGracePeriod.endTime,
-                  nextAvailable: null
-                };
-              }
-            }
-            
-            // Available
-            console.log(`   🟢 Available`);
-            return {
-              name: therapist.name,
-              status: 'available',
-              statusMessage: 'Available Now',
-              currentBooking: null,
-              breakUntil: null,
-              nextAvailable: null
-            };
-            
-          } catch (therapistErr) {
-            console.error(`   ❌ Error processing ${therapist.name}:`, therapistErr.message);
-            return {
-              name: therapist.name,
-              status: 'off',
-              statusMessage: 'Error loading status',
-              currentBooking: null,
-              breakUntil: null,
-              nextAvailable: 'Unable to determine'
-            };
-          }
-        }));
-        
-        // Sort by status
-        const sortOrder = { available: 0, busy: 1, break: 2, off: 3 };
-        statusData.sort((a, b) => sortOrder[a.status] - sortOrder[b.status]);
-        
-        console.log('\n📊 Status Summary:');
-        const summary = statusData.reduce((acc, t) => {
-          acc[t.status] = (acc[t.status] || 0) + 1;
-          return acc;
-        }, {});
-        console.log(summary);
-        
-        res.json(statusData);
-        
-      } catch (error) {
-        console.error('❌ CRITICAL Error in therapist-status endpoint:', error);
-        console.error('Stack trace:', error.stack);
-        res.status(500).json({ 
-          msg: 'Server error', 
-          error: error.message,
-          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
-      }
-    });
-
-    // Helper functions
-    function parseTimeToMinutes(timeString) {
-      try {
-        const [time, period] = timeString.split(' ');
-        let [hours, minutes] = time.split(':').map(Number);
-        
-        if (period === 'PM' && hours !== 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        
-        return hours * 60 + minutes;
-      } catch (err) {
-        console.error('❌ Error parsing time:', timeString, err);
-        return 0;
+    durationGridEl.appendChild(btn);
+  });
+}
+
+// ─── Duration section visibility ─────────────────────────────────────────────
+function showDurationSection() { durationSectionEl.classList.add('visible'); }
+function hideDurationSection()  { durationSectionEl.classList.remove('visible'); }
+function showSummaryBar()       { summaryBarEl.classList.add('visible'); }
+function hideSummaryBar()       { summaryBarEl.classList.remove('visible'); }
+function enableStep1Next(val)   { btnStep1Next.disabled = !val; }
+
+// ─── Summary bar ──────────────────────────────────────────────────────────────
+function updateSummaryBar() {
+  if (!selectedService) { hideSummaryBar(); return; }
+  ssbServiceNameEl.textContent = selectedService.name;
+  ssbDurationEl.textContent = selectedMinutes
+    ? `${selectedMinutes} min · ${selectedService.category}`
+    : 'Choose duration above';
+  ssbPriceEl.textContent = totalAmount ? '₱' + totalAmount.toLocaleString() : '₱—';
+  showSummaryBar();
+}
+
+// ─── Total ────────────────────────────────────────────────────────────────────
+function updateTotal() {
+  if (!selectedService || !selectedMinutes) {
+    totalAmount = 0;
+    totalDisplayEl.textContent = '₱0';
+    if (downPayNoteEl) downPayNoteEl.style.display = 'none';
+    ssbPriceEl.textContent = '₱—';
+    return;
+  }
+
+  // Handle pricing as plain object, Map, MongoDB object, or JSON string
+  let pricing = selectedService.pricing || {};
+  if (typeof pricing === 'string') {
+    try { pricing = JSON.parse(pricing); } catch(e) { pricing = {}; }
+  }
+  if (typeof pricing.toObject === 'function') pricing = pricing.toObject();
+  if (pricing instanceof Map) {
+    const mapObj = {};
+    pricing.forEach((v, k) => { mapObj[k] = v; });
+    pricing = mapObj;
+  }
+
+  // Try all key formats: number, string, and also check allowedDurations+price fallback
+  let basePrice = pricing[selectedMinutes]
+    || pricing[String(selectedMinutes)]
+    || pricing[Number(selectedMinutes)]
+    || null;
+
+  // Fallback: if service has a flat price field
+  if (!basePrice && selectedService.price && selectedService.price > 0) {
+    basePrice = selectedService.price;
+  }
+
+  // Fallback: if allowedDurations has only one option and prices is an array
+  if (!basePrice && selectedService.prices) {
+    const idx = (selectedService.allowedDurations || []).indexOf(selectedMinutes);
+    if (idx >= 0) basePrice = selectedService.prices[idx];
+  }
+
+  basePrice = basePrice || 0;
+
+  // Use max(1, numClients) so price shows even when no clients selected yet
+  const clientCount = numClients > 0 ? numClients : 1;
+  totalAmount = basePrice * clientCount;
+
+  totalDisplayEl.textContent = '₱' + totalAmount.toLocaleString();
+  if (downPayNoteEl) downPayNoteEl.style.display = 'none';
+  ssbPriceEl.textContent = basePrice > 0
+    ? '₱' + totalAmount.toLocaleString()
+    : '₱—';
+
+  console.log('💰 Price debug:', { pricing, selectedMinutes, basePrice, clientCount, totalAmount });
+
+  validateStep3();
+}
+
+// ─── Step Navigation ──────────────────────────────────────────────────────────
+function goToStep(step) {
+  if (step === 2) {
+    // Validate step 1
+    if (!selectedService || !selectedMinutes) {
+      showNotification('❌ Please select a service and duration first.', 'error');
+      return;
+    }
+    // For couples, ensure min 1 female + 1 male
+    if (selectedService.category === 'Couples Packages') {
+      if (femaleClients < 1) femaleClients = 1;
+      if (maleClients < 1)   maleClients   = 1;
+      numClients = femaleClients + maleClients;
+      updateGenderCounterUI();
+      updateTotal();
+    }
+    // Re-apply progressive lock state
+    if (!dateSelected) lockTimeField();
+    else if (!timeSelectEl.value) lockTherapistFields();
+
+    // Lock gender columns until date + time both selected
+    if (!dateInputEl.value || !timeSelectEl.value) lockGenderSection();
+    else unlockGenderSection();
+  }
+
+  if (step === 3) {
+    if (!dateInputEl.value) {
+      showNotification('❌ Please select a date.', 'error');
+      return;
+    }
+    if (!timeSelectEl.value) {
+      showNotification('❌ Please select a time.', 'error');
+      return;
+    }
+    if (numClients < 1) {
+      showNotification('❌ Please add at least 1 client.', 'error');
+      return;
+    }
+    // Couples: must have at least 1 female + 1 male
+    if (selectedService?.category === 'Couples Packages') {
+      if (femaleClients < 1 || maleClients < 1) {
+        showNotification('👫 Couples Package requires at least 1 female and 1 male client.', 'warning');
+        return;
       }
     }
+  }
 
-    function formatTimeFromMinutes(totalMinutes) {
-      try {
-        const hours24 = Math.floor(totalMinutes / 60) % 24;
-        const minutes = totalMinutes % 60;
-        
-        const period = hours24 >= 12 ? 'PM' : 'AM';
-        const hours12 = hours24 > 12 ? hours24 - 12 : (hours24 === 0 ? 12 : hours24);
-        
-        return `${hours12}:${String(minutes).padStart(2, '0')} ${period}`;
-      } catch (err) {
-        console.error('❌ Error formatting time:', totalMinutes, err);
-        return 'Unknown';
+  currentStep = step;
+
+  // Show/hide step panels
+  document.querySelectorAll('.booking-step').forEach((el, i) => {
+    el.classList.toggle('active', i + 1 === step);
+  });
+
+  // Update progress bar
+  for (let i = 1; i <= 3; i++) {
+    const stepEl = document.getElementById(`pStep${i}`);
+    const connEl = document.getElementById(`pConn${i}`);
+    stepEl.classList.toggle('active', i === step);
+    stepEl.classList.toggle('done', i < step);
+    if (connEl) connEl.classList.toggle('done', i < step);
+  }
+
+  // Scroll to top of booking container
+  document.querySelector('.booking-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Booking type ─────────────────────────────────────────────────────────────
+function setBookingType(type) {
+  bookingType = type;
+  document.getElementById('btnOnline').classList.toggle('active', type === 'online');
+  document.getElementById('btnWalkin').classList.toggle('active', type === 'walk-in');
+  document.getElementById('walkinNotice').classList.toggle('visible', type === 'walk-in');
+}
+window.setBookingType = setBookingType;
+
+// ─── Gender Client Counters ───────────────────────────────────────────────────
+const MAX_FEMALE = 4;
+const MAX_MALE   = 2;
+
+function updateGenderCounterUI() {
+  const isCouples = selectedService?.category === 'Couples Packages';
+  const fMin = isCouples ? 1 : 0;
+  const mMin = isCouples ? 1 : 0;
+
+  document.getElementById('ccFValue').textContent = femaleClients;
+  document.getElementById('ccFMinus').disabled = (femaleClients <= fMin);
+  document.getElementById('ccFPlus').disabled  = (femaleClients >= MAX_FEMALE);
+  document.getElementById('femaleMaxSelections').textContent = femaleClients;
+
+  document.getElementById('ccMValue').textContent = maleClients;
+  document.getElementById('ccMMinus').disabled = (maleClients <= mMin);
+  document.getElementById('ccMPlus').disabled  = (maleClients >= MAX_MALE);
+  document.getElementById('maleMaxSelections').textContent = maleClients;
+
+  numClients = femaleClients + maleClients;
+  document.getElementById('totalClientsDisplay').textContent = numClients;
+
+  const warning = document.getElementById('totalClientsWarning');
+  if (warning) warning.style.display = numClients < 1 ? '' : 'none';
+
+  // Lock/unlock therapist dropdowns based on client counts
+  if (femaleClients > 0) unlockFemaleTherapistField();
+  else lockFemaleTherapistField();
+
+  if (maleClients > 0) unlockMaleTherapistField();
+  else lockMaleTherapistField();
+
+  // Trim selected therapists if over new limit
+  trimTherapistSelections();
+
+  // Always re-apply greyout for both columns when counts change
+  updateGenderGreyout('female');
+  updateGenderGreyout('male');
+
+  checkStep2Ready();
+}
+
+function adjustFemaleClients(delta) {
+  const isCouples = selectedService?.category === 'Couples Packages';
+  const min = isCouples ? 1 : 0;
+  femaleClients = Math.max(min, Math.min(MAX_FEMALE, femaleClients + delta));
+  updateGenderCounterUI();
+  updateTotal();
+}
+
+function adjustMaleClients(delta) {
+  const isCouples = selectedService?.category === 'Couples Packages';
+  const min = isCouples ? 1 : 0;
+  maleClients = Math.max(min, Math.min(MAX_MALE, maleClients + delta));
+  updateGenderCounterUI();
+  updateTotal();
+}
+
+// Keep legacy adjustClients as alias (used by couples reset logic)
+function adjustClients(delta) { adjustFemaleClients(delta); }
+
+window.adjustFemaleClients = adjustFemaleClients;
+window.adjustMaleClients   = adjustMaleClients;
+window.adjustClients       = adjustClients;
+
+// ─── Date ─────────────────────────────────────────────────────────────────────
+function setupDateRestrictions() {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, '0');
+  const d = String(today.getDate()).padStart(2, '0');
+  dateInputEl.min = `${y}-${m}-${d}`;
+
+  dateInputEl.addEventListener('change', async function() {
+    hideDateWarning();
+    if (dateInputEl.value) {
+      showDateChecking(true);
+      await checkDateAvailability(dateInputEl.value);
+      showDateChecking(false);
+      if (!dateFullyBooked) {
+        dateSelected = true;
+        unlockTimeField();
+      } else {
+        dateSelected = false;
+        therapistConfirmed = false;
+        lockTimeField();
       }
-    }
-
-    function getNextWorkDay(weeklySchedule, currentDay) {
-      try {
-        if (!weeklySchedule || weeklySchedule.length === 0) return 'Schedule not available';
-        
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const currentIndex = days.indexOf(currentDay);
-        
-        for (let i = 1; i <= 7; i++) {
-          const nextIndex = (currentIndex + i) % 7;
-          const nextDay = days[nextIndex];
-          
-          const schedule = weeklySchedule.find(s => s.dayOfWeek === nextDay && s.isWorking);
-          
-          if (schedule && schedule.shifts && schedule.shifts.length > 0) {
-            const firstShift = schedule.shifts[0];
-            return i === 1 
-              ? `tomorrow at ${firstShift.startTime}` 
-              : `${nextDay} at ${firstShift.startTime}`;
-          }
-        }
-        
-        return 'Schedule not available';
-      } catch (err) {
-        console.error('❌ Error getting next work day:', err);
-        return 'Unable to determine';
-      }
-    }
-
-    // Count unique clients for trust indicators
-    router.get('/count', async (req, res) => {
-      try {
-        const completedBookings = await Booking.find({
-          status: { $in: ['confirmed', 'completed'] }
-        }).select('guestPhone');
-        
-        const uniquePhones = new Set();
-        completedBookings.forEach(booking => {
-          if (booking.guestPhone) {
-            uniquePhones.add(booking.guestPhone);
-          }
-        });
-        
-        res.json({
-          uniqueClients: uniquePhones.size,
-          totalBookings: completedBookings.length
-        });
-        
-      } catch (err) {
-        console.error('Error counting clients:', err);
-        res.json({ uniqueClients: 0, totalBookings: 0 });
-      }
-    });
-
-    // Admin: Assign therapist with optional note (used by admin dashboard)
-router.put('/:id/assign-therapist', auth, roles(['admin']), async (req, res) => {
-  try {
-    const { therapistId, therapist: therapistName, assignNote } = req.body;
-
-    const booking = await Booking.findById(req.params.id).populate('service');
-    if (!booking) {
-      return res.status(404).json({ msg: 'Booking not found' });
-    }
-
-    const oldTherapist = booking.therapist;
-
-    if (therapistId) {
-      // Assigning a specific therapist
-      const therapist = await User.findOne({ _id: therapistId, role: 'therapist', isActive: true });
-      if (!therapist) {
-        return res.status(404).json({ msg: 'Therapist not found or inactive' });
-      }
-
-      booking.therapist  = therapist._id;
-      booking.therapists = [therapist._id];
+      // Grey out therapists who are off on the selected day
+      applyDayOffGreyout(dateInputEl.value);
     } else {
-      // Resetting to "Any available"
-      booking.therapist  = null;
-      booking.therapists = [];
+      dateSelected = false;
+      therapistConfirmed = false;
+      dateFullyBooked = false;
+      lockTherapistField();
+      hideDateWarning();
+      resetTherapistAvailability();
+      lockGenderSection(); // lock gender section when date is cleared
     }
+    validateTimeForToday();
+    checkStep2Ready();
+    await checkAvailability();
+    if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
 
-    // Save optional admin note
-    if (assignNote && assignNote.trim()) {
-      booking.assignNote = assignNote.trim();
+    // Unlock gender section only when BOTH date and time are selected
+    if (dateInputEl.value && timeSelectEl.value) unlockGenderSection();
+    else lockGenderSection();
+  });
+}
+
+// ─── Time ─────────────────────────────────────────────────────────────────────
+function setupTimeListener() {
+  timeSelectEl.addEventListener('change', async () => {
+    if (!validateClosingTime()) {
+      timeSelectEl.value = '';
+      endTimeBadgeEl.classList.remove('visible');
+      lockTherapistField();
+      return;
     }
+    calculateEndTime();
+    validateTimeForToday();
+    checkStep2Ready();
 
-    await booking.save();
-    await booking.populate('service therapist therapists');
+    // Unlock therapist field FIRST so dropdowns are visible
+    if (timeSelectEl.value) unlockTherapistField();
 
-    const io = req.app.get('socketio');
-    if (io) {
-      if (oldTherapist) {
-        io.to(oldTherapist.toString()).emit('appointmentRemoved', {
-          message: 'An appointment was reassigned',
-          bookingId: booking._id
-        });
-      }
-      if (booking.therapist) {
-        io.to(booking.therapist._id.toString()).emit('newAssignment', {
-          message: 'You have been assigned a new appointment!',
-          booking
-        });
-      }
-      io.emit('bookingUpdated', { booking });
-    }
+    // Unlock gender section now that both date and time are set
+    if (dateInputEl.value && timeSelectEl.value) unlockGenderSection();
+    else lockGenderSection();
 
-    res.json({ msg: 'Therapist assigned successfully', booking });
-  } catch (err) {
-    console.error('❌ Assign therapist error:', err);
-    res.status(500).json({ msg: 'Server error', error: err.message });
+    // Then check availability (awaited so greyouts apply in correct order)
+    await checkAvailability();
+  });
+}
+
+function validateClosingTime() {
+  if (!timeSelectEl.value || !selectedMinutes) return true;
+  const startMins = parseTimeToMinutes(timeSelectEl.value);
+  const endMins   = startMins + selectedMinutes;
+  const closeMin  = CLOSING_HOUR * 60 + CLOSING_MINS;
+
+  if (endMins > closeMin) {
+    const latest = formatTimeFromMinutes(closeMin - selectedMinutes);
+    showNotification(
+      `❌ Service would end after closing time (11:00 PM). Latest start time for ${selectedMinutes} min is ${latest}.`,
+      'error'
+    );
+    return false;
   }
-});
+  return true;
+}
 
-// ── GET /api/bookings/service-stats ──────────────────────────────────────────
-// Returns booking count + avg approved rating per service CATEGORY.
-// Used by the homepage to drive "Most Booked" badges and star ratings.
-router.get('/service-stats', async (req, res) => {
+function calculateEndTime() {
+  if (!timeSelectEl.value || !selectedMinutes) {
+    endTimeBadgeEl.classList.remove('visible');
+    return;
+  }
+  const endMins = parseTimeToMinutes(timeSelectEl.value) + selectedMinutes;
+  endTimeBadgeEl.textContent = `⏱ End time: ${formatTimeFromMinutes(endMins)}`;
+  endTimeBadgeEl.classList.add('visible');
+}
+
+function filterTimeOptions() {
+  if (!selectedMinutes) return;
+  const opts = timeSelectEl.querySelectorAll('option');
+  opts.forEach(opt => {
+    if (!opt.value) return;
+    const startMins = parseTimeToMinutes(opt.value);
+    const endMins   = startMins + selectedMinutes;
+    const closeMin  = CLOSING_HOUR * 60 + CLOSING_MINS;
+    opt.disabled = endMins > closeMin;
+  });
+}
+
+function validateTimeForToday() {
+  if (!dateInputEl.value || !timeSelectEl.value) return;
+  const today   = new Date();
+  const booking = new Date(dateInputEl.value + 'T00:00:00');
+  if (booking.toDateString() !== today.toDateString()) return;
+
+  const selMins = parseTimeToMinutes(timeSelectEl.value);
+  const nowMins = today.getHours() * 60 + today.getMinutes();
+  if (selMins < nowMins) {
+    showNotification('❌ Cannot book for a time that has already passed today.', 'error');
+    timeSelectEl.value = '';
+    endTimeBadgeEl.classList.remove('visible');
+    checkStep2Ready();
+  }
+}
+
+function checkStep2Ready() {
+  const hasDateTime = dateInputEl.value && timeSelectEl.value;
+  const hasClients  = numClients >= 1;
+
+  // Therapist fields are optional — confirmed after dropdown close
+  const femaleOk = femaleClients === 0 || femaleTherapistConfirmed || selectedFemaleTherapists.length > 0;
+  const maleOk   = maleClients   === 0 || maleTherapistConfirmed   || selectedMaleTherapists.length   > 0;
+
+  btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk);
+}
+
+// ─── Availability check ───────────────────────────────────────────────────────
+// ─── Day-off Greyout ─────────────────────────────────────────────────────────
+// Grey out therapists who are not working on the selected date
+function applyDayOffGreyout(dateStr) {
+  if (!dateStr) { resetTherapistAvailability(); return; }
+
+  // Get day name from date — use local date to avoid UTC offset issues
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const localDate = new Date(year, month - 1, day);
+  const dayNames  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName   = dayNames[localDate.getDay()];
+
+  ['female', 'male'].forEach(gender => {
+    const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+    const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+    if (!optionsEl) return;
+
+    const cbs = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+    cbs.forEach(cb => {
+      let schedule = [];
+      try { schedule = JSON.parse(cb.dataset.schedule || '[]'); } catch(e) {}
+
+      // Find this day in weeklySchedule
+      const dayEntry = schedule.find(s => s.dayOfWeek === dayName);
+      const isWorking = dayEntry ? dayEntry.isWorking : true; // default to working if no schedule
+
+      const item = cb.parentElement;
+      const lbl  = item.querySelector('label');
+
+      if (!isWorking) {
+        // Day off — grey out
+        cb.disabled = true;
+        item.dataset.available = 'false';
+        item.style.opacity = '0.4';
+        item.style.cursor  = 'not-allowed';
+        if (lbl) {
+          lbl.style.color = 'rgba(247,198,165,0.4)';
+          lbl.title = `Day off on ${dayName}`;
+        }
+        // Uncheck if was selected
+        if (cb.checked) {
+          cb.checked = false;
+          if (gender === 'female') {
+            selectedFemaleTherapists = selectedFemaleTherapists.filter(t => t.id !== cb.dataset.id);
+          } else {
+            selectedMaleTherapists = selectedMaleTherapists.filter(t => t.id !== cb.dataset.id);
+          }
+          selectedTherapists = [...selectedFemaleTherapists, ...selectedMaleTherapists];
+          updateGenderDropdownDisplay(gender);
+        }
+      } else {
+        // Working day — restore, BUT only if not booked at the selected time
+        item.dataset.available = 'true';
+        if (item.dataset.booked === 'true') return; // booked greyout wins — don't restore
+        if (!cb.checked) {
+          const limit        = gender === 'female' ? femaleClients : maleClients;
+          const checkedCount = cbs.filter(c => c.checked).length;
+          if (checkedCount < limit || limit === 0) {
+            cb.disabled = false;
+            item.style.opacity = '1';
+            item.style.cursor  = 'pointer';
+            if (lbl) { lbl.style.color = ''; lbl.title = ''; lbl.style.textDecoration = ''; }
+          }
+        }
+      }
+    });
+
+    // Re-apply limit greyout on top
+    updateGenderGreyout(gender);
+  });
+}
+
+async function checkAvailability() {
+  if (!selectedService || !selectedMinutes || !dateInputEl.value || !timeSelectEl.value) {
+    lastAvailableList = null;
+    resetTherapistAvailability();
+    if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+    return;
+  }
   try {
-    // 1. Booking counts grouped by service category (completed only)
-    const bookingCounts = await Booking.aggregate([
-      { $match: { status: 'completed' } },
-      {
-        $lookup: {
-          from: 'services',
-          localField: 'service',
-          foreignField: '_id',
-          as: 'serviceDoc',
-        },
-      },
-      { $unwind: '$serviceDoc' },
-      {
-        $group: {
-          _id: '$serviceDoc.category',
-          bookingCount: { $sum: 1 },
-          // keep one sample service name per category
-          sampleServiceName: { $first: '$serviceDoc.name' },
-        },
-      },
-      { $sort: { bookingCount: -1 } },
-    ]);
-
-    // 2. Avg approved rating grouped by service category
-    const ratingsByCategory = await Review.aggregate([
-      { $match: { status: 'approved', hidden: { $ne: true } } },
-      {
-        $lookup: {
-          from: 'services',
-          localField: 'service',
-          foreignField: '_id',
-          as: 'serviceDoc',
-        },
-      },
-      { $unwind: '$serviceDoc' },
-      {
-        $group: {
-          _id: '$serviceDoc.category',
-          averageRating: { $avg: '$rating' },
-          reviewCount:   { $sum: 1 },
-        },
-      },
-    ]);
-
-    // 3. Merge
-    const ratingsMap = {};
-    ratingsByCategory.forEach(r => {
-      ratingsMap[r._id] = {
-        averageRating: parseFloat(r.averageRating.toFixed(1)),
-        reviewCount:   r.reviewCount,
-      };
+    const res = await apiFetch(`${API_URL}/bookings/check-availability`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({
+        service: selectedService.name,
+        date: dateInputEl.value,
+        time: timeSelectEl.value,
+        durationMinutes: selectedMinutes
+      })
     });
 
-    // Find max recent bookings (last 30 days) for "Trending" badge
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const recentCounts = await Booking.aggregate([
-      { $match: { status: { $in: ['completed', 'confirmed'] }, date: { $gte: thirtyDaysAgo } } },
-      {
-        $lookup: {
-          from: 'services',
-          localField: 'service',
-          foreignField: '_id',
-          as: 'serviceDoc',
-        },
-      },
-      { $unwind: '$serviceDoc' },
-      {
-        $group: {
-          _id: '$serviceDoc.category',
-          recentCount: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const recentMap = {};
-    recentCounts.forEach(r => { recentMap[r._id] = r.recentCount; });
-
-    // Identify the single most-booked category
-    const maxBookings = bookingCounts.length > 0 ? bookingCounts[0].bookingCount : 0;
-    // Identify the single most-trending category
-    const maxRecent = Math.max(...Object.values(recentMap), 0);
-
-    const result = bookingCounts.map(cat => ({
-      category:      cat._id,
-      bookingCount:  cat.bookingCount,
-      recentCount:   recentMap[cat._id] || 0,
-      isMostBooked:  cat.bookingCount === maxBookings,
-      isTrending:    (recentMap[cat._id] || 0) === maxRecent && maxRecent > 0,
-      averageRating: ratingsMap[cat._id]?.averageRating || null,
-      reviewCount:   ratingsMap[cat._id]?.reviewCount   || 0,
-    }));
-
-    res.json(result);
+    if (!res.ok) {
+      lastAvailableList = null;
+      resetTherapistAvailability();
+    } else {
+      const data = await res.json();
+      lastAvailableList = data.available || [];
+      applyBookingAvailabilityGreyout(lastAvailableList);
+    }
   } catch (err) {
-    console.error('service-stats error:', err);
-    res.status(500).json({ msg: 'Server error' });
+    console.error('Availability check error:', err);
+    lastAvailableList = null;
+    resetTherapistAvailability();
   }
-});
 
-// ── GET /api/bookings/homepage-stats ─────────────────────────────────────────
-// Returns aggregate numbers for the counter section of the homepage.
-router.get('/homepage-stats', async (req, res) => {
+  // Always re-apply day-off LAST so it wins over booking availability
+  if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+}
+
+// Grey out therapists who are booked at the selected time
+// availableList = therapists who ARE free (from API)
+function applyBookingAvailabilityGreyout(availableList) {
+  // Always convert to plain lowercase string for reliable comparison
+  const availIds = new Set(
+    availableList.map(t => String(t.id || t._id || '').trim().toLowerCase())
+  );
+
+  ['female', 'male'].forEach(gender => {
+    const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+    const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+    if (!optionsEl) return;
+
+    const cbs = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+    cbs.forEach(cb => {
+      const id      = (cb.dataset.id || '').trim().toLowerCase();
+      const isAvail = availIds.has(id);
+      const item    = cb.parentElement;
+      const lbl     = item.querySelector('label');
+
+      if (!isAvail) {
+        // Already booked at this time — grey out
+        cb.disabled = true;
+        item.dataset.booked = 'true';
+        item.style.opacity  = '0.4';
+        item.style.cursor   = 'not-allowed';
+        if (lbl) {
+          lbl.style.color           = 'rgba(247,198,165,0.4)';
+          lbl.style.textDecoration  = 'line-through';
+          lbl.title = 'Already booked at this time';
+        }
+        // Deselect if was selected
+        if (cb.checked) {
+          cb.checked = false;
+          if (gender === 'female') selectedFemaleTherapists = selectedFemaleTherapists.filter(t => t.id !== id);
+          else                     selectedMaleTherapists   = selectedMaleTherapists.filter(t => t.id !== id);
+          selectedTherapists = [...selectedFemaleTherapists, ...selectedMaleTherapists];
+          updateGenderDropdownDisplay(gender);
+        }
+      } else {
+        // Free — restore (unless day-off, handled after)
+        item.dataset.booked = 'false';
+        if (item.dataset.available !== 'false') {
+          cb.disabled         = false;
+          item.style.opacity  = '1';
+          item.style.cursor   = 'pointer';
+          if (lbl) { lbl.style.color = ''; lbl.style.textDecoration = ''; lbl.title = ''; }
+        }
+      }
+    });
+
+    updateGenderGreyout(gender);
+  });
+}
+
+
+// ── Progressive field unlock ───────────────────────────────────────────────
+function unlockFemaleTherapistField() {
+  var el   = document.getElementById('femaleTherapistFieldGroup');
+  var hint = document.getElementById('femaleTherapistLockHint');
+  if (!el) return;
+  el.classList.remove('field-group-locked');
+  el.classList.add('field-group-unlocking');
+  if (hint) hint.style.display = 'none';
+  setTimeout(function(){ el.classList.remove('field-group-unlocking'); }, 500);
+}
+function unlockMaleTherapistField() {
+  var el   = document.getElementById('maleTherapistFieldGroup');
+  var hint = document.getElementById('maleTherapistLockHint');
+  if (!el) return;
+  el.classList.remove('field-group-locked');
+  el.classList.add('field-group-unlocking');
+  if (hint) hint.style.display = 'none';
+  setTimeout(function(){ el.classList.remove('field-group-unlocking'); }, 500);
+}
+// ─── Gender section lock (until date + time selected) ─────────────────────────
+function lockGenderSection() {
+  ['female', 'male'].forEach(g => {
+    const col = document.querySelector(`.gender-col--${g}`);
+    if (!col) return;
+    col.style.opacity     = '0.45';
+    col.style.pointerEvents = 'none';
+    col.style.userSelect  = 'none';
+    col.title = 'Please select a date and time first';
+  });
+}
+
+function unlockGenderSection() {
+  ['female', 'male'].forEach(g => {
+    const col = document.querySelector(`.gender-col--${g}`);
+    if (!col) return;
+    col.style.opacity       = '1';
+    col.style.pointerEvents = '';
+    col.style.userSelect    = '';
+    col.title = '';
+  });
+}
+
+function lockFemaleTherapistField() {
+  var el   = document.getElementById('femaleTherapistFieldGroup');
+  var hint = document.getElementById('femaleTherapistLockHint');
+  if (el) { el.classList.add('field-group-locked'); el.classList.remove('field-group-unlocking'); }
+  if (hint) hint.style.display = '';
+}
+function lockMaleTherapistField() {
+  var el   = document.getElementById('maleTherapistFieldGroup');
+  var hint = document.getElementById('maleTherapistLockHint');
+  if (el) { el.classList.add('field-group-locked'); el.classList.remove('field-group-unlocking'); }
+  if (hint) hint.style.display = '';
+}
+// Unified helpers used in setupTimeListener / date change
+function unlockTherapistField()  { if (femaleClients > 0) unlockFemaleTherapistField(); if (maleClients > 0) unlockMaleTherapistField(); }
+function lockTherapistField()    { lockFemaleTherapistField(); lockMaleTherapistField(); }
+function lockTherapistFields()   { lockTherapistField(); }
+function unlockTherapistFields() { unlockTherapistField(); }
+
+function unlockTimeField() {
+  var el   = document.getElementById('timeFieldGroup');
+  var hint = document.getElementById('timeLockHint');
+  if (!el) return;
+  el.classList.remove('field-group-locked');
+  el.classList.add('field-group-unlocking');
+  if (hint) hint.style.display = 'none';
+  setTimeout(function(){ el.classList.remove('field-group-unlocking'); }, 500);
+}
+function lockTimeField() {
+  var el   = document.getElementById('timeFieldGroup');
+  var hint = document.getElementById('timeLockHint');
+  if (el) { el.classList.add('field-group-locked'); el.classList.remove('field-group-unlocking'); }
+  if (hint) hint.style.display = '';
+  if (timeSelectEl) timeSelectEl.value = '';
+  if (endTimeBadgeEl) endTimeBadgeEl.classList.remove('visible');
+  femaleTherapistConfirmed = false;
+  maleTherapistConfirmed   = false;
+  therapistConfirmed       = false;
+  lockTherapistField();
+  checkStep2Ready();
+}
+
+// ─── Date-level Availability Check ─────────────────────────────────────────
+async function checkDateAvailability(dateStr) {
+  if (!selectedMinutes) return;
   try {
-    const [totalBookings, uniqueClientsResult, ratingResult] = await Promise.all([
-      // Total completed bookings
-      Booking.countDocuments({ status: 'completed' }),
+    var res = await apiFetch(API_URL + "/bookings/date-availability?date=" + dateStr + "&duration=" + selectedMinutes);
+    if (!res.ok) return;
+    var data = await res.json();
+   if (data.fullyBooked) {
+  dateFullyBooked = true;
 
-      // Sum numberOfClients across all completed bookings = total people served
-      Booking.aggregate([
-        { $match: { status: 'completed' } },
-        { $group: { _id: null, total: { $sum: { $ifNull: ['$numberOfClients', 1] } } } },
-      ]),
+  if (data.blockedByAdmin) {
+    // Admin closure — show centered closure message, no "error" type
+    const title = data.blockReason === 'vacation'
+      ? `🏖️ The spa is closed: "${data.blockLabel}"`
+      : `🚫 ${data.blockLabel || 'Store Holiday'}`;
+    showDateWarning(title, 'Please choose another date.', 'caution');
+    lockTimeField();
+    return;
+  }
 
-      // Average rating from approved reviews
-      Review.aggregate([
-        { $match: { status: 'approved', hidden: { $ne: true } } },
-        { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
-      ]),
-    ]);
-
-    const uniqueClients  = uniqueClientsResult[0]?.total  || 0;
-    const averageRating  = ratingResult[0]
-      ? parseFloat(ratingResult[0].avg.toFixed(1))
-      : 4.9;
-
-    res.json({
-      totalBookings,
-      totalClients:  uniqueClients,
-      yearsExperience: 15,            // static — business age
-      averageRating,
-    });
+  // Fully booked by appointments
+  showDateWarning(
+    "This date is fully booked",
+    "All therapists are occupied for " + selectedMinutes + "-minute services on this day. Please choose another date.",
+    "caution"
+  );
+  disableFullyBookedTimes(data.busySlots || []);
+} else {
+      dateFullyBooked = false;
+      if (data.busySlots && data.busySlots.length > 0) {
+        disableFullyBookedTimes(data.busySlots);
+        if (data.busySlots.length >= 6) {
+          showDateWarning(
+            "Some times are unavailable",
+            "Greyed-out slots have no available therapists. Choose from the remaining times.",
+            "warning"
+          );
+        } else {
+          hideDateWarning();
+        }
+      } else {
+        hideDateWarning();
+        resetTimeOptions();
+      }
+    }
   } catch (err) {
-    console.error('homepage-stats error:', err);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Date availability check failed:", err);
+    dateFullyBooked = false;
+  }
+}
+
+function disableFullyBookedTimes(busySlots) {
+  if (!timeSelectEl) return;
+  var opts = timeSelectEl.querySelectorAll("option");
+  opts.forEach(function(opt) {
+    if (!opt.value) return;
+    var isBusy = busySlots.indexOf(opt.value) !== -1;
+    opt.disabled = isBusy;
+    opt.textContent = isBusy ? opt.value + " (fully booked)" : opt.value;
+  });
+}
+
+function resetTimeOptions() {
+  if (!timeSelectEl) return;
+  var opts = timeSelectEl.querySelectorAll("option");
+  opts.forEach(function(opt) {
+    opt.disabled = false;
+    if (opt.value) opt.textContent = opt.value;
+  });
+}
+
+function showDateWarning(title, detail, type) {
+  var el = document.getElementById("dateAvailWarning");
+  if (!el) return;
+  var isError = type === "error";
+  el.className = "date-avail-warning " + (isError ? "daw-error" : "daw-caution");
+  el.innerHTML =
+    "<span class=\"daw-icon\">" + (isError ? "⛔" : "⚠️") + "</span>" +
+    "<div><strong>" + title + "</strong>" +
+    (detail ? "<br><span class=\"daw-detail\">" + detail + "</span>" : "") + "</div>";
+  el.style.display = "flex";
+el.style.justifyContent = "center";
+el.style.textAlign = "center";
+}
+
+function hideDateWarning() {
+  var el = document.getElementById("dateAvailWarning");
+  if (el) el.style.display = "none";
+  resetTimeOptions();
+}
+
+function showDateChecking(show) {
+  var el = document.getElementById("dateAvailWarning");
+  if (!el) return;
+  if (show) {
+    el.className = "date-avail-warning daw-checking";
+    el.innerHTML = "<span class=\"daw-icon\">\u23f3</span><div><strong>Checking availability…</strong></div>";
+    el.style.display = "flex";
+  } else {
+    if (el.className.indexOf("daw-checking") !== -1) el.style.display = "none";
+  }
+}
+// ─── Therapist Dropdown ───────────────────────────────────────────────────────
+async function loadTherapists() {
+  try {
+    const res = await apiFetch(`${API_URL}/auth/therapists`);
+    allTherapists = await res.json();
+
+    const femaleList = allTherapists.filter(t => t.gender === 'female');
+    const maleList   = allTherapists.filter(t => t.gender === 'male');
+    const noneHaveGender = femaleList.length === 0 && maleList.length === 0;
+
+    // If gender not in DB yet: show all in both (temporary fallback)
+    // If partially set: use what we have, fallback to all for the empty side
+    populateGenderDropdown('female', noneHaveGender || femaleList.length === 0 ? allTherapists : femaleList);
+    populateGenderDropdown('male',   noneHaveGender || maleList.length   === 0 ? allTherapists : maleList);
+
+    console.log(`✅ Loaded ${allTherapists.length} therapists`);
+    // If date already selected, apply day-off greyout immediately
+    if (dateInputEl && dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+  } catch (err) {
+    console.error('Failed to load therapists:', err);
+  }
+}
+
+function populateGenderDropdown(gender, therapists) {
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  // Remove existing non-"any" options
+  const existing = optionsEl.querySelectorAll('.option-item');
+  existing.forEach((el, i) => { if (i > 0) el.remove(); });
+
+  therapists.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'option-item';
+    div.style.cssText = 'cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;user-select:none;';
+    div.innerHTML = `
+      <input type="checkbox" id="therapist-${gender}-${t._id}" value="${t.name}"
+        data-id="${t._id}"
+        data-gender="${gender}"
+        data-expertise='${JSON.stringify(t.expertise || [])}'
+        data-schedule='${JSON.stringify(t.weeklySchedule || [])}'>
+      <label for="therapist-${gender}-${t._id}" style="cursor:pointer;pointer-events:none;">${t.name}</label>
+    `;
+    div.addEventListener('click', (e) => {
+      const cb = div.querySelector('input[type="checkbox"]');
+      if (!cb || cb.disabled) return;
+      if (e.target !== cb) cb.click();
+    });
+    optionsEl.appendChild(div);
+  });
+
+  refreshGenderDropdownListeners(gender);
+}
+
+function setupTherapistDropdown() {
+  setupGenderDropdown('female');
+  setupGenderDropdown('male');
+}
+
+function setupGenderDropdown(gender) {
+  const displayEl  = document.getElementById(gender === 'female' ? 'femaleDropdownDisplay'  : 'maleDropdownDisplay');
+  const optionsEl  = document.getElementById(gender === 'female' ? 'femaleDropdownOptions'  : 'maleDropdownOptions');
+  const dropdownEl = document.getElementById(gender === 'female' ? 'femaleTherapistDropdown': 'maleTherapistDropdown');
+
+  if (!displayEl || !optionsEl || !dropdownEl) {
+    console.warn(`setupGenderDropdown: missing elements for gender="${gender}"`);
+    return;
+  }
+
+  displayEl.addEventListener('click', () => {
+    optionsEl.classList.toggle('show');
+    // Re-apply greyout when opening dropdown in case API finished after last open
+    if (optionsEl.classList.contains('show') && lastAvailableList !== null) {
+      applyBookingAvailabilityGreyout(lastAvailableList);
+      if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!dropdownEl.contains(e.target)) {
+      const wasOpen = optionsEl.classList.contains('show');
+      optionsEl.classList.remove('show');
+      if (wasOpen && dateSelected) {
+        if (gender === 'female') femaleTherapistConfirmed = true;
+        else                     maleTherapistConfirmed   = true;
+        checkStep2Ready();
+      }
+    }
+  });
+}
+
+function refreshGenderDropdownListeners(gender) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  const maxCount  = gender === 'female' ? femaleClients : maleClients;
+  const anyCheckbox = document.getElementById(anyId);
+
+  const otherCBs = () => Array.from(
+    optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`)
+  );
+
+  anyCheckbox.addEventListener('change', () => {
+    if (anyCheckbox.checked) {
+      otherCBs().forEach(cb => { cb.checked = false; });
+      if (gender === 'female') selectedFemaleTherapists = [];
+      else                     selectedMaleTherapists   = [];
+      updateGenderDropdownDisplay(gender);
+      updateGenderGreyout(gender);
+      checkStep2Ready();
+    }
+  });
+
+  optionsEl.addEventListener('change', (e) => {
+    const cb = e.target;
+    if (!cb || cb.id === anyId) return;
+
+    const limit = gender === 'female' ? femaleClients : maleClients;
+    const checked = otherCBs().filter(c => c.checked);
+    if (cb.checked && checked.length > limit) {
+      cb.checked = false;
+      showNotification(`You can only select up to ${limit} ${gender} therapist(s).`, 'warning');
+      return;
+    }
+
+    const selected = otherCBs()
+      .filter(c => c.checked)
+      .map(c => ({ name: c.value, id: c.dataset.id, gender }));
+
+    if (gender === 'female') selectedFemaleTherapists = selected;
+    else                     selectedMaleTherapists   = selected;
+
+    // Sync legacy selectedTherapists for summary/submission
+    selectedTherapists = [...selectedFemaleTherapists, ...selectedMaleTherapists];
+
+    const any = document.getElementById(anyId);
+    if (selected.length > 0) any.checked = false;
+    else                      any.checked = true;
+
+    updateGenderDropdownDisplay(gender);
+    updateGenderGreyout(gender);
+    checkStep2Ready();
+  });
+}
+
+function updateTherapistGreyout() {
+  updateGenderGreyout('female');
+  updateGenderGreyout('male');
+}
+
+function updateGenderGreyout(gender) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  const limit     = gender === 'female' ? femaleClients : maleClients;
+  const otherCBs  = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+
+  // If no clients for this gender, clear all greyout EXCEPT day-off therapists
+  if (limit === 0) {
+    otherCBs.forEach(cb => {
+      if (cb.parentElement.dataset.available === 'false') return; // keep day-off greyout
+      cb.disabled = false;
+      cb.parentElement.style.opacity = '1';
+      cb.parentElement.style.cursor  = 'pointer';
+      const lbl = cb.parentElement.querySelector('label');
+      if (lbl) { lbl.style.color = ''; lbl.style.textDecoration = ''; }
+    });
+    return;
+  }
+
+  const checkedCount = otherCBs.filter(cb => cb.checked).length;
+  const limitReached = checkedCount >= limit;
+
+  otherCBs.forEach(cb => {
+    // Skip therapists on day off or already booked — those states own their own styling
+    if (cb.parentElement.dataset.available === 'false') return;
+    if (cb.parentElement.dataset.booked === 'true') return;
+    const lbl = cb.parentElement.querySelector('label');
+    if (cb.checked) {
+      cb.disabled = false;
+      cb.parentElement.style.opacity = '1';
+      cb.parentElement.style.cursor  = 'pointer';
+      if (lbl) { lbl.style.color = ''; lbl.style.textDecoration = ''; }
+    } else if (limitReached) {
+      cb.disabled = true;
+      cb.parentElement.style.opacity = '0.4';
+      cb.parentElement.style.cursor  = 'not-allowed';
+      if (lbl) lbl.style.color = 'rgba(247,198,165,0.4)';
+    } else {
+      cb.disabled = false;
+      cb.parentElement.style.opacity = '1';
+      cb.parentElement.style.cursor  = 'pointer';
+      if (lbl) { lbl.style.color = ''; lbl.style.textDecoration = ''; }
+    }
+  });
+}
+
+function updateDropdownDisplay() {
+  updateGenderDropdownDisplay('female');
+  updateGenderDropdownDisplay('male');
+}
+
+function updateGenderDropdownDisplay(gender) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const displayEl = document.getElementById(gender === 'female' ? 'femaleDropdownDisplay' : 'maleDropdownDisplay');
+  const anyCheckbox = document.getElementById(anyId);
+  const ph = displayEl?.querySelector('.placeholder');
+  if (!ph) return;
+  const selected = gender === 'female' ? selectedFemaleTherapists : selectedMaleTherapists;
+  if (anyCheckbox?.checked || selected.length === 0) {
+    ph.textContent = `Any available ${gender} therapist`;
+  } else {
+    ph.textContent = selected.map(t => t.name).join(', ');
+  }
+}
+
+function trimTherapistSelections() {
+  // Trim female selections if over new female client count
+  if (selectedFemaleTherapists.length > femaleClients) {
+    selectedFemaleTherapists = selectedFemaleTherapists.slice(0, femaleClients);
+    const optionsEl = document.getElementById('femaleDropdownOptions');
+    const cbs = Array.from(optionsEl.querySelectorAll('input[type="checkbox"]:not(#any-female-therapist)'));
+    const keepIds = new Set(selectedFemaleTherapists.map(t => t.id));
+    cbs.forEach(cb => { if (!keepIds.has(cb.dataset.id)) cb.checked = false; });
+    updateGenderDropdownDisplay('female');
+  }
+  // Trim male selections if over new male client count
+  if (selectedMaleTherapists.length > maleClients) {
+    selectedMaleTherapists = selectedMaleTherapists.slice(0, maleClients);
+    const optionsEl = document.getElementById('maleDropdownOptions');
+    const cbs = Array.from(optionsEl.querySelectorAll('input[type="checkbox"]:not(#any-male-therapist)'));
+    const keepIds = new Set(selectedMaleTherapists.map(t => t.id));
+    cbs.forEach(cb => { if (!keepIds.has(cb.dataset.id)) cb.checked = false; });
+    updateGenderDropdownDisplay('male');
+  }
+  selectedTherapists = [...selectedFemaleTherapists, ...selectedMaleTherapists];
+}
+
+function resetTherapistAvailability() {
+  resetGenderAvailability('female');
+  resetGenderAvailability('male');
+}
+
+function resetGenderAvailability(gender) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  if (!optionsEl) return;
+  const otherCBs = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+  otherCBs.forEach(cb => {
+    // Never reset therapists marked as day-off
+    if (cb.parentElement.dataset.available === 'false') return;
+    cb.disabled = false;
+    cb.parentElement.dataset.booked = 'false';
+    cb.parentElement.style.opacity  = '1';
+    cb.parentElement.style.cursor   = 'pointer';
+    const lbl = cb.parentElement.querySelector('label');
+    if (lbl) { lbl.style.color = ''; lbl.style.textDecoration = ''; lbl.title = ''; }
+  });
+  updateGenderGreyout(gender);
+}
+
+function updateTherapistAvailability(availableList) {
+  updateGenderAvailability('female', availableList);
+  updateGenderAvailability('male',   availableList);
+}
+
+function updateGenderAvailability(gender, availableList) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  const availIds  = availableList.map(t => String(t.id || t._id || ''));
+  const otherCBs  = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+
+  otherCBs.forEach(cb => {
+    const id   = cb.dataset.id;
+    // Only grey out therapists explicitly confirmed as unavailable (already booked at that time)
+    // Don't grey based on expertise — that's enforced at booking time on the backend
+    const avail = availIds.includes(id);
+    cb.parentElement.dataset.available = avail ? 'true' : 'false';
+    if (!avail) {
+      cb.disabled = true;
+      cb.parentElement.style.opacity = '0.4';
+      cb.parentElement.style.cursor  = 'not-allowed';
+      const lbl = cb.parentElement.querySelector('label');
+      if (lbl) { lbl.style.color = 'rgba(247,198,165,0.4)'; lbl.style.textDecoration = 'line-through'; }
+      if (cb.checked) {
+        cb.checked = false;
+        if (gender === 'female') selectedFemaleTherapists = selectedFemaleTherapists.filter(t => t.id !== id);
+        else                     selectedMaleTherapists   = selectedMaleTherapists.filter(t => t.id !== id);
+        selectedTherapists = [...selectedFemaleTherapists, ...selectedMaleTherapists];
+        updateGenderDropdownDisplay(gender);
+      }
+    }
+  });
+  updateGenderGreyout(gender);
+}
+
+// ─── Step 3 Validation ────────────────────────────────────────────────────────
+function validateStep3() {
+  const name  = document.getElementById('guestName')?.value?.trim();
+  const phone = document.getElementById('guestPhone')?.value?.trim();
+  if (btnReview) btnReview.disabled = !(name && phone);
+}
+
+function setupCharCounter() {
+  guestNotesEl?.addEventListener('input', () => {
+    charCountSmEl.textContent = `${guestNotesEl.value.length} / 500`;
+  });
+}
+
+// Validate on input so the "Review" button enables in real-time
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'guestName' || e.target.id === 'guestPhone') {
+    validateStep3();
   }
 });
 
-    // ⚠️ IMPORTANT: All /:id routes MUST come AFTER specific routes
-    // Get single booking
-    router.get('/:id', auth, async (req, res) => {
-      try {
-        const booking = await Booking.findById(req.params.id)
-          .populate('service therapist therapists');
-        
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
+function submitStep3() {
+  const name  = document.getElementById('guestName')?.value?.trim();
+  const phone = document.getElementById('guestPhone')?.value?.trim();
+  if (!name || !phone) {
+    showNotification('❌ Please enter your name and phone number.', 'error');
+    return;
+  }
+  populateSummaryModal();
+  showSummaryModal();
+}
 
-        const isAdmin = req.user.role === 'admin';
-        const isTherapist = req.user.role === 'therapist' && booking.therapist?.toString() === req.user.id;
+// ─── Sort filter ──────────────────────────────────────────────────────────────
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'sortFilter') {
+    currentSort = e.target.value;
+    if (selectedCategory) renderServices();
+  }
+});
 
-        if (!isAdmin && !isTherapist) {
-          return res.status(403).json({ msg: 'Not authorized' });
-        }
+// ─── Summary Modal ────────────────────────────────────────────────────────────
+function populateSummaryModal() {
+  document.getElementById('summary-category').textContent   = selectedService?.category || '—';
+  document.getElementById('summary-service').textContent    = selectedService?.name || '—';
+  document.getElementById('summary-duration').textContent   = selectedMinutes ? `${selectedMinutes} minutes` : '—';
+  document.getElementById('summary-clients').textContent    =
+    `${numClients} (${femaleClients}F / ${maleClients}M)`;
 
-        res.json(booking);
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
+  const femaleNames = selectedFemaleTherapists.length > 0
+    ? selectedFemaleTherapists.map(t => t.name).join(', ')
+    : 'Any available female therapist';
+  const maleNames = selectedMaleTherapists.length > 0
+    ? selectedMaleTherapists.map(t => t.name).join(', ')
+    : (maleClients > 0 ? 'Any available male therapist' : 'None');
+  document.getElementById('summary-therapists').textContent =
+    `Female: ${femaleNames}` + (maleClients > 0 ? ` | Male: ${maleNames}` : '');
+
+  document.getElementById('summary-date').textContent = dateInputEl.value
+    ? new Date(dateInputEl.value).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+    : '—';
+  document.getElementById('summary-time').textContent    = timeSelectEl.value || '—';
+
+  // End time calc
+  if (timeSelectEl.value && selectedMinutes) {
+    const endMins = parseTimeToMinutes(timeSelectEl.value) + selectedMinutes;
+    document.getElementById('summary-endtime').textContent = formatTimeFromMinutes(endMins);
+  } else {
+    document.getElementById('summary-endtime').textContent = '—';
+  }
+
+  document.getElementById('summary-name').textContent  = document.getElementById('guestName')?.value || '—';
+  document.getElementById('summary-phone').textContent = document.getElementById('guestPhone')?.value || '—';
+
+  const notes = guestNotesEl?.value?.trim() || '';
+  const notesSec = document.getElementById('notes-section');
+  if (notes) {
+    document.getElementById('summary-notes').textContent = notes;
+    notesSec.style.display = 'block';
+  } else {
+    notesSec.style.display = 'none';
+  }
+
+  document.getElementById('summary-total').textContent = '₱' + totalAmount.toLocaleString();
+}
+
+function showSummaryModal() {
+  summaryModalEl.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  const sc = summaryModalEl.querySelector('.summary-content');
+  if (sc) sc.scrollTop = 0;
+  // Reset terms checkbox
+  const cb = document.getElementById('termsCheckbox');
+  if (cb) {
+    cb.checked = false;
+    confirmBookingBtn.disabled = true;
+    confirmBookingBtn.style.opacity = '0.5';
+    confirmBookingBtn.style.cursor  = 'not-allowed';
+  }
+}
+
+function hideSummaryModal() {
+  summaryModalEl.style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function setupBackToEdit() {
+  backToEditBtn?.addEventListener('click', () => {
+    hideSummaryModal();
+    goToStep(3);
+  });
+}
+
+// ─── Terms ────────────────────────────────────────────────────────────────────
+function setupTermsCheckbox() {
+  const cb = document.getElementById('termsCheckbox');
+  if (!cb) return;
+  cb.addEventListener('change', () => {
+    confirmBookingBtn.disabled = !cb.checked;
+    confirmBookingBtn.style.opacity = cb.checked ? '1' : '0.5';
+    confirmBookingBtn.style.cursor  = cb.checked ? 'pointer' : 'not-allowed';
+  });
+}
+
+function showTermsModal(e) {
+  e.preventDefault();
+  const m = document.getElementById('termsModal');
+  if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+function closeTermsModal() {
+  const m = document.getElementById('termsModal');
+  if (m) { m.style.display = 'none'; document.body.style.overflow = 'auto'; }
+}
+function acceptTerms() {
+  const cb = document.getElementById('termsCheckbox');
+  if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change')); }
+  closeTermsModal();
+}
+window.showTermsModal  = showTermsModal;
+window.closeTermsModal = closeTermsModal;
+window.acceptTerms     = acceptTerms;
+
+// ─── Confirm Booking ──────────────────────────────────────────────────────────
+function setupConfirmBtn() {
+  confirmBookingBtn?.addEventListener('click', async () => {
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    if (!termsCheckbox?.checked) {
+      showNotification('❌ Please accept the Terms and Conditions to proceed.', 'error');
+      return;
+    }
+
+    const name  = document.getElementById('guestName')?.value?.trim();
+    const phone = document.getElementById('guestPhone')?.value?.trim();
+    const notes = guestNotesEl?.value?.trim() || '';
+    const date  = dateInputEl.value;
+    const time  = timeSelectEl.value;
+
+    if (!selectedService || !selectedMinutes || !date || !time || !name || !phone) {
+      showNotification('❌ Please complete all required fields.', 'error');
+      return;
+    }
+
+    // Calculate end time string
+    const endMins = parseTimeToMinutes(time) + selectedMinutes;
+    const endTime = formatTimeFromMinutes(endMins);
+
+    const bookingData = {
+      service:         selectedService.name,
+      minutes:         String(selectedMinutes),
+      therapists:      selectedTherapists.length > 0
+                         ? selectedTherapists
+                         : [{ name: 'Any available therapist' }],
+      femaleTherapists: selectedFemaleTherapists.length > 0
+                         ? selectedFemaleTherapists
+                         : [],
+      maleTherapists:   selectedMaleTherapists.length > 0
+                         ? selectedMaleTherapists
+                         : [],
+      numberOfClients: numClients,
+      femaleClients,
+      maleClients,
+      date,
+      time,
+      endTime,
+      notes,
+      name,
+      phone,
+      totalAmount,
+      paymentMethod:   bookingType === 'walk-in' ? 'Cash on Arrival' : 'Not specified',
+      termsAccepted:   true,
+      bookingType,
+    };
+
+    confirmBookingBtn.disabled = true;
+    confirmBookingBtn.textContent = 'Processing…';
+
+    try {
+      const response = await apiFetch(`${API_URL}/bookings`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body:    JSON.stringify(bookingData),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        hideSummaryModal();
+        const txn = data.booking?.transactionNumber || data.booking?._id?.substring(0, 8).toUpperCase();
+        showSuccessMessage(txn);
+        resetForm();
+      } else {
+        showNotification(`⚠️ ${data.msg || 'Booking failed. Please try again.'}`, 'error');
       }
+    } catch (err) {
+      console.error('Booking submit error:', err);
+      showNotification('❌ Server error. Please try again later.', 'error');
+    } finally {
+      confirmBookingBtn.disabled = false;
+      confirmBookingBtn.textContent = 'Confirm Booking →';
+    }
+  });
+}
+
+function showSuccessMessage(txn) {
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:white;padding:40px;border-radius:20px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:10002;
+    text-align:center;max-width:480px;width:90%;
+  `;
+  el.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:20px">✅</div>
+    <h3 style="color:#28a745;margin-bottom:15px;font-size:1.5rem">Booking Confirmed!</h3>
+    <p style="color:#666;margin-bottom:20px">Your appointment has been successfully booked.</p>
+    <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:20px">
+      <p style="color:#666;font-size:0.9rem;margin-bottom:10px">Your Transaction Number:</p>
+      <p style="color:#4b2e1e;font-size:1.8rem;font-weight:700;letter-spacing:2px">#${txn}</p>
+      <p style="color:#999;font-size:0.85rem;margin-top:10px">Save this number to manage your booking</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <button onclick="window.location.href='manage-booking.html'"
+        style="padding:12px 24px;background:#3498db;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+        Manage Booking
+      </button>
+      <button onclick="window.location.href='index.html'"
+        style="padding:12px 24px;background:#95a5a6;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+        Back to Home
+      </button>
+    </div>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; setTimeout(() => el.remove(), 400); }, 12000);
+}
+
+function resetForm() {
+  selectedService  = null;
+  selectedMinutes  = null;
+  selectedTherapists = [];
+  selectedFemaleTherapists = [];
+  selectedMaleTherapists   = [];
+  numClients    = 0;
+  femaleClients = 0;
+  maleClients   = 0;
+  totalAmount   = 0;
+
+  // Reset gender counter UI
+  document.getElementById('ccFValue').textContent = '0';
+  document.getElementById('ccFMinus').disabled = true;
+  document.getElementById('ccFPlus').disabled  = false;
+  document.getElementById('femaleMaxSelections').textContent = '0';
+  document.getElementById('ccMValue').textContent = '0';
+  document.getElementById('ccMMinus').disabled = true;
+  document.getElementById('ccMPlus').disabled  = false;
+  document.getElementById('maleMaxSelections').textContent = '0';
+  document.getElementById('totalClientsDisplay').textContent = '0';
+
+  dateInputEl.value = '';
+  timeSelectEl.value = '';
+  endTimeBadgeEl.classList.remove('visible');
+
+  document.getElementById('guestName').value  = '';
+  document.getElementById('guestPhone').value = '';
+  guestNotesEl.value = '';
+  charCountSmEl.textContent = '0 / 500';
+
+  totalDisplayEl.textContent = '₱0';
+
+  hideDurationSection();
+  hideSummaryBar();
+  enableStep1Next(false);
+  btnStep2Next.disabled = true;
+  if (btnReview) btnReview.disabled = true;
+
+  const anyFemale = document.getElementById('any-female-therapist');
+  if (anyFemale) anyFemale.checked = true;
+  const anyMale = document.getElementById('any-male-therapist');
+  if (anyMale) anyMale.checked = true;
+
+  // Uncheck all therapist checkboxes in both dropdowns
+  ['femaleDropdownOptions','maleDropdownOptions'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      if (cb.id !== 'any-female-therapist' && cb.id !== 'any-male-therapist') cb.checked = false;
     });
+  });
+  updateDropdownDisplay();
 
-    // Delete booking
-    router.delete('/:id', auth, roles(['admin']), async (req, res) => {
-      try {
-        const booking = await Booking.findByIdAndDelete(req.params.id);
-        
-        if (!booking) {
-          return res.status(404).json({ msg: 'Booking not found' });
-        }
+  goToStep(1);
+  if (selectedCategory) renderServices();
+}
 
-        const io = req.app.get('socketio');
-        if (io) {
-          io.emit('bookingDeleted', { bookingId: req.params.id });
-        }
+// ─── Mobile nav ───────────────────────────────────────────────────────────────
+function setupNavMobile() {
+  const hamburger = document.getElementById('hamburger');
+  const navLinks  = document.getElementById('navLinks');
+  if (!hamburger || !navLinks) return;
 
-        res.json({ msg: 'Booking deleted' });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server error' });
-      }
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('active');
+    document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('active');
+      document.body.style.overflow = '';
     });
+  });
+}
 
+// ─── Notification ─────────────────────────────────────────────────────────────
+function showNotification(message, type = 'info') {
+  document.querySelectorAll('.booking-notification').forEach(n => n.remove());
+  const el = document.createElement('div');
+  el.className = 'booking-notification';
+  const bg = type === 'success' ? '#28a745'
+           : type === 'error'   ? '#dc3545'
+           : type === 'warning' ? '#e68a00'
+           : '#007bff';
+  el.style.cssText = `
+    position:fixed;top:20px;right:20px;
+    background:${bg};color:white;
+    padding:14px 22px;border-radius:10px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.18);
+    z-index:10005;max-width:380px;
+    font-family:'Poppins',sans-serif;font-size:0.88rem;
+    animation:slideInRight 0.3s ease;
+  `;
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 5000);
+}
 
+// Animation
+const notifStyle = document.createElement('style');
+notifStyle.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(400px); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+`;
+document.head.appendChild(notifStyle);
 
-    module.exports = router;
+// ─── Time helpers ─────────────────────────────────────────────────────────────
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const [tp, per] = timeStr.split(' ');
+  let [h, m] = tp.split(':').map(Number);
+  if (per === 'PM' && h !== 12) h += 12;
+  if (per === 'AM' && h === 12) h = 0;
+  return h * 60 + m;
+}
+
+function formatTimeFromMinutes(total) {
+  const h24  = Math.floor(total / 60) % 24;
+  const mins = total % 60;
+  const per  = h24 >= 12 ? 'PM' : 'AM';
+  const h12  = h24 > 12 ? h24 - 12 : (h24 === 0 ? 12 : h24);
+  return `${h12}:${String(mins).padStart(2, '0')} ${per}`;
+}

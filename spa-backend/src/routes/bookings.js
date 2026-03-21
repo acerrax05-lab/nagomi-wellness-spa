@@ -169,20 +169,7 @@
     // Get all bookings (Admin only)
     router.get('/', auth, roles(['admin']), async (req, res) => {
       try {
-        const { from, to } = req.query;
-        let query = {};
-        
-        if (from || to) {
-          query.date = {};
-          if (from) query.date.$gte = new Date(from);
-          if (to) {
-            const toDate = new Date(to);
-            toDate.setHours(23, 59, 59, 999);
-            query.date.$lte = toDate;
-          }
-        }
-
-        let bookings = await Booking.find(query)
+        let bookings = await Booking.find()
           .populate('service', 'name price pricing durationMinutes allowedDurations')
           .populate('client', 'name email phone')
           .populate('therapist therapists', 'name email')
@@ -285,7 +272,7 @@
         
         res.json({
           available: availableTherapists.map(t => ({
-            id: t._id.toString(),
+            id: t._id,
             name: t.name,
             email: t.email,
             expertise: t.expertise
@@ -472,8 +459,6 @@ try {
           minutes,
           therapists: selectedTherapists,
           numberOfClients,
-          femaleClients,
-          maleClients,
           date,
           time,
           endTime,
@@ -983,23 +968,28 @@ booking = updatedBooking;
       }
     });
 
-    // POST /lookup — show ALL bookings, not just active ones
+    // POST /lookup — find bookings by phone (name optional)
     router.post('/lookup', async (req, res) => {
       try {
         const { phone, name } = req.body;
         
-        if (!phone || !name) {
-          return res.status(400).json({ msg: 'Phone number and name are required' });
+        if (!phone) {
+          return res.status(400).json({ msg: 'Phone number is required' });
+        }
+
+        const query = { guestPhone: phone };
+        if (name && name.trim()) {
+          query.guestName = { $regex: new RegExp(name.trim(), 'i') };
         }
         
-        const bookings = await Booking.find({
-          guestPhone: phone,
-          guestName: { $regex: new RegExp(name.trim(), 'i') },
-          // ✅ REMOVED: status filter — show all bookings
-        })
+        const bookings = await Booking.find(query)
           .populate('service', 'name price pricing')
           .populate('therapist', 'name')
-          .sort({ date: -1 }); // Most recent first
+          .sort({ date: -1 });
+
+        if (bookings.length === 0) {
+          return res.status(404).json({ msg: 'No bookings found with that phone number.' });
+        }
         
         res.json(bookings);
       } catch (err) {
@@ -1388,7 +1378,7 @@ booking = updatedBooking;
         
         console.log(`📊 Found ${therapists.length} active therapists`);
         
-        // Get all bookings for today using Philippine date
+        // Get all bookings for today
         const todayStart = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate());
         const todayEnd   = new Date(phTime.getFullYear(), phTime.getMonth(), phTime.getDate(), 23, 59, 59);
         
@@ -1440,7 +1430,6 @@ booking = updatedBooking;
             console.log(`   ✅ Has schedule for ${currentDay}`);
             
             const shifts = todaySchedule.shifts || [];
-            console.log(`   📋 Shifts: ${JSON.stringify(shifts)}`);
             if (shifts.length === 0) {
               console.log(`   ⚠️ Schedule exists but no shifts defined`);
               return {
@@ -1458,8 +1447,7 @@ booking = updatedBooking;
             
             for (const shift of shifts) {
               const workStart = parseTimeToMinutes(shift.startTime);
-              const workEnd   = parseTimeToMinutes(shift.endTime);
-              console.log(`   ⏰ Shift: ${shift.startTime}(${workStart}) - ${shift.endTime}(${workEnd}) | Now: ${currentTime}`);
+              const workEnd = parseTimeToMinutes(shift.endTime);
               
               if (currentTime >= workStart && currentTime < workEnd) {
                 isWithinWorkHours = true;
