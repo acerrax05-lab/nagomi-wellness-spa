@@ -157,33 +157,14 @@ require('./models/Settings');
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ✅ CORS — allows Vercel + local dev + all methods including PATCH/DELETE
-const corsOptions = {
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (origin.endsWith('.vercel.app')) return callback(null, true);
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-
-// ✅ Handle OPTIONS preflight — required for PATCH/DELETE from Vercel
+// ✅ BULLETPROOF CORS — set headers on every single response
 app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    const origin = req.headers.origin;
-    if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '86400');
-    return res.sendStatus(200);
-  }
+  const origin = req.headers.origin;
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 
@@ -191,9 +172,7 @@ app.use(express.json());
 app.set('socketio', io);
 
 // ── Serve spa-frontend static files ───────────────────────────────────────────
-// This is what makes uploaded service images reachable at /img/services/<file>
-// Path: spa-backend/src/server.js → ../../spa-frontend → spa-frontend/
-app.use(express.static(path.join(__dirname, '../../spa-frontend')));   // ← ADDED
+app.use(express.static(path.join(__dirname, '../../spa-frontend')));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ROUTES
@@ -213,7 +192,6 @@ app.get('/', (req, res) => {
   res.send('Nagomi Wellness Spa backend running');
 });
 
-// ✅ Health check — used by keep-alive ping
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -237,11 +215,7 @@ app.use((err, req, res, next) => {
 
 io.on('connection', (socket) => {
   console.log('✅ New client connected:', socket.id);
-
-  socket.on('disconnect', () => {
-    console.log('❌ Client disconnected:', socket.id);
-  });
-
+  socket.on('disconnect', () => console.log('❌ Client disconnected:', socket.id));
   socket.on('join', ({ userId, role }) => {
     socket.join(role);
     socket.join(userId);
@@ -250,33 +224,28 @@ io.on('connection', (socket) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// START SERVER
+// AUTO-ARCHIVE + START SERVER
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Booking  = require('./models/Booking');
 const mongoose = require('mongoose');
 
 function scheduleArchive() {
-  const now        = new Date();
-  const next2AM    = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-  const msUntil2AM = next2AM - now;
-  console.log(`🗃️  Auto-archive scheduled — next run in ${Math.round(msUntil2AM / 3600000)}h`);
+  const now     = new Date();
+  const next2AM = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
   setTimeout(async () => {
     try {
       const cutoff = new Date();
       cutoff.setFullYear(cutoff.getFullYear() - 2);
       const old = await Booking.find({ date: { $lt: cutoff } }).lean();
       if (old.length > 0) {
-        const db = mongoose.connection.db;
-        await db.collection('archivedBookings').insertMany(old);
+        await mongoose.connection.db.collection('archivedBookings').insertMany(old);
         await Booking.deleteMany({ date: { $lt: cutoff } });
         console.log(`✅ Auto-archive: moved ${old.length} bookings → archivedBookings`);
-      } else {
-        console.log(`🗃️  Auto-archive: no old bookings found`);
       }
     } catch (err) { console.error('❌ Auto-archive error:', err.message); }
     scheduleArchive();
-  }, msUntil2AM);
+  }, next2AM - now);
 }
 
 const PORT = process.env.PORT || 5000;
@@ -290,17 +259,14 @@ server.listen(PORT, () => {
   setTimeout(() => pingSarimaHealth(), 5000);
   scheduleArchive();
 
-  // ✅ Keep Render free tier awake — ping every 5 min
   if (process.env.NODE_ENV === 'production') {
     const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://nagomi-backend.onrender.com';
     setInterval(() => {
       http.get(`${SELF_URL}/health`, (res) => {
         console.log(`🏓 Keep-alive ping → ${res.statusCode}`);
-      }).on('error', (err) => {
-        console.warn('⚠️  Keep-alive ping failed:', err.message);
-      });
+      }).on('error', () => {});
     }, 5 * 60 * 1000);
-    console.log(`🏓 Keep-alive enabled → pinging every 5 min`);
+    console.log(`🏓 Keep-alive enabled`);
   }
 });
 
