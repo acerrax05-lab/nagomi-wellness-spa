@@ -16,7 +16,6 @@ body {
   background: url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200') center/cover;
   position: relative;
   padding: 60px 40px;
-  padding-top: 100px; /* account for fixed navbar on desktop */
   color: white;
   display: flex;
   justify-content: space-between;
@@ -603,21 +602,49 @@ body {
 @media (max-width: 768px) {
   .hero-section {
     flex-direction: column;
-    gap: 20px;
-    padding: 40px 20px;
+    gap: 16px;
+    padding: 80px 20px 30px; /* push below fixed navbar */
+    text-align: center;
   }
 
   .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .hero-content p {
+    font-size: 0.9rem;
   }
 
   .stats-section {
-    padding: 20px;
-    grid-template-columns: 1fr;
+    padding: 16px 20px;
+    grid-template-columns: repeat(2, 1fr); /* 2-col not 1-col */
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px 12px;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
   }
 
   .main-content {
-    padding: 0 20px 20px;
+    padding: 0 16px 24px;
+    gap: 20px;
+  }
+
+  .appointment-card {
+    padding: 18px 16px;
+  }
+
+  .btn-complete {
+    font-size: 0.9rem;
+    padding: 12px;
   }
 }
 
@@ -626,7 +653,7 @@ body {
    ═══════════════════════════════════════════════════════════════ */
 
 .therapist-navbar {
-  display: flex; /* visible on both desktop and mobile */
+  display: none; /* hidden on desktop — hero section shows instead */
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 56px;
@@ -647,7 +674,7 @@ body {
 
 /* Hamburger */
 .therapist-navbar .hamburger {
-  display: none; /* hidden on desktop */
+  display: flex;
   flex-direction: column;
   gap: 5px;
   cursor: pointer;
@@ -704,7 +731,6 @@ body {
 
 @media (max-width: 768px) {
   .therapist-navbar { display: flex; }
-  .therapist-navbar .hamburger { display: flex; } /* show hamburger on mobile */
 
   /* Push content below the fixed navbar */
   .hero-section { padding-top: 80px; }
@@ -712,4 +738,34 @@ body {
 
   /* Hide the desktop logout inside hero on mobile — navbar has it */
   #logoutBtn { display: none; }
+}
+
+/* === SMALL MOBILE (480px and below) === */
+@media (max-width: 480px) {
+  .hero-section { padding: 72px 16px 24px; }
+  .hero-content h1 { font-size: 1.5rem; }
+  .hero-content p  { font-size: 0.82rem; }
+
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .stat-number { font-size: 1.5rem; }
+  .stat-icon   { width: 44px; height: 44px; font-size: 1.3rem; }
+
+  .main-content { padding: 0 12px 20px; }
+
+  .appointment-card { padding: 14px; border-radius: 12px; }
+  .appointment-time { font-size: 1.2rem; }
+  .client-name      { font-size: 1rem; }
+  .btn-complete     { padding: 11px; font-size: 0.85rem; }
+}
+
+/* === VERY SMALL (360px and below) === */
+@media (max-width: 360px) {
+  .hero-content h1 { font-size: 1.3rem; }
+  .stat-number { font-size: 1.3rem; }
+  .main-content { padding: 0 10px 16px; }
 }
