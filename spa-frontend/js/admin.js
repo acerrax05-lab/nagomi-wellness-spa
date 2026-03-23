@@ -67,16 +67,20 @@ socket.on('bookingStatusUpdated', () => {
   document.getElementById('bookingSearchInput')?.addEventListener('input', (e) => {
     searchTerm = e.target.value.toLowerCase().trim();
     const clearBtn = document.getElementById('clearSearchBtn');
-    
+    const infoDiv  = document.getElementById('searchResultsInfo');
+
     if (searchTerm) {
       clearBtn.style.display = 'block';
-      // Wait 300ms after user stops typing before searching
+      // Show "searching…" immediately so the UI doesn't appear frozen
+      if (infoDiv) infoDiv.innerHTML = `<span style="color:#999;font-size:0.9rem;">🔍 Searching…</span>`;
       clearTimeout(searchDebounceTimer);
+      // 500ms debounce — waits until user stops typing before filtering
       searchDebounceTimer = setTimeout(() => {
         performBookingSearch();
-      }, 300);
+      }, 500);
     } else {
       clearTimeout(searchDebounceTimer);
+      if (infoDiv) infoDiv.innerHTML = '';
       clearBookingSearch();
     }
   });
@@ -103,160 +107,80 @@ socket.on('bookingStatusUpdated', () => {
   function displaySearchResults(results) {
   const tbody = document.querySelector('#bookingsTable tbody');
   const infoDiv = document.getElementById('searchResultsInfo');
-  
-  console.log('🔍 Displaying', results.length, 'search results');
-  
-  // Update info banner
+
+  // ── Info banner ──────────────────────────────────────────────────
   if (results.length === 0) {
     infoDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #dc3545; font-weight: 600;">
-          ❌ No bookings found matching "${searchTerm}"
-        </span>
-      </div>
-    `;
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#dc3545;font-weight:600;">❌ No bookings found matching "${searchTerm}"</span>
+      </div>`;
   } else {
     infoDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 600; color: #2196f3;">
-          ✅ Found ${results.length} booking${results.length !== 1 ? 's' : ''}
-        </span>
-        <span style="color: #666; font-size: 0.85rem;">
-          👆 Click any booking to view its full details on the calendar
-        </span>
-      </div>
-    `;
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:600;color:#2196f3;">✅ Found ${results.length} booking${results.length !== 1 ? 's' : ''}</span>
+        <span style="color:#666;font-size:0.85rem;">👆 Click any booking to view its full details on the calendar</span>
+      </div>`;
   }
-  
-  // Handle empty results
+
+  // ── Empty state ──────────────────────────────────────────────────
   if (results.length === 0) {
     tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
-          <div style="font-size: 3rem; margin-bottom: 15px;">🔍</div>
-          <p style="font-size: 1.1rem; margin-bottom: 8px;">No bookings found</p>
-          <p style="font-size: 0.9rem;">Try searching by:</p>
-          <ul style="list-style: none; padding: 0; margin-top: 10px; color: #666;">
-            <li>• Guest name</li>
-            <li>• Phone number</li>
-            <li>• Transaction number</li>
-            <li>• Service name</li>
-            <li>• Status (pending, confirmed, etc.)</li>
-          </ul>
-        </td>
-      </tr>
-    `;
+      <tr><td colspan="8" style="text-align:center;padding:40px;color:#999;">
+        <div style="font-size:3rem;margin-bottom:15px;">🔍</div>
+        <p style="font-size:1.1rem;margin-bottom:8px;">No bookings found</p>
+        <p style="font-size:0.9rem;">Try: name, phone, transaction number, service, or status</p>
+      </td></tr>`;
     return;
   }
-  
-  // Sort by date (most recent first)
-  const sorted = results.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-  tbody.innerHTML = '';
-  
-  // Display results with enhanced styling
-  sorted.forEach((booking, index) => {
+
+  // ── Sort once, build ALL rows as one string, set innerHTML ONCE ──
+  // This avoids the O(n) DOM re-parse that caused the lag/crash.
+  const statusColors = { pending:'#ffc107', confirmed:'#2196f3', completed:'#28a745', cancelled:'#dc3545' };
+
+  const sorted = results.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const html = sorted.map((booking, index) => {
     const dateStr = new Date(booking.date).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      weekday:'short', month:'short', day:'numeric', year:'numeric'
     });
-    
-    const therapistDisplay = booking.therapists && booking.therapists.length > 0
+    const therapistDisplay = booking.therapists?.length
       ? booking.therapists.map(t => t.name).join(', ')
-      : booking.therapist
-        ? booking.therapist.name
-        : 'Unassigned';
-    
-    // Determine status color
-    const statusColors = {
-      pending: '#ffc107',
-      confirmed: '#2196f3',
-      completed: '#28a745',
-      cancelled: '#dc3545'
-    };
+      : booking.therapist?.name || 'Unassigned';
     const statusColor = statusColors[booking.status] || '#6c757d';
-    
-    tbody.innerHTML += `
-      <tr 
-        data-booking-id="${booking._id}"
-        style="
-          cursor: pointer; 
-          transition: all 0.3s;
-          border-left: 4px solid ${statusColor};
-          ${index === 0 ? 'background: #f0f7ff;' : ''}
-        " 
-        onmouseover="
-          this.style.background='#f5f1eb';
-          this.style.transform='translateX(4px)';
-          this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';
-        " 
-        onmouseout="
-          this.style.background='${index === 0 ? '#f0f7ff' : ''}';
-          this.style.transform='translateX(0)';
-          this.style.boxShadow='none';
-        "
-        onclick="navigateToBookingDate('${booking._id}')">
-        
+    const genderHtml = (booking.femaleClients > 0 || booking.maleClients > 0)
+      ? `<div style="margin-bottom:4px;">
+           <span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${booking.femaleClients ?? 0}</span>
+           <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${booking.maleClients ?? 0}</span>
+         </div>`
+      : '';
+
+    return `
+      <tr data-booking-id="${booking._id}"
+          style="cursor:pointer;border-left:4px solid ${statusColor};${index === 0 ? 'background:#f0f7ff;' : ''}"
+          onmouseover="this.style.background='#f5f1eb';this.style.transform='translateX(4px)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
+          onmouseout="this.style.background='${index === 0 ? '#f0f7ff' : ''}';this.style.transform='translateX(0)';this.style.boxShadow='none';"
+          onclick="navigateToBookingDate('${booking._id}')">
         <td>
-          <div style="font-weight: 600; font-size: 1rem; margin-bottom: 6px;">
-            ${booking.guestName}
-          </div>
-          ${(booking.femaleClients != null || booking.maleClients != null) && (booking.femaleClients > 0 || booking.maleClients > 0) ? `
-          <div style="margin-bottom:4px;">
-            <span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${booking.femaleClients ?? 0}</span>
-            <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${booking.maleClients ?? 0}</span>
-          </div>` : ''}
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 6px;">
-              <span>📞</span>
-              <span>${booking.guestPhone}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 6px;">
-              <span>🎫</span>
-              <span style="font-family: monospace; background: #f5f5f5; padding: 2px 8px; border-radius: 4px;">
-                ${booking.transactionNumber}
-              </span>
-            </div>
-          </div>
+          <div style="font-weight:600;font-size:1rem;margin-bottom:4px;">${booking.guestName}</div>
+          ${genderHtml}
+          <div style="font-size:0.85rem;color:#666;">📞 ${booking.guestPhone || '—'}</div>
+          <div style="font-size:0.85rem;color:#666;">🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;">${booking.transactionNumber || '—'}</span></div>
         </td>
-        
         <td>
-          <div style="font-weight: 600; color: #4b2e1e;">${dateStr}</div>
-          <div style="font-size: 0.85rem; color: #666; margin-top: 2px;">${booking.time}</div>
+          <div style="font-weight:600;color:#4b2e1e;">${dateStr}</div>
+          <div style="font-size:0.85rem;color:#666;margin-top:2px;">${booking.time || '—'}</div>
         </td>
-        
         <td>${booking.service?.name || 'N/A'}</td>
         <td>${therapistDisplay}</td>
         <td>${booking.durationMinutes} mins</td>
-        <td style="font-weight: 600;">₱${(booking.price || 0).toLocaleString()}</td>
-        
-        <td>
-          <span class="status-badge status-${booking.status}" style="background: ${statusColor}; color: white;">
-            ${booking.status}
-          </span>
-        </td>
-        
-        <td>
-          <div style="
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: #2196f3;
-            font-weight: 600;
-          ">
-            <span>📍</span>
-            <span>View on Calendar</span>
-            <span style="font-size: 1.2rem;">→</span>
-          </div>
-        </td>
-      </tr>
-    `;
-  });
-  
-  console.log('✅ Search results displayed');
+        <td style="font-weight:600;">₱${(booking.price || 0).toLocaleString()}</td>
+        <td><span class="status-badge status-${booking.status}" style="background:${statusColor};color:white;">${booking.status}</span></td>
+        <td><div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:#2196f3;font-weight:600;">📍 View on Calendar →</div></td>
+      </tr>`;
+  }).join('');
+
+  // Single DOM write — no looping innerHTML +=
+  tbody.innerHTML = html;
 }
 
   function navigateToBookingDate(bookingId) {
@@ -399,32 +323,30 @@ socket.on('bookingStatusUpdated', () => {
 
 
   function clearBookingSearch() {
-  console.log('🧹 Clearing search');
-  
   searchTerm = '';
   const searchInput = document.getElementById('bookingSearchInput');
-  const clearBtn = document.getElementById('clearSearchBtn');
-  const infoDiv = document.getElementById('searchResultsInfo');
-  
+  const clearBtn    = document.getElementById('clearSearchBtn');
+  const infoDiv     = document.getElementById('searchResultsInfo');
+  const mobileList  = document.getElementById('mobileBookingList');
+
   if (searchInput) searchInput.value = '';
-  if (clearBtn) clearBtn.style.display = 'none';
-  if (infoDiv) infoDiv.innerHTML = '';
-  
-  // Reload current date or show message
+  if (clearBtn)    clearBtn.style.display = 'none';
+  if (infoDiv)     infoDiv.innerHTML = '';
+  if (mobileList)  mobileList.innerHTML = '';
+
+  // Reload current date or show placeholder
   if (selectedDate) {
-    console.log('📅 Reloading selected date:', selectedDate);
     loadBookingsForDate(selectedDate);
   } else {
     const tbody = document.querySelector('#bookingsTable tbody');
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">📅</div>
-            <p style="font-size: 1.1rem;">Select a date from the calendar to view bookings</p>
+          <td colspan="8" style="text-align:center;padding:40px;color:#999;">
+            <div style="font-size:3rem;margin-bottom:15px;">📅</div>
+            <p style="font-size:1.1rem;">Select a date from the calendar to view bookings</p>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }
   }
 }

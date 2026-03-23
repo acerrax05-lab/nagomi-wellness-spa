@@ -42,6 +42,7 @@ let selectedMaleTherapists   = [];
 let allTherapists    = [];
 let bookingType      = 'online';
 let dateSelected     = false;
+let dateFullyBooked  = false;   // ← explicit declaration
 let therapistConfirmed = false;
 let femaleTherapistConfirmed = false;
 let maleTherapistConfirmed   = false;
@@ -442,6 +443,11 @@ function goToStep(step) {
       showNotification('❌ Please select a date.', 'error');
       return;
     }
+    // Hard block — date fully booked by all therapists
+    if (dateFullyBooked) {
+      showNotification('⛔ This date is fully booked. Please choose a different date to continue.', 'error');
+      return;
+    }
     if (!timeSelectEl.value) {
       showNotification('❌ Please select a time.', 'error');
       return;
@@ -684,6 +690,12 @@ function checkStep2Ready() {
   // Therapist fields are optional — confirmed after dropdown close
   const femaleOk = femaleClients === 0 || femaleTherapistConfirmed || selectedFemaleTherapists.length > 0;
   const maleOk   = maleClients   === 0 || maleTherapistConfirmed   || selectedMaleTherapists.length   > 0;
+
+  // Block if date is fully booked — client must choose another date
+  if (dateFullyBooked) {
+    btnStep2Next.disabled = true;
+    return;
+  }
 
   btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk);
 }
@@ -943,27 +955,28 @@ async function checkDateAvailability(dateStr) {
     var res = await apiFetch(API_URL + "/bookings/date-availability?date=" + dateStr + "&duration=" + selectedMinutes);
     if (!res.ok) return;
     var data = await res.json();
-   if (data.fullyBooked) {
-  dateFullyBooked = true;
+  if (data.fullyBooked) {
+    dateFullyBooked = true;
 
-  if (data.blockedByAdmin) {
-    // Admin closure — show centered closure message, no "error" type
-    const title = data.blockReason === 'vacation'
-      ? `🏖️ The spa is closed: "${data.blockLabel}"`
-      : `🚫 ${data.blockLabel || 'Store Holiday'}`;
-    showDateWarning(title, 'Please choose another date.', 'caution');
-    lockTimeField();
-    return;
-  }
+    if (data.blockedByAdmin) {
+      const title = data.blockReason === 'vacation'
+        ? `🏖️ The spa is closed: "${data.blockLabel}"`
+        : `🚫 ${data.blockLabel || 'Store Holiday'}`;
+      showDateWarning(title, 'Please choose another date.', 'error');
+      lockTimeField();
+      checkStep2Ready();
+      return;
+    }
 
-  // Fully booked by appointments
-  showDateWarning(
-    "This date is fully booked",
-    "All therapists are occupied for " + selectedMinutes + "-minute services on this day. Please choose another date.",
-    "caution"
-  );
-  disableFullyBookedTimes(data.busySlots || []);
-} else {
+    // Fully booked by appointments — block the date clearly
+    showDateWarning(
+      "⛔ This date is fully booked",
+      "All therapists are occupied for " + selectedMinutes + "-minute services on this day. You must choose a different date to continue.",
+      "error"
+    );
+    disableFullyBookedTimes(data.busySlots || []);
+    checkStep2Ready();
+  } else {
       dateFullyBooked = false;
       if (data.busySlots && data.busySlots.length > 0) {
         disableFullyBookedTimes(data.busySlots);
@@ -980,6 +993,7 @@ async function checkDateAvailability(dateStr) {
         hideDateWarning();
         resetTimeOptions();
       }
+      checkStep2Ready();
     }
   } catch (err) {
     console.error("Date availability check failed:", err);
@@ -1479,6 +1493,14 @@ function setupConfirmBtn() {
       return;
     }
 
+    // Final safety guard — should never reach here if UI blocks correctly
+    if (dateFullyBooked) {
+      showNotification('⛔ This date is fully booked. Please go back and choose a different date.', 'error');
+      hideSummaryModal();
+      goToStep(2);
+      return;
+    }
+
     const name  = document.getElementById('guestName')?.value?.trim();
     const phone = document.getElementById('guestPhone')?.value?.trim();
     const notes = guestNotesEl?.value?.trim() || '';
@@ -1592,6 +1614,8 @@ function resetForm() {
   femaleClients = 0;
   maleClients   = 0;
   totalAmount   = 0;
+  dateFullyBooked = false;   // ← reset so next booking starts clean
+  dateSelected    = false;
 
   // Reset gender counter UI
   document.getElementById('ccFValue').textContent = '0';
