@@ -1,14 +1,6 @@
-const API_URL        = 'https://nagomi-backend.onrender.com/api';
-
-// Only add ngrok header when running locally via ngrok — not needed in production
-const isNgrok = window.location.hostname.endsWith('.ngrok-free.app') ||
-                window.location.hostname.endsWith('.ngrok.io');
+const API_URL = 'https://nagomi-backend.onrender.com/api';
 
 const apiFetch = (url, options = {}) => {
-  options.headers = {
-    ...(isNgrok ? { 'ngrok-skip-browser-warning': 'true' } : {}),
-    ...(options.headers || {})
-  };
   return fetch(url, options);
 };
 const CLOSING_HOUR   = 23;   // 11 PM
@@ -685,7 +677,8 @@ function checkStep2Ready() {
   const femaleOk = femaleClients === 0 || femaleTherapistConfirmed || selectedFemaleTherapists.length > 0;
   const maleOk   = maleClients   === 0 || maleTherapistConfirmed   || selectedMaleTherapists.length   > 0;
 
-  btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk);
+  // Block next if date is fully booked — client must pick another date
+  btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk) || dateFullyBooked;
 }
 
 // ─── Availability check ───────────────────────────────────────────────────────
@@ -947,22 +940,23 @@ async function checkDateAvailability(dateStr) {
   dateFullyBooked = true;
 
   if (data.blockedByAdmin) {
-    // Admin closure — show centered closure message, no "error" type
     const title = data.blockReason === 'vacation'
       ? `🏖️ The spa is closed: "${data.blockLabel}"`
       : `🚫 ${data.blockLabel || 'Store Holiday'}`;
-    showDateWarning(title, 'Please choose another date.', 'caution');
+    showDateWarning(title, 'Please choose another date to continue.', 'caution');
     lockTimeField();
+    updateStep2Next(); // re-evaluate button
     return;
   }
 
   // Fully booked by appointments
   showDateWarning(
-    "This date is fully booked",
-    "All therapists are occupied for " + selectedMinutes + "-minute services on this day. Please choose another date.",
-    "caution"
+    "⛔ This date is fully booked",
+    "All therapists are occupied for " + selectedMinutes + "-minute services on this day. Please select a different date to continue.",
+    "error"
   );
-  disableFullyBookedTimes(data.busySlots || []);
+  lockTimeField();
+  updateStep2Next(); // re-evaluate button — will disable it
 } else {
       dateFullyBooked = false;
       if (data.busySlots && data.busySlots.length > 0) {
