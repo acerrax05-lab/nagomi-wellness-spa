@@ -8,7 +8,7 @@
 
 /* === GLOBAL === */
 html {
-  overflow-x: hidden; /* prevents horizontal scroll without clipping fixed elements */
+  overflow-x: clip; /* clip instead of hidden — does NOT clip fixed-position children on Android */
 }
 
 body {
@@ -16,6 +16,7 @@ body {
   background: #f5f1eb;
   color: #333;
   scroll-behavior: smooth;
+  overflow-x: hidden; /* safety net on body (does NOT clip fixed children) */
 }
 
 h1, h2, h3 {
@@ -39,6 +40,9 @@ h1, h2, h3 {
   z-index: 1000;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   overflow: visible;
+  /* Ensure navbar never exceeds viewport width */
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .navbar.scrolled {
@@ -55,7 +59,11 @@ h1, h2, h3 {
   font-weight: 700;
   color: #fff;
   transition: color 0.3s ease;
-  flex-shrink: 0;
+  flex-shrink: 1;       /* allow shrinking on small screens */
+  min-width: 0;         /* let flexbox truncate it */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   z-index: 1001;
 }
 
@@ -68,7 +76,7 @@ h1, h2, h3 {
   gap: 5px;
   padding: 8px;
   margin-right: -8px;
-  flex-shrink: 0;
+  flex-shrink: 0;       /* NEVER shrink — always stays visible */
   background: none;
   border: none;
   -webkit-tap-highlight-color: transparent;
@@ -731,7 +739,16 @@ footer {
   /* Mobile Navigation */
   .navbar {
     padding: 14px 16px 14px 20px;
+    gap: 8px; /* small gap between logo and hamburger */
   }
+
+  /* Shorten logo on mobile so hamburger always fits */
+  .logo {
+    font-size: 1rem;
+  }
+
+  .logo-full  { display: none; }
+  .logo-short { display: inline !important; }
 
   .hamburger {
     display: flex;
@@ -850,7 +867,7 @@ footer {
 /* === SMALL MOBILE (480px and below) === */
 @media (max-width: 480px) {
   .logo {
-    font-size: 1.05rem;
+    font-size: 0.88rem;
   }
 
   .hero-text h1 {
