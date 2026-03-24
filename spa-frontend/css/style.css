@@ -7,12 +7,15 @@
 }
 
 /* === GLOBAL === */
+html {
+  overflow-x: hidden; /* prevents horizontal scroll without clipping fixed elements */
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background: #f5f1eb;
   color: #333;
   scroll-behavior: smooth;
-  overflow-x: hidden;
 }
 
 h1, h2, h3 {
@@ -31,8 +34,11 @@ h1, h2, h3 {
   position: fixed;
   width: 100%;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  overflow: visible;
 }
 
 .navbar.scrolled {
@@ -58,8 +64,14 @@ h1, h2, h3 {
   display: none;
   flex-direction: column;
   cursor: pointer;
-  z-index: 1001;
+  z-index: 1002;
   gap: 5px;
+  padding: 8px;
+  margin-right: -8px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hamburger span {
@@ -718,7 +730,7 @@ footer {
 @media (max-width: 768px) {
   /* Mobile Navigation */
   .navbar {
-    padding: 14px 20px;
+    padding: 14px 16px 14px 20px;
   }
 
   .hamburger {
