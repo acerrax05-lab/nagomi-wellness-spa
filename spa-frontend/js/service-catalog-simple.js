@@ -6,7 +6,7 @@
   // Your frontend runs on a different port (e.g. 5501 via Live Server).
   // Uploaded images are stored on the backend (port 5000), so relative paths
   // like /img/services/... must be prefixed with the backend origin.
-  const BACKEND_ORIGIN  = 'https://nagomi-backend.onrender.com/api';
+  const BACKEND_ORIGIN  = 'https://nagomi-backend.onrender.com';
 
   let allServices = [];
   let currentCategory = 'all';
