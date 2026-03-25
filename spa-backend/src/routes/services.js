@@ -4,29 +4,37 @@ const router = express.Router();
 const Service = require('../models/Service');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 
-const imgDir = path.join(__dirname, '../../../spa-frontend/img/services');
-if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, imgDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    cb(null, `service-${req.params.id}-${Date.now()}${ext}`);
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+ 
+// Use Cloudinary storage instead of disk storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:         'nagomi-services',       // images go to this folder in Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 800, height: 600, crop: 'fill', quality: 'auto' }],
+    public_id: (req, file) => {
+      // Use service ID + timestamp as filename so it's unique
+      const name = (req.params.id || 'service') + '-' + Date.now();
+      return name.replace(/[^a-zA-Z0-9-_]/g, '-');
+    },
   },
 });
-
-const uploadImg = multer({
+ 
+const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
-  fileFilter: (_req, file, cb) => {
-    if (/jpeg|jpg|png|webp/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only JPG, PNG, and WEBP images are allowed'));
-  },
-}).single('image');
+});
 
 // PUBLIC ROUTES 
 
@@ -95,47 +103,67 @@ router.get('/admin/all', auth, roles(['admin']), async (req, res) => {
 });
 
 // ── POST /api/services/:id/image — upload or replace ────────────────────────
-router.post('/:id/image', auth, (req, res) => {
-  uploadImg(req, res, async (err) => {
-    if (err)        return res.status(400).json({ msg: err.message || 'Upload error' });
-    if (!req.file)  return res.status(400).json({ msg: 'No file received' });
-
-    try {
-      const service = await Service.findById(req.params.id);
-      if (!service) return res.status(404).json({ msg: 'Service not found' });
-
-      // Delete old image file from disk
-      if (service.image) {
-        const old = path.join(__dirname, '../../../spa-frontend', service.image.replace(/^\//, ''));
-        if (fs.existsSync(old)) fs.unlinkSync(old);
-      }
-
-      service.image = `/img/services/${req.file.filename}`;
-      await service.save();
-      res.json({ image: service.image });
-    } catch (e) {
-      console.error('Image upload error:', e);
-      res.status(500).json({ msg: 'Server error' });
+router.post('/:id/image', auth, roles(['admin']), upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ msg: 'No image file provided' });
     }
-  });
+ 
+    // Cloudinary returns the permanent URL in req.file.path
+    const imageUrl = req.file.path;
+ 
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { image: imageUrl },
+      { new: true }
+    );
+ 
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+ 
+    console.log(`✅ Image uploaded to Cloudinary: ${imageUrl}`);
+ 
+    res.json({
+      msg:   'Image uploaded successfully',
+      image: imageUrl,
+      service,
+    });
+ 
+  } catch (err) {
+    console.error('❌ Image upload error:', err);
+    res.status(500).json({ msg: 'Upload failed', error: err.message });
+  }
 });
 
 // ── DELETE /api/services/:id/image — remove image ────────────────────────────
-router.delete('/:id/image', auth, async (req, res) => {
+router.delete('/:id/image', auth, roles(['admin']), async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
     if (!service) return res.status(404).json({ msg: 'Service not found' });
-
-    if (service.image) {
-      const p = path.join(__dirname, '../../../spa-frontend', service.image.replace(/^\//, ''));
-      if (fs.existsSync(p)) fs.unlinkSync(p);
-      service.image = null;
-      await service.save();
+ 
+    // Delete from Cloudinary if it's a Cloudinary URL
+    if (service.image && service.image.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from URL
+        const parts   = service.image.split('/');
+        const file    = parts[parts.length - 1].split('.')[0];
+        const folder  = parts[parts.length - 2];
+        const publicId = `${folder}/${file}`;
+        await cloudinary.uploader.destroy(publicId);
+        console.log(`🗑️  Deleted from Cloudinary: ${publicId}`);
+      } catch (cloudErr) {
+        console.warn('⚠️ Could not delete from Cloudinary:', cloudErr.message);
+      }
     }
-
-    res.json({ msg: 'Image removed' });
-  } catch (e) {
-    console.error('Image delete error:', e);
+ 
+    service.image = null;
+    await service.save();
+ 
+    res.json({ msg: 'Image removed', service });
+ 
+  } catch (err) {
+    console.error('❌ Image remove error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
