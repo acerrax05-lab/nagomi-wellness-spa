@@ -214,16 +214,16 @@
         <h3 id="selectedDateTitle">Select a date to view bookings</h3>
         <table id="bookingsTable" class="bookings-table" style="table-layout:fixed;width:100%;">
           <colgroup>
-            <col style="width:17%"> <!-- Client -->
+            <col style="width:18%"> <!-- Client -->
             <col style="width:9%">  <!-- Date -->
-            <col style="width:7%">  <!-- Start Time -->
-            <col style="width:7%">  <!-- End Time -->
-            <col style="width:16%"> <!-- Service -->
+            <col style="width:8%">  <!-- Start Time -->
+            <col style="width:8%">  <!-- End Time -->
+            <col style="width:18%"> <!-- Service -->
             <col style="width:12%"> <!-- Therapist -->
-            <col style="width:6%">  <!-- Duration -->
+            <col style="width:7%">  <!-- Duration -->
             <col style="width:7%">  <!-- Price -->
             <col style="width:7%">  <!-- Status -->
-            <col style="width:12%"> <!-- Actions -->
+            <col style="width:6%">  <!-- Actions -->
           </colgroup>
           <thead>
             <tr>
@@ -241,8 +241,6 @@
           </thead>
           <tbody></tbody>
         </table>
-        <!-- Mobile-only card list -->
-        <div id="mobileBookingList" class="mobile-booking-list"></div>
       </div>
     </section>
 
@@ -536,6 +534,18 @@
         
         <label>Phone</label>
         <input type="text" id="therapistPhone">
+
+        <label>Gender</label>
+        <div style="display:flex;gap:20px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:400;color:#555;cursor:pointer;">
+            <input type="radio" name="therapistGender" id="genderFemale" value="female" checked>
+            ♀ Female
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-weight:400;color:#555;cursor:pointer;">
+            <input type="radio" name="therapistGender" id="genderMale" value="male">
+            ♂ Male
+          </label>
+        </div>
         
         <div class="modal-actions">
           <button type="submit" class="btn-success">Save</button>
@@ -703,7 +713,7 @@
         placeholder="e.g. Resigned, Contract ended, Performance issues..."
         style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95rem;resize:vertical;box-sizing:border-box;margin-bottom:20px;"></textarea>
       <div class="modal-actions">
-        <button class="btn-success" id="confirmArchiveBtn" onclick="confirmArchiveTherapist()">✅ Confirm Archive</button>
+        <button class="btn-success" onclick="confirmArchiveTherapist()">✅ Confirm Archive</button>
         <button class="btn-secondary" onclick="closeArchiveModal()">Cancel</button>
       </div>
     </div>

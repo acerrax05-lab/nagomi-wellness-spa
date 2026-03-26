@@ -6688,7 +6688,12 @@ async function confirmAssignTherapist() {
     document.getElementById('therapistName').value = '';
     document.getElementById('therapistEmail').value = '';
     document.getElementById('therapistPhone').value = '';
-    document.getElementById('genderFemale').checked = true;
+    // Safely set gender — element may not exist in all HTML versions
+    const genderFemaleEl = document.getElementById('genderFemale');
+    if (genderFemaleEl) genderFemaleEl.checked = true;
+    // Also try by name selector as fallback
+    const genderRadio = document.querySelector('input[name="therapistGender"][value="female"]');
+    if (genderRadio) genderRadio.checked = true;
     document.getElementById('editTherapistModal').classList.add('active');
   });
 
@@ -6708,7 +6713,11 @@ async function confirmAssignTherapist() {
       document.getElementById('therapistEmail').value = therapist.email;
       document.getElementById('therapistPhone').value = therapist.phone || '';
       const gender = therapist.gender || 'female';
-      document.getElementById(gender === 'male' ? 'genderMale' : 'genderFemale').checked = true;
+      const genderEl = document.getElementById(gender === 'male' ? 'genderMale' : 'genderFemale');
+      if (genderEl) genderEl.checked = true;
+      // Also try by name selector as fallback
+      const genderRadioEl = document.querySelector(`input[name="therapistGender"][value="${gender}"]`);
+      if (genderRadioEl) genderRadioEl.checked = true;
       document.getElementById('editTherapistModal').classList.add('active');
     } catch (err) {
       console.error(err);
