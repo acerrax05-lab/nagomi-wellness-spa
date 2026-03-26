@@ -42,36 +42,21 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     const { category, sortBy = 'name' } = req.query;
-    
-    // Build query - only show active services
+ 
     let query = { active: true };
-    
-    // Filter by category if provided
     if (category && category !== 'all') {
-      query.category = category;
+      query.category = { $regex: new RegExp(category, 'i') };
     }
-    
-    // Determine sort option
+ 
     let sortOption = {};
-    switch(sortBy) {
-      case 'popular':
-        sortOption = { bookingCount: -1 }; // Most booked first
-        break;
-      case 'rating':
-        sortOption = { averageRating: -1 }; // Highest rated first
-        break;
-      case 'price-low':
-        sortOption = { price: 1 }; // Lowest price first
-        break;
-      case 'price-high':
-        sortOption = { price: -1 }; // Highest price first
-        break;
-      case 'alphabetical':
-      case 'name':
-      default:
-        sortOption = { name: 1 }; // A-Z
+    switch (sortBy) {
+      case 'popular':    sortOption = { bookingCount: -1 };  break;
+      case 'rating':     sortOption = { averageRating: -1 }; break;
+      case 'price-low':  sortOption = { price: 1 };          break;
+      case 'price-high': sortOption = { price: -1 };         break;
+      default:           sortOption = { name: 1 };
     }
-    
+ 
     const services = await Service.find(query).sort(sortOption);
     res.json(services);
   } catch (err) {
@@ -124,11 +109,7 @@ router.post('/:id/image', auth, roles(['admin']), upload.single('image'), async 
  
     console.log(`✅ Image uploaded to Cloudinary: ${imageUrl}`);
  
-    res.json({
-      msg:   'Image uploaded successfully',
-      image: imageUrl,
-      service,
-    });
+    res.json({ msg: 'Image uploaded successfully', image: imageUrl, service });
  
   } catch (err) {
     console.error('❌ Image upload error:', err);
@@ -145,10 +126,9 @@ router.delete('/:id/image', auth, roles(['admin']), async (req, res) => {
     // Delete from Cloudinary if it's a Cloudinary URL
     if (service.image && service.image.includes('cloudinary.com')) {
       try {
-        // Extract public_id from URL
-        const parts   = service.image.split('/');
-        const file    = parts[parts.length - 1].split('.')[0];
-        const folder  = parts[parts.length - 2];
+        const parts    = service.image.split('/');
+        const file     = parts[parts.length - 1].split('.')[0];
+        const folder   = parts[parts.length - 2];
         const publicId = `${folder}/${file}`;
         await cloudinary.uploader.destroy(publicId);
         console.log(`🗑️  Deleted from Cloudinary: ${publicId}`);
@@ -167,14 +147,11 @@ router.delete('/:id/image', auth, roles(['admin']), async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
-
 // Get single service by ID
 router.get('/:id', async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
-    if (!service) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
+    if (!service) return res.status(404).json({ msg: 'Service not found' });
     res.json(service);
   } catch (err) {
     console.error(err);
@@ -187,98 +164,67 @@ router.get('/:id', async (req, res) => {
 // Create new service
 router.post('/', auth, roles(['admin']), async (req, res) => {
   try {
-    const { 
-      name, 
-      description, 
-      durationMinutes, 
-      price, 
-      pricing, 
-      allowedDurations,
-      category 
-    } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ msg: 'Service name is required' });
-    }
-
-    // Create service with all fields
+    const { name, description, durationMinutes, price, pricing, allowedDurations, category } = req.body;
+ 
+    if (!name) return res.status(400).json({ msg: 'Service name is required' });
+ 
     const serviceData = {
       name,
       description,
       durationMinutes,
       price,
       allowedDurations: allowedDurations || [60, 90, 120],
-      category: category || 'Massage' //  Default category
+      category: category || 'Massage Services',
     };
-
-    // Handle pricing Map
+ 
     if (pricing) {
       serviceData.pricing = new Map(Object.entries(pricing));
     }
-
+ 
     const service = await Service.create(serviceData);
-    
-    res.status(201).json({ 
-      msg: 'Service created successfully', 
-      service 
-    });
+    res.status(201).json({ msg: 'Service created successfully', service });
+ 
   } catch (err) {
     console.error('❌ Error creating service:', err);
-    
     if (err.code === 11000) {
       return res.status(400).json({ msg: 'Service with this name already exists' });
     }
-    
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) return res.status(404).json({ msg: 'Service not found' });
+    res.json(service);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+ 
 // Update service
 router.put('/:id', auth, roles(['admin']), async (req, res) => {
   try {
-    const { 
-      name, 
-      description, 
-      durationMinutes, 
-      price, 
-      pricing, 
-      allowedDurations, 
-      active,
-      category 
-    } = req.body;
-    
-    const updateData = {
-      name,
-      description,
-      durationMinutes,
-      price,
-      allowedDurations,
-      active,
-      category 
-    };
-    
-    // Handle pricing Map
+    const { name, description, durationMinutes, price, pricing, allowedDurations, active, category } = req.body;
+ 
+    const updateData = { name, description, durationMinutes, price, allowedDurations, active, category };
+ 
     if (pricing) {
       updateData.pricing = new Map(Object.entries(pricing));
     }
-    
+ 
     const updated = await Service.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { 
-        new: true, 
-        runValidators: true 
-      }
+      { new: true, runValidators: true }
     );
-    
-    if (!updated) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
-    
-    res.json({ 
-      msg: 'Service updated successfully', 
-      service: updated 
-    });
+ 
+    if (!updated) return res.status(404).json({ msg: 'Service not found' });
+ 
+    res.json({ msg: 'Service updated successfully', service: updated });
+ 
   } catch (err) {
     console.error('❌ Error updating service:', err);
     res.status(500).json({ msg: 'Server error' });
@@ -289,55 +235,34 @@ router.put('/:id', auth, roles(['admin']), async (req, res) => {
 router.patch('/:id/toggle', auth, roles(['admin']), async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
-    
-    if (!service) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
-    
+    if (!service) return res.status(404).json({ msg: 'Service not found' });
+ 
     service.active = !service.active;
     await service.save();
-    
-    res.json({ 
-      msg: `Service ${service.active ? 'activated' : 'hidden'}`, 
-      service 
-    });
+ 
+    res.json({ msg: `Service ${service.active ? 'activated' : 'hidden'}`, service });
+ 
   } catch (err) {
     console.error('❌ Error toggling service:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
-
-// Delete/Deactivate service (keep original for compatibility)
+ 
+// DELETE /api/services/:id — soft delete (set active: false)
 router.delete('/:id', auth, roles(['admin']), async (req, res) => {
   try {
-    // Soft delete (set active: false)
     const service = await Service.findByIdAndUpdate(
-      req.params.id, 
-      { active: false }, 
+      req.params.id,
+      { active: false },
       { new: true }
     );
-    
-    if (!service) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
-    
-    res.json({ 
-      msg: 'Service hidden successfully', 
-      service 
-    });
+ 
+    if (!service) return res.status(404).json({ msg: 'Service not found' });
+ 
+    res.json({ msg: 'Service hidden successfully', service });
+ 
   } catch (err) {
     console.error('❌ Error hiding service:', err);
-    res.status(500).json({ msg: 'Server error' });
-  }
-});
-
-router.get('/public', async (req, res) => {
-  try {
-    const services = await Service.find({ active: true })
-      .select('name category description pricing image benefits')
-      .sort({ name: 1 });
-    res.json(services);
-  } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }
 });
