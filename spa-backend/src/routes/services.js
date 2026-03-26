@@ -10,31 +10,57 @@ const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
- 
-// Use Cloudinary storage instead of disk storage
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder:         'nagomi-services',       // images go to this folder in Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 800, height: 600, crop: 'fill', quality: 'auto' }],
-    public_id: (req, file) => {
-      // Use service ID + timestamp as filename so it's unique
-      const name = (req.params.id || 'service') + '-' + Date.now();
-      return name.replace(/[^a-zA-Z0-9-_]/g, '-');
+// ── Validate Cloudinary env vars on startup ──────────────────────────────────
+const CLOUDINARY_CONFIGURED = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY    &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+if (!CLOUDINARY_CONFIGURED) {
+  console.error('❌ CLOUDINARY env vars missing! Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in Render > Environment.');
+} else {
+  console.log('✅ Cloudinary configured for image uploads');
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:    process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
+
+// Build multer/Cloudinary storage only if env vars are present
+let upload = null;
+
+if (CLOUDINARY_CONFIGURED) {
+  const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder:          'nagomi-services',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+      transformation:  [{ width: 800, height: 600, crop: 'fill', quality: 'auto' }],
+      public_id: (req) => {
+        const name = (req.params.id || 'service') + '-' + Date.now();
+        return name.replace(/[^a-zA-Z0-9-_]/g, '-');
+      },
     },
-  },
-});
- 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
-});
+  });
+
+  upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+  });
+}
+
+// Returns a clear 503 when Cloudinary env vars aren't configured
+function requireCloudinary(req, res, next) {
+  if (!CLOUDINARY_CONFIGURED || !upload) {
+    return res.status(503).json({
+      msg: 'Image uploads unavailable — Cloudinary is not configured on the server.',
+      fix: 'Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Render > Environment tab, then redeploy.',
+    });
+  }
+  next();
+}
 
 // PUBLIC ROUTES 
 
@@ -88,29 +114,38 @@ router.get('/admin/all', auth, roles(['admin']), async (req, res) => {
 });
 
 // ── POST /api/services/:id/image — upload or replace ────────────────────────
-router.post('/:id/image', auth, roles(['admin']), upload.single('image'), async (req, res) => {
+// Uses requireCloudinary middleware to return a clear error if env vars are missing,
+// then dynamically applies upload.single('image') so it never crashes on init.
+router.post('/:id/image', auth, roles(['admin']), requireCloudinary, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('❌ Multer/Cloudinary error:', err.message);
+      return res.status(500).json({ msg: 'Upload failed', error: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ msg: 'No image file provided' });
+      return res.status(400).json({ msg: 'No image file provided. Make sure you are sending a multipart/form-data request with an "image" field.' });
     }
- 
-    // Cloudinary returns the permanent URL in req.file.path
+
+    // req.file.path is the permanent Cloudinary HTTPS URL
     const imageUrl = req.file.path;
- 
+
     const service = await Service.findByIdAndUpdate(
       req.params.id,
       { image: imageUrl },
       { new: true }
     );
- 
+
     if (!service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
- 
+
     console.log(`✅ Image uploaded to Cloudinary: ${imageUrl}`);
- 
     res.json({ msg: 'Image uploaded successfully', image: imageUrl, service });
- 
+
   } catch (err) {
     console.error('❌ Image upload error:', err);
     res.status(500).json({ msg: 'Upload failed', error: err.message });
