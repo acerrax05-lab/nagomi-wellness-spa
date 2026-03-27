@@ -4703,7 +4703,7 @@ window.getBookingRowActions = getBookingRowActions;
     const duration    = b.durationMinutes || 60;
     const price       = (b.price || 0).toLocaleString();
     const startTime   = b.time || '—';
-    const endTime     = b.endTime || '—';
+    const endTime     = formatEndTime(b.endTime);
     const phone = b.guestPhone || 'No phone';
     const txn   = b.transactionNumber || 'N/A';
 
@@ -4865,7 +4865,7 @@ function formatBookingDate(b) {
        <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${maleCount}</span>`
     : '';
   const startTime  = b.time || '—';
-  const endTime    = b.endTime || '—';
+  const endTime    = formatEndTime(b.endTime);
 
   // Format date from booking.date
   const bookingDateStr = b.date
@@ -6312,6 +6312,24 @@ async function confirmAssignTherapist() {
         </div>
       `;
     }).join('');
+  }
+
+  // ─── Format endTime regardless of whether it's an ISO string or plain "H:MM AM/PM" ───
+  function formatEndTime(raw) {
+    if (!raw) return '—';
+    // ISO datetime string e.g. "2026-03-31T13:00:00.000Z"
+    // The backend stored Manila local time as UTC digits, so read HH:MM directly from the T part
+    if (raw.includes('T')) {
+      const timePart = raw.split('T')[1]?.substring(0, 5); // "13:00"
+      if (timePart) {
+        let [h, m] = timePart.split(':').map(Number);
+        const per = h >= 12 ? 'PM' : 'AM';
+        const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+        return `${h12}:${String(m).padStart(2, '0')} ${per}`;
+      }
+    }
+    // Already a plain time string like "1:00 PM"
+    return raw;
   }
 
   function convertTo24HourInput(timeStr) {
