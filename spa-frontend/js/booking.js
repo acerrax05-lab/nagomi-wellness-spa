@@ -300,9 +300,8 @@ function buildDurationButtons(svc) {
     btn.dataset.mins = mins;
 
     let label = '';
-    if      (mins === 30)  label = '30 min';
-    else if (mins === 60)  label = '1 hour';
-    else if (mins === 90)  label = '1.5 hours';
+    if (mins === 60)  label = '1 hour';
+    else if (mins === 90)  label = '1 hour and 30 minutes';
     else if (mins === 120) label = '2 hours';
     else                   label = `${mins} min`;
 
