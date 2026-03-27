@@ -3060,15 +3060,6 @@ const percentChange = comparisonCount > 0
                     </div>
                   </div>
                   <div>
-                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Completion Rate</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: ${
-                      t.successRate >= 80 ? '#28a745' : 
-                      t.successRate >= 60 ? '#ffc107' : '#dc3545'
-                    };">
-                      ${t.successRate || 0}%
-                    </div>
-                  </div>
-                  <div>
                     <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Revenue</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">
                       ₱${(t.totalRevenue || 0).toLocaleString()}
@@ -6198,7 +6189,6 @@ async function confirmAssignTherapist() {
             <div class="therapist-avatar">👤</div>
             <h3>${t.name}</h3>
             <p>${t.email}</p>
-            <p>${t.phone || 'No phone'}</p>
             <p style="margin-top:6px;">
               <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;
                 background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};
@@ -6775,7 +6765,6 @@ async function confirmAssignTherapist() {
       document.getElementById('therapistModalTitle').textContent = 'Edit Therapist';
       document.getElementById('therapistName').value = therapist.name;
       document.getElementById('therapistEmail').value = therapist.email;
-      document.getElementById('therapistPhone').value = therapist.phone || '';
       const gender = therapist.gender || 'female';
       const genderEl = document.getElementById(gender === 'male' ? 'genderMale' : 'genderFemale');
       if (genderEl) genderEl.checked = true;
@@ -6796,7 +6785,6 @@ async function confirmAssignTherapist() {
     const therapistData = {
       name:     document.getElementById('therapistName').value,
       email:    document.getElementById('therapistEmail').value,
-      phone:    document.getElementById('therapistPhone').value,
       gender:   document.querySelector('input[name="therapistGender"]:checked')?.value || 'female',
       role:     'therapist',
       isActive: true
@@ -8257,7 +8245,7 @@ function updateCommissionDisplay(rate) {
     if (incomeData.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+          <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
             No income data for this period
           </td>
         </tr>
@@ -8287,9 +8275,6 @@ function updateCommissionDisplay(rate) {
           <td>${therapist.completedServices}</td>
           <td style="font-weight: 600;">₱${therapist.totalRevenue.toLocaleString()}</td>
           <td class="income-amount">₱${therapist.commission.toLocaleString()}</td>
-          <td>
-            <span class="success-rate ${rateClass}">${successRate}%</span>
-          </td>
           <td>
             <button class="btn-edit" onclick="showIncomeDetail('${therapist.id}', '${therapist.name}')">
               View Details
