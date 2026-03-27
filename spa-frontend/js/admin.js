@@ -6741,7 +6741,6 @@ async function confirmAssignTherapist() {
     document.getElementById('therapistModalTitle').textContent = 'Add New Therapist';
     document.getElementById('therapistName').value = '';
     document.getElementById('therapistEmail').value = '';
-    document.getElementById('therapistPhone').value = '';
     // Safely set gender — element may not exist in all HTML versions
     const genderFemaleEl = document.getElementById('genderFemale');
     if (genderFemaleEl) genderFemaleEl.checked = true;
