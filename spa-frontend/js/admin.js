@@ -4703,9 +4703,7 @@ window.getBookingRowActions = getBookingRowActions;
     const duration    = b.durationMinutes || 60;
     const price       = (b.price || 0).toLocaleString();
     const startTime   = b.time || '—';
-    const endTime     = b.endTime
-      ? new Date(b.endTime).toLocaleTimeString('en-US', { timeZone:'Asia/Manila', hour:'2-digit', minute:'2-digit' })
-      : '—';
+    const endTime     = b.endTime || '—';
     const phone = b.guestPhone || 'No phone';
     const txn   = b.transactionNumber || 'N/A';
 
@@ -4867,13 +4865,7 @@ function formatBookingDate(b) {
        <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${maleCount}</span>`
     : '';
   const startTime  = b.time || '—';
-  const endTime    = b.endTime
-    ? new Date(b.endTime).toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Manila',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    : '—';
+  const endTime    = b.endTime || '—';
 
   // Format date from booking.date
   const bookingDateStr = b.date
@@ -4908,7 +4900,7 @@ function formatBookingDate(b) {
           </span>
         </div>
       </td>
-      <td style="white-space:nowrap;">${bookingDateStr}</td>
+      <td style="white-space:nowrap;min-width:140px;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>
