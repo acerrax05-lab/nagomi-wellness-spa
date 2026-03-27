@@ -1,8 +1,51 @@
 const API_URL = 'https://nagomi-backend.onrender.com/api';
 
-const apiFetch = (url, options = {}) => {
-  return fetch(url, options);
-};
+// ─── apiFetch with retry + "server waking up" toast ──────────────────────────
+const MAX_RETRIES    = 4;
+const RETRY_DELAY_MS = 4000;
+
+function _showWakeToast() {
+  if (document.getElementById('_wakeToast')) return;
+  const t = document.createElement('div');
+  t.id = '_wakeToast';
+  t.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#4b2e1e;color:#fff;padding:14px 24px;border-radius:10px;
+    font-size:0.95rem;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    display:flex;align-items:center;gap:10px;`;
+  t.innerHTML = `<span style="font-size:1.2rem;">⏳</span>
+    <span>Server is waking up, please wait…</span>`;
+  document.body.appendChild(t);
+}
+function _hideWakeToast() {
+  const t = document.getElementById('_wakeToast');
+  if (t) t.remove();
+}
+
+async function apiFetch(url, options = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      // 502/503/504 = Render still booting
+      if ([502, 503, 504].includes(res.status) && attempt < MAX_RETRIES) {
+        _showWakeToast();
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+        continue;
+      }
+      _hideWakeToast();
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < MAX_RETRIES) {
+        _showWakeToast();
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+      }
+    }
+  }
+  _hideWakeToast();
+  throw lastErr;
+}
 const CLOSING_HOUR   = 23;   // 11 PM
 const CLOSING_MINS   = 0;
 const MAX_CLIENTS    = 6;
