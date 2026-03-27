@@ -249,6 +249,35 @@ function renderBookingCard(booking, canModify) {
     </div>`;
 }
 
+// ─── SILENT REFRESH (used after reschedule/cancel — avoids re-validating inputs) ──
+
+async function refreshCurrentBookings() {
+  try {
+    if (lookupMethod === 'id') {
+      const transactionId = document.getElementById('lookupTransactionId').value.trim().toUpperCase();
+      if (!transactionId) return;
+      const res = await fetch(`${API_URL}/bookings/lookup-by-id/${transactionId}`);
+      const data = await res.json();
+      if (!res.ok) return;
+      currentBookings = [data];
+      displayBookings([data]);
+    } else {
+      if (!storedIdentity.phone) return;
+      const res = await fetch(`${API_URL}/bookings/lookup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(storedIdentity)
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+      currentBookings = data;
+      displayBookings(data);
+    }
+  } catch (e) {
+    // silent fail — the success notification already showed
+  }
+}
+
 // ─── RESCHEDULE MODAL ─────────────────────────────────────────────────────────
 
 function openRescheduleModal(bookingId) {
@@ -301,7 +330,7 @@ async function confirmReschedule() {
 
     showNotification('✅ Reschedule request submitted! Awaiting admin approval.', 'success');
     closeRescheduleModal();
-    setTimeout(() => { if (lookupMethod === 'id') lookupByTransactionId(); else lookupBookings(); }, 1000);
+    setTimeout(refreshCurrentBookings, 1000);
   } catch (error) {
     showNotification('❌ Error submitting reschedule request', 'error');
   }
@@ -345,7 +374,7 @@ async function confirmCancel() {
 
     showNotification('✅ Cancellation request submitted! Awaiting admin approval.', 'success');
     closeCancelModal();
-    setTimeout(() => { if (lookupMethod === 'id') lookupByTransactionId(); else lookupBookings(); }, 1000);
+    setTimeout(refreshCurrentBookings, 1000);
   } catch (error) {
     showNotification('❌ Error submitting cancellation request', 'error');
   }
