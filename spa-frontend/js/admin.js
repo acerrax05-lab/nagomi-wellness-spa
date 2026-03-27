@@ -7468,13 +7468,6 @@ async function confirmAssignTherapist() {
             </div>
             
             <div class="status-detail-item">
-              <span class="status-detail-label">Completion Rate:</span>
-              <span class="status-detail-value" style="color: ${successRate >= 80 ? '#28a745' : successRate >= 60 ? '#ffc107' : '#dc3545'};">
-                ${successRate || 0}%
-              </span>
-            </div>
-            
-            <div class="status-detail-item">
               <span class="status-detail-label">Revenue:</span>
               <span class="status-detail-value">₱${(totalRevenue || 0).toLocaleString()}</span>
             </div>
