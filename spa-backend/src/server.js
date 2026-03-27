@@ -5,6 +5,7 @@ const http       = require('http');
 const socketIO   = require('socket.io');
 const cors       = require('cors');
 const path       = require('path');
+const https      = require('https');
 const { spawn }  = require('child_process');
 const connectDB  = require('./config/db');
 const reviewsRouter = require('./routes/reviews');
@@ -262,9 +263,11 @@ server.listen(PORT, () => {
   if (process.env.NODE_ENV === 'production') {
     const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://nagomi-backend.onrender.com';
     setInterval(() => {
-      http.get(`${SELF_URL}/health`, (res) => {
+      https.get(`${SELF_URL}/health`, (res) => {
         console.log(`🏓 Keep-alive ping → ${res.statusCode}`);
-      }).on('error', () => {});
+      }).on('error', (err) => {
+        console.warn(`⚠️  Keep-alive ping failed: ${err.message}`);
+      });
     }, 5 * 60 * 1000);
     console.log(`🏓 Keep-alive enabled`);
   }
