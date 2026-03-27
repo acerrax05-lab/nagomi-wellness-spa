@@ -68,6 +68,7 @@ const apiBase = 'https://nagomi-backend.onrender.com/api';
   let currentChart = {};
   let filteredBookingsData = []; // Store filtered data for detail views
   let currentIncomePeriod = 'today';
+  let currentCardPeriod   = 'today';
   let incomeRefreshInterval;
   let commissionSettings = {
     rate: 60, // 60% commission
@@ -7311,7 +7312,7 @@ async function confirmAssignTherapist() {
 
   async function loadTherapistPerformance() {
     try {
-      const period = currentIncomePeriod || 'today';
+      const period = currentCardPeriod || 'today';
       console.log(`📊 Loading therapist performance for period: ${period}`);
       
       // Use therapist-status endpoint (timezone-fixed) for live status
@@ -7860,22 +7861,22 @@ async function confirmAssignTherapist() {
     }
   });
 
-  // Update filter buttons to reload performance
+  // Filter for therapist CARDS (Live Status Dashboard) — independent from income filter
+  function filterCardByPeriod(period) {
+    currentCardPeriod = period;
+    document.querySelectorAll('[data-card-period]').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`[data-card-period="${period}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    loadTherapistPerformance();
+  }
+
+  // Filter for INCOME & COMMISSION table only
   function filterIncomeByPeriod(period) {
     currentIncomePeriod = period;
-    
-    console.log('🔄 Filtering by period:', period);
-    
-    // Update button states
-    document.querySelectorAll('[data-income-period]').forEach(btn => {
-      btn.classList.remove('active');
-    });
+    document.querySelectorAll('[data-income-period]').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.querySelector(`[data-income-period="${period}"]`);
     if (activeBtn) activeBtn.classList.add('active');
-    
-    //  CHANGED: Reload both performance and income
-    loadTherapistPerformance(); // Reload status with new period
-    loadIncomeData();           // Reload income with new period
+    loadIncomeData();
   }
 
   async function saveCommissionSettings() {
@@ -8616,6 +8617,7 @@ function updateCommissionDisplay(rate) {
   window.loadTherapistAnalytics = loadTherapistAnalytics;
   window.saveCommissionSettings = saveCommissionSettings;
   window.filterIncomeByPeriod = filterIncomeByPeriod;
+  window.filterCardByPeriod   = filterCardByPeriod;
   window.showIncomeDetail = showIncomeDetail;
   window.closeIncomeDetail = closeIncomeDetail;
   window.exportIncomeReport = exportIncomeReport;
