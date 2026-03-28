@@ -214,21 +214,19 @@
         <h3 id="selectedDateTitle">Select a date to view bookings</h3>
         <table id="bookingsTable" class="bookings-table" style="table-layout:fixed;width:100%;">
           <colgroup>
-            <col style="width:18%"> <!-- Client -->
-            <col style="width:9%">  <!-- Date -->
-            <col style="width:8%">  <!-- Start Time -->
-            <col style="width:8%">  <!-- End Time -->
+            <col style="width:22%"> <!-- Client -->
+            <col style="width:9%">  <!-- Start Time -->
+            <col style="width:9%">  <!-- End Time -->
             <col style="width:18%"> <!-- Service -->
-            <col style="width:12%"> <!-- Therapist -->
+            <col style="width:13%"> <!-- Therapist -->
             <col style="width:7%">  <!-- Duration -->
             <col style="width:7%">  <!-- Price -->
-            <col style="width:7%">  <!-- Status -->
-            <col style="width:6%">  <!-- Actions -->
+            <col style="width:8%">  <!-- Status -->
+            <col style="width:7%">  <!-- Actions -->
           </colgroup>
           <thead>
             <tr>
               <th>Client</th>
-              <th>Date</th>  
               <th>Start Time</th>
               <th>End Time</th>
               <th>Service</th>
@@ -241,6 +239,8 @@
           </thead>
           <tbody></tbody>
         </table>
+        <!-- Mobile card list (shown on ≤768px, hidden on desktop) -->
+        <div id="mobileBookingList" class="mobile-booking-list"></div>
       </div>
     </section>
 

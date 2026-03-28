@@ -4684,7 +4684,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (dayBookings.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+          <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
             No bookings for this date
           </td>
         </tr>
@@ -4710,7 +4710,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (onlineBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #e3f2fd; font-weight: 700;">
-          <td colspan="10" style="padding: 12px; color: #1976d2; font-size: 1.1rem;">
+          <td colspan="9" style="padding: 12px; color: #1976d2; font-size: 1.1rem;">
   💻 ONLINE BOOKINGS (${onlineBookings.length})
 </td>
         </tr>
@@ -4727,7 +4727,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (walkInBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #fff3e0; font-weight: 700; border-top: 3px solid #ff9800;">
-          <td colspan="10" style="padding: 12px; color: #f57c00; font-size: 1.1rem;">
+          <td colspan="9" style="padding: 12px; color: #f57c00; font-size: 1.1rem;">
   🚶 WALK-IN BOOKINGS (${walkInBookings.length})
 </td>
         </tr>
@@ -4946,14 +4946,24 @@ function formatBookingDate(b) {
           </span>
         </div>
       </td>
-      <td style="white-space:nowrap;min-width:140px;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;">${therapistDisplay}</td>
       <td style="text-align:center;">${duration} mins</td>
       <td style="text-align:right;">₱${(b.price || 0).toLocaleString()}</td>
-      <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+      <td>${(() => {
+        const statusLabels = {
+          pending:              { label: 'Pending',      cls: 'pending' },
+          confirmed:            { label: 'Confirmed',    cls: 'confirmed' },
+          completed:            { label: 'Completed',    cls: 'completed' },
+          cancelled:            { label: 'Cancelled',    cls: 'cancelled' },
+          pending_reschedule:   { label: 'Reschedule ⏳', cls: 'pending_reschedule' },
+          pending_cancellation: { label: 'Cancel Req ⏳', cls: 'pending_cancellation' },
+        };
+        const s = statusLabels[b.status] || { label: b.status, cls: b.status };
+        return `<span class="status-badge status-${s.cls}" style="font-size:0.75rem;padding:4px 6px;white-space:nowrap;">${s.label}</span>`;
+      })()}</td>
       <td class="action-buttons">${actions || '-'}</td>
     </tr>
   `;

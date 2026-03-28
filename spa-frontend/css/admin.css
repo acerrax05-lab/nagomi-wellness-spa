@@ -375,7 +375,7 @@ body {
 .bookings-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 780px;
   table-layout: fixed; /* locks column widths */
 }
 
@@ -412,6 +412,8 @@ body {
 .status-confirmed { background: #e3f2fd; color: #2196f3; }
 .status-completed { background: #e8f5e9; color: #4caf50; }
 .status-cancelled { background: #ffebee; color: #f44336; }
+.status-pending_reschedule   { background: #f3e5f5; color: #9c27b0; }
+.status-pending_cancellation { background: #fbe9e7; color: #ff5722; }
 
 .action-buttons {
   display: flex;
@@ -1553,6 +1555,20 @@ body {
   
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  /* Tighten table padding and font on tablet */
+  .bookings-table th,
+  .bookings-table td {
+    padding: 0.55rem 0.45rem;
+    font-size: 0.82rem;
+  }
+  .bookings-table {
+    min-width: 700px;
+  }
+  .btn-confirm, .btn-cancel-booking, .btn-complete-booking {
+    font-size: 0.72rem;
+    padding: 4px 7px;
   }
 }
 
@@ -3693,7 +3709,7 @@ input:checked + .toggle-slider:before {
    ================================================================ */
 
 /* ── Default: hide mobile card list on desktop ── */
-.mobile-booking-list { display: none !important; }
+.mobile-booking-list { display: none !important; margin-top: 12px; }
 
 /* ── Hamburger / sidebar (already in file, kept for reference) ── */
 
