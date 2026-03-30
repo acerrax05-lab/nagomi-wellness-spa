@@ -629,8 +629,6 @@ if (currentPeriod === 'month' || currentPeriod === 'year') {
       const element = document.getElementById(id);
       if (element) {
         element.textContent = elements[id];
-      } else {
-        console.warn(`⚠️ Element not found: ${id}`);
       }
     });
   }
