@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const API_BASE = ;
+  const API_BASE = 'https://nagomi-backend.onrender.com/api';
 
   const CARD_CATEGORY_MAP = {
     'The Nagomi Massage':    'Massage Services',
