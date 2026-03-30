@@ -4030,38 +4030,7 @@ input:checked + .toggle-slider:before {
   margin-bottom: 28px;
 }
 
-/* ── Summary bar replaces stat cards ── */
-.summary-bar {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  border: 1px solid #ede5da;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  gap: 0;
-}
-.summary-item {
-  display: flex; align-items: center; gap: 10px;
-  flex: 1; min-width: 120px;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-.summary-item:hover { background: #faf6f1; }
-.summary-icon { font-size: 1.5rem; flex-shrink: 0; }
-.summary-num {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.6rem; font-weight: 700;
-  color: #4b2e1e; line-height: 1;
-}
-.summary-lbl { font-size: 0.72rem; color: #8b6f47; font-weight: 500; margin-top: 2px; }
-.summary-divider {
-  width: 1px; background: #ede5da; height: 40px; flex-shrink: 0;
-}
+
 
 /* ── Chart boxes ── */
 .chart-box {
@@ -4135,12 +4104,8 @@ input:checked + .toggle-slider:before {
 @media (max-width: 768px) {
   .sidebar { top: 64px !important; height: calc(100vh - 64px) !important; width: 240px !important; }
   .admin-content { margin-left: 0 !important; }
-  .summary-bar { gap: 4px; padding: 12px 10px; }
-  .summary-num { font-size: 1.2rem; }
-  .summary-divider { display: none; }
+
 }
 @media (max-width: 480px) {
-  .summary-item { min-width: 80px; padding: 6px 6px; }
-  .summary-icon { font-size: 1.1rem; }
-  .summary-num { font-size: 1rem; }
+
 }

@@ -126,60 +126,7 @@
 </div>
 
       <!-- 7 Stat Cards -->
-      <!-- Compact Summary Bar (replaces stat cards) -->
-      <div class="summary-bar">
-        <div class="summary-item" onclick="showStatDetail('bookings')" title="Click for details">
-          <span class="summary-icon">📅</span>
-          <div>
-            <div class="summary-num" id="periodBookings">0</div>
-            <div class="summary-lbl" id="periodBookingsLabel">Today's Bookings</div>
-          </div>
-          <div id="bookingsInsight" class="stat-insight" style="display:none;"></div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item" onclick="showStatDetail('completed')" title="Click for details">
-          <span class="summary-icon">✅</span>
-          <div>
-            <div class="summary-num" id="periodCompleted">0</div>
-            <div class="summary-lbl" id="periodCompletedLabel">Completed</div>
-          </div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item" onclick="showStatDetail('cancelled')" title="Click for details">
-          <span class="summary-icon">❌</span>
-          <div>
-            <div class="summary-num" id="periodCancelled">0</div>
-            <div class="summary-lbl" id="periodCancelledLabel">Cancelled</div>
-          </div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item" onclick="showStatDetail('revenue')" title="Click for details">
-          <span class="summary-icon">💰</span>
-          <div>
-            <div class="summary-num" id="periodRevenue">₱0</div>
-            <div class="summary-lbl" id="periodRevenueLabel">Revenue</div>
-          </div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item" onclick="showStatDetail('therapists')" title="Click for details">
-          <span class="summary-icon">👨‍⚕️</span>
-          <div>
-            <div class="summary-num" id="periodTherapists">0</div>
-            <div class="summary-lbl" id="periodTherapistsLabel">Active Therapists</div>
-          </div>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-item" onclick="showPredictionsDetail()" title="Click for details">
-          <span class="summary-icon">📈</span>
-          <div>
-            <div class="summary-num" id="periodPredictions">0</div>
-            <div class="summary-lbl" id="periodPredictionsLabel">Next 7 Days</div>
-            <div id="predictionsSubtitle" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Grid -->
+            <!-- Charts Grid -->
       <div class="charts-container">
         <div class="data-timestamp" style="grid-column: 1 / -1; margin-bottom: 0;">
           <span style="color: #28a745;">●</span> Loading data...
@@ -476,21 +423,8 @@
     </div>
   </div>
 
-  <!-- Stat Detail Modal -->
-  <div id="statDetailModal" class="modal" onclick="closeStatDetailOnBackdrop(event)">
-    <div class="modal-content stat-detail-modal" onclick="event.stopPropagation()">
-      <button class="close-modal-btn" onclick="closeStatDetail()">✕</button>
-      <h3 id="statDetailTitle">Detail View</h3>
-      <div id="statDetailContent"></div>
-      <div style="padding: 0 20px 20px 20px;">
-        <button onclick="closeStatDetail()" class="btn-secondary" style="width: 100%; padding: 12px; font-size: 1rem;">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Action Modal -->
+    <!-- Action Modal -->
   <div id="actionModal" class="modal">
     <div class="modal-content">
       <h3 id="actionModalTitle">Confirm Action</h3>

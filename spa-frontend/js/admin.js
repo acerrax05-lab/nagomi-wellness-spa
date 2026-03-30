@@ -520,7 +520,10 @@ if (defaultBtn) defaultBtn.classList.add('active');
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // Only handle overview period buttons — income/card buttons have data-income-period / data-card-period
+    if (!btn.dataset.period) return;
+
+    document.querySelectorAll('.filter-btn[data-period]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     currentPeriod = btn.dataset.period;
@@ -1350,275 +1353,6 @@ function buildServicesChartForecast(labels, serviceCounts) {
   }
 
   // UPDATE ALL STAT CARDS WITH INSIGHTS
-  async function updateAllStatCardsWithInsights() {
-    try {
-      console.log('📊 Updating all stat cards with insights...');
-      
-      // Update each stat card
-      await updateBookingsStatCard(predictionsData);
-      await updateCompletedStatCard();
-      await updateRevenueStatCard(predictionsData);
-      await updateCancelledStatCard();
-      await updateTherapistsStatCard();
-      // Predictions card already has insights from updatePredictionsStatCard()
-      
-      console.log('✅ All stat cards updated with insights');
-      
-    } catch (err) {
-      console.error('❌ Error updating stat cards:', err);
-    }
-  }
-
-  // BOOKINGS STAT CARD
-  async function updateBookingsStatCard() {
-  const statCard = document.querySelector('[onclick="showStatDetail(\'bookings\')"]');
-  if (!statCard) return;
-
-  const currentCount = filteredBookingsData.length;
-  const prevCount    = getPreviousPeriodBookings().length;
-  const { rawPct, label, color } = compareToPrevPeriod(currentCount, prevCount);
-
-  const pending   = filteredBookingsData.filter(b => b.status === 'pending').length;
-  const confirmed = filteredBookingsData.filter(b => b.status === 'confirmed').length;
-
-  let insightDiv = statCard.querySelector('.stat-insight');
-  if (!insightDiv) {
-    insightDiv = document.createElement('div');
-    insightDiv.className = 'stat-insight';
-    statCard.querySelector('.stat-details').appendChild(insightDiv);
-  }
-
-  const bgColor = color === '#28a745' ? '#e8f5e9' : color === '#dc3545' ? '#ffebee' : '#f8f9fa';
-
-  insightDiv.innerHTML = `
-    <div style="margin-top:8px;padding:8px 12px;
-      background:${bgColor};
-      border-radius:6px;border-left:3px solid ${color};">
-      <div style="font-size:0.75rem;color:${color};font-weight:700;margin-bottom:4px;">
-        ${label}
-      </div>
-      <div style="font-size:0.7rem;color:#666;">
-        ${pending} pending · ${confirmed} confirmed
-      </div>
-    </div>`;
-}
-
-  // COMPLETED STAT CARD
-  async function updateCompletedStatCard() {
-    const statCard = document.querySelector('[onclick="showStatDetail(\'completed\')"]');
-    if (!statCard) return;
-    
-    const completed = filteredBookingsData.filter(b => b.status === 'completed').length;
-    const total = filteredBookingsData.length;
-    
-    const completionRate = total > 0 ? (completed / total * 100) : 0;
-    const isGood = completionRate >= 80;
-    
-    // Get top service from completed bookings
-    const serviceCount = {};
-    filteredBookingsData
-      .filter(b => b.status === 'completed')
-      .forEach(b => {
-        const serviceName = b.service?.name || 'Unknown';
-        serviceCount[serviceName] = (serviceCount[serviceName] || 0) + 1;
-      });
-    
-    const topService = Object.entries(serviceCount)
-      .sort((a, b) => b[1] - a[1])[0];
-    
-    let insightDiv = statCard.querySelector('.stat-insight');
-    
-    if (!insightDiv) {
-      insightDiv = document.createElement('div');
-      insightDiv.className = 'stat-insight';
-      statCard.querySelector('.stat-details').appendChild(insightDiv);
-    }
-    
-    insightDiv.innerHTML = `
-      <div style="margin-top: 8px; padding: 8px 12px; background: ${isGood ? '#e8f5e9' : '#ffebee'}; border-radius: 6px; border-left: 3px solid ${isGood ? '#28a745' : '#dc3545'};">
-        <div style="font-size: 0.75rem; color: ${isGood ? '#28a745' : '#dc3545'}; font-weight: 700; margin-bottom: 4px;">
-          ${completionRate.toFixed(1)}% completion rate
-        </div>
-        <div style="font-size: 0.7rem; color: #666;">
-          ${topService ? `Top: ${topService[0]} (${topService[1]})` : 'No completed services'}
-        </div>
-      </div>
-    `;
-  }
-
-  // REVENUE STAT CARD
-  async function updateRevenueStatCard() {
-  const statCard = document.querySelector('[onclick="showStatDetail(\'revenue\')"]');
-  if (!statCard) return;
-
-  const currentRevenue = filteredBookingsData
-    .filter(b => b.status === 'completed')
-    .reduce((s, b) => s + (b.price || 0), 0);
-
-  const prevRevenue = getPreviousPeriodBookings()
-    .filter(b => b.status === 'completed')
-    .reduce((s, b) => s + (b.price || 0), 0);
-
-  const { rawPct, label, color } = compareToPrevPeriod(currentRevenue, prevRevenue, '₱');
-
-  const completedCount = filteredBookingsData.filter(b => b.status === 'completed').length;
-  const avgPerBooking  = completedCount > 0 ? Math.round(currentRevenue / completedCount) : 0;
-
-  let insightDiv = statCard.querySelector('.stat-insight');
-  if (!insightDiv) {
-    insightDiv = document.createElement('div');
-    insightDiv.className = 'stat-insight';
-    statCard.querySelector('.stat-details').appendChild(insightDiv);
-  }
-
-  insightDiv.innerHTML = `
-    <div style="margin-top:8px;padding:8px 12px;
-      background:${rawPct >= 0 ? '#e8f5e9' : '#ffebee'};
-      border-radius:6px;border-left:3px solid ${color};">
-      <div style="font-size:0.75rem;color:${color};font-weight:700;margin-bottom:4px;">
-        ${label}
-      </div>
-      <div style="font-size:0.7rem;color:#666;">
-        Avg: ₱${avgPerBooking.toLocaleString()} per completed booking
-      </div>
-    </div>`;
-}
-
-  // CANCELLED STAT CARD
-  async function updateCancelledStatCard() {
-    const statCard = document.querySelector('[onclick="showStatDetail(\'cancelled\')"]');
-    if (!statCard) return;
-    
-    const cancelled = filteredBookingsData.filter(b => b.status === 'cancelled').length;
-    const total = filteredBookingsData.length;
-    
-    const cancellationRate = total > 0 ? (cancelled / total * 100) : 0;
-    const isGood = cancellationRate <= 15;
-    
-    // Estimate lost revenue (assuming avg booking value of ₱1500)
-    const avgBookingValue = 1500;
-    const lostRevenue = cancelled * avgBookingValue;
-    
-    let insightDiv = statCard.querySelector('.stat-insight');
-    
-    if (!insightDiv) {
-      insightDiv = document.createElement('div');
-      insightDiv.className = 'stat-insight';
-      statCard.querySelector('.stat-details').appendChild(insightDiv);
-    }
-    
-    insightDiv.innerHTML = `
-      <div style="margin-top: 8px; padding: 8px 12px; background: ${isGood ? '#e8f5e9' : '#ffebee'}; border-radius: 6px; border-left: 3px solid ${isGood ? '#28a745' : '#dc3545'};">
-        <div style="font-size: 0.75rem; color: ${isGood ? '#28a745' : '#dc3545'}; font-weight: 700; margin-bottom: 4px;">
-          ${cancellationRate.toFixed(1)}% cancellation rate
-        </div>
-        <div style="font-size: 0.7rem; color: #666;">
-          ${cancelled > 0 ? `Est. ₱${lostRevenue.toLocaleString()} revenue loss` : 'No cancellations'}
-        </div>
-      </div>
-    `;
-  }
-
-  // THERAPISTS STAT CARD
-  async function updateTherapistsStatCard() {
-    const statCard = document.querySelector('[onclick="showStatDetail(\'therapists\')"]');
-    if (!statCard) return;
-    
-    try {
-      // Get live therapist status
-      const statusRes = await fetch(`${apiBase}/bookings/therapist-status`);
-      if (!statusRes.ok) {
-        console.warn('Could not load therapist status');
-        return;
-      }
-      
-      const therapistStatus = await statusRes.json();
-      
-      const available = therapistStatus.filter(t => t.status === 'available').length;
-      const busy = therapistStatus.filter(t => t.status === 'busy').length;
-      const total = therapistStatus.length;
-      
-      const activeCount = available + busy;
-
-      const therapistCountEl = document.getElementById('periodTherapists');
-      if (therapistCountEl) therapistCountEl.textContent = activeCount;
-      
-      let insightDiv = statCard.querySelector('.stat-insight');
-      
-      if (!insightDiv) {
-        insightDiv = document.createElement('div');
-        insightDiv.className = 'stat-insight';
-        statCard.querySelector('.stat-details').appendChild(insightDiv);
-      }
-      
-      insightDiv.innerHTML = `
-        <div style="margin-top: 8px; padding: 8px 12px; background: #e3f2fd; border-radius: 6px; border-left: 3px solid #2196f3;">
-          <div style="font-size: 0.75rem; color: #1976d2; font-weight: 700; margin-bottom: 4px;">
-            ${available} available • ${busy} in session
-          </div>
-          <div style="font-size: 0.7rem; color: #666;">
-            ${total} total therapists
-          </div>
-        </div>
-      `;
-      
-    } catch (err) {
-      console.error('Error updating therapists stat card:', err);
-    }
-  }
-
-
-  // Predictions Stat Card 
-  function updatePredictionsStatCard(data) {
-    const { predictions, totalPredictedBookings, overallTopServices, forecastHorizon } = data;
-    
-    if (!predictions || predictions.length === 0) return;
-    
-    // Update stat card number
-    const statCard = document.getElementById('periodPredictions');
-    if (statCard) {
-      statCard.textContent = totalPredictedBookings || 0;
-    }
-    
-    // ✅ DYNAMIC LABEL based on period
-    const statLabel = document.getElementById('periodPredictionsLabel');
-    if (statLabel) {
-      let comparisonCount;
-if (currentPeriod === 'today') {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    comparisonCount = allBookings.filter(b => new Date(b.date) >= sevenDaysAgo).length;
-} else {
-    comparisonCount = filteredBookingsData.length;
-}
-const percentChange = comparisonCount > 0 
-    ? ((totalPredictedBookings - comparisonCount) / comparisonCount * 100)
-    : 0;
-      
-      const changeIcon = percentChange >= 0 ? '↑' : '↓';
-      const changeColor = percentChange >= 0 ? '#28a745' : '#dc3545';
-      
-      // ✅ USE FORECAST HORIZON IN LABEL
-      const horizonText = forecastHorizon || 'Next 7 Days';
-      
-      statLabel.innerHTML = `
-        <div style="font-size: 0.8rem; color: #666; margin-top: 2px; font-weight: 500;">
-          ${horizonText} Predictions
-        </div>
-        <div style="font-size: 0.75rem; color: ${changeColor}; margin-top: 4px; font-weight: 700;">
-          ${changeIcon} ${Math.abs(percentChange).toFixed(1)}% vs current period
-        </div>
-        ${overallTopServices && overallTopServices.length > 0 ? `
-          <div style="font-size: 0.7rem; color: #888; margin-top: 4px; font-weight: 400;">
-            Top: ${overallTopServices.slice(0, 3).map(s => s.name).join(', ')}
-          </div>
-        ` : ''}
-      `;
-    }
-  }
-
-
-
   function generatePredictionsInsight(analytics, predictionsData) {
     // This is the same as the main comprehensive insights
     // We'll call the existing function
@@ -2044,7 +1778,6 @@ const percentChange = comparisonCount > 0
   }
 
   // Update stat cards
-  await updateAllStatCardsWithInsights();
 
   console.log(`📊 Forecast ${forecastEnabled ? 'enabled' : 'disabled'}`);
 }
@@ -2102,7 +1835,6 @@ const percentChange = comparisonCount > 0
         console.log(`⚡ Predictions cache hit for: ${currentPeriod}`);
         const data = cached.data;
         predictionsData = data.predictions || [];
-        updatePredictionsStatCard(data);
         if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
           createCharts(filteredBookingsData || currentBookingsData);
         }
@@ -2123,7 +1855,6 @@ const percentChange = comparisonCount > 0
       analyticsCache[cacheKey] = { data, timestamp: Date.now() };
       
       predictionsData = data.predictions || [];
-      updatePredictionsStatCard(data);
 
       if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
         createCharts(filteredBookingsData || currentBookingsData);
@@ -2641,7 +2372,6 @@ const percentChange = comparisonCount > 0
       calculateStats(filteredBookingsData);
       createCharts(filteredBookingsData);
       updateStatLabels();
-      updateBookingsStatCard();
       hideLoader();
 
       // ── Step 2: Load full year range in background for comparisons/calendar ─
@@ -2661,24 +2391,20 @@ const percentChange = comparisonCount > 0
           // Refresh stats silently with complete data
           calculateStats(filteredBookingsData);
           createCharts(filteredBookingsData);
-          updateBookingsStatCard();
-          // Also refresh calendar if on bookings tab
+              // Also refresh calendar if on bookings tab
           if (selectedDate) loadBookingsForDate(selectedDate);
         })
         .catch(err => console.warn('Background full-load failed:', err));
 
       // Load analytics in background — skip heavy forecast for today/week
       if (currentPeriod === 'today' || currentPeriod === 'week') {
-        // Today/Week: only light stat card updates, no SARIMA/predictions
-        updateAllStatCardsWithInsights()
-          .catch(err => console.error('Stat cards error:', err));
+        // Today/Week: light load only
       } else {
         // Month/Year: run analytics + predictions IN PARALLEL (not sequential)
         Promise.all([
           loadComprehensiveAnalytics(),
           loadEnhancedPredictions()
         ])
-          .then(() => updateAllStatCardsWithInsights())
           .catch(err => console.error('Analytics load error:', err));
       }
 
@@ -2793,325 +2519,6 @@ const percentChange = comparisonCount > 0
       cancelledInsight.className = cancellationRate > 10 ? 'stat-insight negative' : 'stat-insight neutral';
     }
   }
-  // SHOW STAT DETAIL MODAL
-  function showStatDetail(type) {
-    const modal = document.getElementById('statDetailModal');
-    const title = document.getElementById('statDetailTitle');
-    const content = document.getElementById('statDetailContent');
-    
-    const periodText = {
-      today: 'Today',
-      week: 'This Week',
-      month: 'This Month',
-      year: 'This Year'
-    }[currentPeriod];
-    
-    switch(type) {
-      case 'bookings':
-        title.textContent = `📅 ${periodText}'s Bookings Breakdown`;
-        content.innerHTML = generateBookingsDetail(filteredBookingsData);
-        break;
-      
-      case 'completed':
-        title.textContent = `✅ Completed Bookings ${periodText}`;
-        content.innerHTML = generateCompletedDetail(filteredBookingsData);
-        break;
-      
-      case 'revenue':
-        title.textContent = `💰 Revenue Breakdown ${periodText}`;
-        content.innerHTML = generateRevenueDetail(filteredBookingsData);
-        break;
-      
-      case 'cancelled':
-        title.textContent = `❌ Cancelled Bookings ${periodText}`;
-        content.innerHTML = generateCancelledDetail(filteredBookingsData);
-        break;
-      
-      case 'therapists':
-    title.textContent = `👨‍⚕️ Active Therapists ${periodText}`;
-    content.innerHTML = `
-      <div style="padding: 20px;">
-        <div class="loading-indicator">
-          <div class="spinner-small"></div>
-          <p>Loading live status...</p>
-        </div>
-      </div>
-    `;
-
-    
-
-    modal.classList.add('active');
-    
-    // Load live status asynchronously
-    loadTherapistStatusForOverview(content, periodText);
-    return; // ⚠️ IMPORTANT: Return here so modal stays open
-
-    case 'reviews':
-    loadReviewsManagement();
-    break;
-    }
-    
-    modal.classList.add('active');
-  }
-
-  async function loadTherapistStatusForOverview(contentElement, periodText) {
-    try {
-      console.log('📊 Loading therapist live status for overview...');
-      
-      // Fetch live status from backend
-      const statusRes = await fetch(`${apiBase}/bookings/therapist-status`);
-      
-      if (!statusRes.ok) {
-        throw new Error('Failed to load status');
-      }
-      
-      const statusData = await statusRes.json();
-      console.log('✅ Loaded', statusData.length, 'therapist statuses');
-      
-      // Calculate performance stats from filtered bookings
-      const therapistStats = {};
-      
-      filteredBookingsData.forEach(b => {
-        if (b.therapist) {
-          const id = b.therapist._id || b.therapist;
-          const name = b.therapist.name || 'Unknown';
-          
-          if (!therapistStats[id]) {
-            therapistStats[id] = { name, total: 0, completed: 0, revenue: 0 };
-          }
-          
-          therapistStats[id].total++;
-          if (b.status === 'completed') {
-            therapistStats[id].completed++;
-            therapistStats[id].revenue += (b.price || 0);
-          }
-        }
-      });
-      
-      // Merge status data with performance stats
-      const mergedData = statusData.map(therapist => {
-        // Find matching stats by name
-        const statsEntry = Object.values(therapistStats).find(
-          s => s.name.toLowerCase() === therapist.name.toLowerCase()
-        ) || { total: 0, completed: 0, revenue: 0 };
-        
-        const successRate = statsEntry.total > 0 
-          ? Math.round((statsEntry.completed / statsEntry.total) * 100)
-          : 0;
-        
-        return {
-          ...therapist,
-          totalBookings: statsEntry.total,
-          completedBookings: statsEntry.completed,
-          totalRevenue: statsEntry.revenue,
-          successRate
-        };
-      });
-      
-      // Display the merged data
-      displayTherapistStatusInOverview(contentElement, mergedData, periodText);
-      
-    } catch (err) {
-      console.error('❌ Error loading therapist status:', err);
-      contentElement.innerHTML = `
-        <div style="padding: 20px; text-align: center;">
-          <p style="color: #dc3545; margin-bottom: 15px;">❌ Failed to load live status</p>
-          <p style="color: #666; font-size: 0.9rem;">${err.message}</p>
-          <button 
-            onclick="location.reload()" 
-            style="margin-top: 15px; padding: 10px 20px; background: var(--primary-brown); color: white; border: none; border-radius: 6px; cursor: pointer;"
-          >
-            Retry
-          </button>
-        </div>
-      `;
-    }
-  }
-
-  function displayTherapistStatusInOverview(contentElement, therapists, periodText) {
-    if (!therapists || therapists.length === 0) {
-      contentElement.innerHTML = `
-        <div style="padding: 40px; text-align: center;">
-          <p style="color: #999; font-size: 1.1rem;">No therapists available</p>
-        </div>
-      `;
-      return;
-    }
-    
-    // Sort: Available first, then by success rate
-    therapists.sort((a, b) => {
-      const statusOrder = { available: 0, busy: 1, break: 2, off: 3 };
-      if (statusOrder[a.status] !== statusOrder[b.status]) {
-        return statusOrder[a.status] - statusOrder[b.status];
-      }
-      return b.successRate - a.successRate;
-    });
-    
-    console.log('🎨 Rendering', therapists.length, 'therapist cards with live status');
-    
-    contentElement.innerHTML = `
-      <div style="padding: 20px;">
-        <!-- Status Legend -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
-          <div style="text-align: center;">
-            <div style="font-size: 1.8rem; margin-bottom: 4px;">🟢</div>
-            <div style="font-size: 0.85rem; color: #666; font-weight: 600;">Available</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 1.8rem; margin-bottom: 4px;">🔴</div>
-            <div style="font-size: 0.85rem; color: #666; font-weight: 600;">In Session</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 1.8rem; margin-bottom: 4px;">🟡</div>
-            <div style="font-size: 0.85rem; color: #666; font-weight: 600;">On Break</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 1.8rem; margin-bottom: 4px;">⚫</div>
-            <div style="font-size: 0.85rem; color: #666; font-weight: 600;">Off Duty</div>
-          </div>
-        </div>
-        
-        <!-- Therapist Cards -->
-        <div style="display: grid; gap: 16px;">
-          ${therapists.map((t, index) => {
-            const statusConfig = {
-              available: { icon: '🟢', text: 'Available Now', color: '#28a745', bg: '#e8f5e9' },
-              busy: { icon: '🔴', text: 'In Session', color: '#dc3545', bg: '#ffebee' },
-              break: { icon: '🟡', text: 'On Break', color: '#ffc107', bg: '#fff8e1' },
-              off: { icon: '⚫', text: 'Off Duty', color: '#6c757d', bg: '#f5f5f5' }
-            };
-            
-            const config = statusConfig[t.status] || statusConfig.off;
-            const isTopPerformer = index < 3 && t.successRate > 0;
-            const medal = isTopPerformer ? (index === 0 ? '🏆 ' : index === 1 ? '🥈 ' : '🥉 ') : '';
-            
-            return `
-              <div style="
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                padding: 20px; 
-                background: ${isTopPerformer ? '#fff8e1' : 'white'}; 
-                border: ${isTopPerformer ? '2px solid #ffc107' : '2px solid #e0e0e0'}; 
-                border-left: 5px solid ${config.color};
-                border-radius: 12px;
-                transition: all 0.3s;
-                gap: 20px;
-                flex-wrap: wrap;
-              " onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
-                
-                <!-- Left Section: Status & Info -->
-                <div style="flex: 1; min-width: 250px;">
-                  <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
-                    <!-- Status Indicator -->
-                    <div style="
-                      width: 50px; 
-                      height: 50px; 
-                      background: ${config.bg}; 
-                      border: 3px solid ${config.color}; 
-                      border-radius: 50%; 
-                      display: flex; 
-                      align-items: center; 
-                      justify-content: center;
-                      font-size: 1.5rem;
-                      box-shadow: 0 2px 8px ${config.color}40;
-                    ">
-                      ${config.icon}
-                    </div>
-                    
-                    <!-- Name & Status -->
-                    <div style="flex: 1;">
-                      <div style="font-weight: 700; font-size: 1.2rem; color: #4b2e1e; margin-bottom: 4px;">
-                        ${medal}${t.name}
-                      </div>
-                      <div style="
-                        color: ${config.color}; 
-                        font-size: 0.9rem; 
-                        font-weight: 600;
-                        display: inline-block;
-                        padding: 4px 12px;
-                        background: ${config.bg};
-                        border-radius: 20px;
-                      ">
-                        ${config.text}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Current Activity Info -->
-                  ${t.currentBooking ? `
-                    <div style="margin-left: 65px; padding: 12px; background: #fff3e0; border-left: 3px solid #ff9800; border-radius: 6px; font-size: 0.9rem;">
-                      <div style="color: #666; margin-bottom: 4px;">📅 <strong>Current Session:</strong></div>
-                      <div style="color: #333; font-weight: 600;">${t.currentBooking.service?.name || 'Service'} until ${t.currentBooking.endTime}</div>
-                    </div>
-                  ` : ''}
-                  
-                  ${t.status === 'break' && t.breakUntil ? `
-                    <div style="margin-left: 65px; padding: 12px; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 6px; font-size: 0.9rem;">
-                      <div style="color: #666; margin-bottom: 4px;">☕ <strong>Break Time:</strong></div>
-                      <div style="color: #333; font-weight: 600;">Returns at ${t.breakUntil}</div>
-                    </div>
-                  ` : ''}
-                  
-                  ${t.status === 'off' && t.nextAvailable ? `
-                    <div style="margin-left: 65px; padding: 12px; background: #f5f5f5; border-left: 3px solid #6c757d; border-radius: 6px; font-size: 0.9rem;">
-                      <div style="color: #666; margin-bottom: 4px;">⏰ <strong>Next Available:</strong></div>
-                      <div style="color: #333; font-weight: 600;">${t.nextAvailable}</div>
-                    </div>
-                  ` : ''}
-                </div>
-                
-                <!-- Right Section: Stats -->
-                <div style="display: flex; gap: 25px; text-align: center;">
-                  <div>
-                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Bookings (${periodText})</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: #4b2e1e;">
-                      ${t.completedBookings || 0}/${t.totalBookings || 0}
-                    </div>
-                  </div>
-                  <div>
-                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Revenue</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">
-                      ₱${(t.totalRevenue || 0).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-        
-        <!-- Info Footer -->
-        <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; border-left: 4px solid #2196f3;">
-          <div style="display: flex; align-items: start; gap: 15px;">
-            <div style="font-size: 2rem;">💡</div>
-            <div>
-              <p style="color: #1565c0; margin: 0 0 8px 0; font-weight: 600; font-size: 1rem;">
-                Live Status Dashboard
-              </p>
-              <p style="color: #666; margin: 0; line-height: 1.6; font-size: 0.9rem;">
-                This shows real-time therapist availability and performance metrics for <strong>${periodText}</strong>. 
-                Status updates automatically every 30 seconds. For detailed analytics, income tracking, and commission management, 
-                visit the <strong>Therapist Analytics</strong> tab.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function closeStatDetail() {
-    document.getElementById('statDetailModal').classList.remove('active');
-  }
-
-  function closeStatDetailOnBackdrop(event) {
-    // Close modal only if clicking on the backdrop (not the content)
-    if (event.target.id === 'statDetailModal') {
-      closeStatDetail();
-    }
-  }
-
   // DETAIL GENERATORS
   function generateBookingsDetail(bookings) {
     const statusCounts = {
@@ -6192,7 +5599,9 @@ async function confirmAssignTherapist() {
       const therapists = allTherapists.filter(t => t.isActive !== false && !archivedIds.has(t._id));
 
       const therapistsList = document.getElementById('therapistsList');
-      
+      // therapistsList may be null if the separate management section was removed
+      if (!therapistsList) return;
+
       if (therapists.length === 0) {
         therapistsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No active therapists</p>';
         return;
@@ -7472,7 +6881,6 @@ async function confirmAssignTherapist() {
       predictionsData = data.predictions || [];
       
       // Update stat card
-      updatePredictionsStatCard(data);
       
       // Display predictions chart
       if (forecastEnabled) {
@@ -7641,191 +7049,6 @@ async function confirmAssignTherapist() {
       }
     });
   }
-
-  // ✅ UPDATED: Show predictions detail modal with enhanced information
-  function showPredictionsDetail() {
-    const modal = document.getElementById('statDetailModal');
-    const title = document.getElementById('statDetailTitle');
-    const content = document.getElementById('statDetailContent');
-    
-    // ✅ GET DYNAMIC TITLE BASED ON CURRENT PERIOD
-    const periodTitles = {
-      today: '📈 Next 7 Days Booking Predictions',
-      week: '📈 Next 14 Days Booking Predictions',
-      month: '📈 Next 30 Days Booking Predictions',
-      year: '📈 Next Quarter (90 Days) Predictions'
-    };
-    
-    title.textContent = periodTitles[currentPeriod] || '📈 Booking Predictions';
-    
-    if (!predictionsData || predictionsData.length === 0) {
-      content.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">No predictions available</p>';
-      modal.classList.add('active');
-      return;
-    }
-    
-    const totalBookings = predictionsData.reduce((sum, p) => sum + p.predictedBookings, 0);
-    const totalRevenue = predictionsData.reduce((sum, p) => sum + p.predictedRevenue, 0);
-    
-    // ✅ SHOW FORECAST HORIZON IN SUBTITLE
-    const forecastLabel = predictionsData[0]?.forecastHorizon || 'Next 7 Days';
-    
-    // Get overall top services
-    const allServices = {};
-    predictionsData.forEach(pred => {
-      pred.topServices?.forEach(service => {
-        if (!allServices[service.name]) {
-          allServices[service.name] = 0;
-        }
-        allServices[service.name] += service.count;
-      });
-    });
-    
-    const topOverallServices = Object.entries(allServices)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-    
-    content.innerHTML = `
-      <div style="padding: 20px;">
-        <!-- Header with dynamic forecast horizon -->
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-          <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">📊 Forecast Period: ${forecastLabel}</h3>
-          <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
-            ${new Date(predictionsData[0].date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} 
-            → 
-            ${new Date(predictionsData[predictionsData.length - 1].date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-          </p>
-        </div>
-        
-        <!-- Summary Cards -->
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
-          <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-            <div style="font-size: 0.9rem; opacity: 0.9;">Total Predicted Bookings</div>
-            <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">${totalBookings}</div>
-          </div>
-          <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white;">
-            <div style="font-size: 0.9rem; opacity: 0.9;">Expected Revenue</div>
-            <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">₱${totalRevenue.toLocaleString()}</div>
-          </div>
-        </div>
-        
-        <!-- Top Services Overall -->
-        <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #4b2e1e;">
-          <h4 style="margin: 0 0 15px 0; color: #4b2e1e;">🏆 Top Predicted Services</h4>
-          <div style="display: grid; gap: 10px;">
-            ${topOverallServices.map(([name, count], index) => `
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 1.5rem;">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '⭐'}</span>
-                  <span style="font-weight: 600; color: #4b2e1e;">${name}</span>
-                </div>
-                <span style="font-weight: 700; color: #28a745;">${count} bookings</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <!-- Day-by-Day Breakdown -->
-        <h4 style="margin-bottom: 20px;">📅 Day-by-Day Breakdown:</h4>
-        
-        <div style="display: grid; gap: 12px;">
-          ${predictionsData.slice(0, Math.min(predictionsData.length, 10)).map((pred, index) => {
-            const confidenceColor = {
-              high: '#28a745',
-              medium: '#ffc107',
-              low: '#dc3545'
-            }[pred.confidence?.toLowerCase()] || '#6c757d';
-            
-            const date = new Date(pred.date);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric' 
-            });
-            
-            return `
-              <div style="padding: 16px; background: ${index < 3 ? '#fff8e1' : '#f5f5f5'}; border-radius: 8px; ${index < 3 ? 'border: 2px solid #ffc107;' : ''}">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <div>
-                    <div style="font-weight: 700; font-size: 1.1rem; color: #4b2e1e;">
-                      ${index < 3 ? (index === 0 ? '🥇 ' : index === 1 ? '🥈 ' : '🥉 ') : ''}${pred.dayName}
-                    </div>
-                    <div style="color: #666; font-size: 0.85rem;">${formattedDate}</div>
-                  </div>
-                  <div style="text-align: right;">
-                    <div style="font-size: 1.8rem; font-weight: 700; color: #4b2e1e;">${pred.predictedBookings}</div>
-                    <div style="font-size: 0.8rem; color: #999;">bookings</div>
-                  </div>
-                </div>
-                
-                ${pred.topServices && pred.topServices.length > 0 ? `
-                  <div style="margin: 12px 0; padding: 12px; background: white; border-radius: 6px;">
-                    <div style="font-weight: 600; color: #666; font-size: 0.85rem; margin-bottom: 8px;">Top Services:</div>
-                    ${pred.topServices.map((service, idx) => `
-                      <div style="display: flex; justify-content: space-between; padding: 6px 0; ${idx < pred.topServices.length - 1 ? 'border-bottom: 1px solid #e0e0e0;' : ''}">
-                        <span style="color: #4b2e1e;">${idx + 1}. ${service.name}</span>
-                        <span style="font-weight: 600; color: #28a745;">${service.count} (${service.percentage}%)</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                ` : ''}
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                  <div>
-                    <div style="color: #666; font-size: 0.85rem;">Expected Revenue</div>
-                    <div style="font-weight: 600; color: #28a745;">₱${pred.predictedRevenue.toLocaleString()}</div>
-                  </div>
-                  <div>
-                    <div style="color: #666; font-size: 0.85rem;">Peak Hour</div>
-                    <div style="font-weight: 600; color: #4b2e1e;">${pred.peakHour || 'N/A'}</div>
-                  </div>
-                </div>
-                
-                <div style="margin-top: 10px; padding: 6px 12px; background: ${confidenceColor}; color: white; border-radius: 4px; display: inline-block; font-size: 0.8rem; font-weight: 600;">
-                  Confidence: ${pred.confidence}
-                </div>
-              </div>
-            `;
-          }).join('')}
-          
-          ${predictionsData.length > 10 ? `
-            <div style="text-align: center; padding: 20px; color: #666;">
-              <p>+ ${predictionsData.length - 10} more days...</p>
-            </div>
-          ` : ''}
-        </div>
-        
-        <!-- Info Footer -->
-        <div style="margin-top: 25px; padding: 20px; background: #e3f2fd; border-radius: 12px; border-left: 4px solid #2196f3;">
-  <div style="display: flex; align-items: start; gap: 15px;">
-    <div style="font-size: 2rem;">ℹ️</div>
-    <div>
-      <p style="color: #1565c0; margin: 0 0 10px 0; font-weight: 600; font-size: 1rem;">
-        About This Forecast
-      </p>
-      <p style="color: #666; margin: 0; line-height: 1.6; font-size: 0.9rem;">
-        This forecast is generated using <strong>SARIMA</strong> 
-        (Seasonal AutoRegressive Integrated Moving Average) with <strong>weekly seasonality (s=7)</strong>.
-        The model is auto-fitted using AIC to find the best (p,d,q)(P,D,Q) parameters.
-      </p>
-      <ul style="color: #666; margin: 10px 0 0 20px; line-height: 1.8; font-size: 0.9rem;">
-        <li><strong>Today:</strong> Predicts next 7 days</li>
-        <li><strong>This Week:</strong> Predicts next 14 days</li>
-        <li><strong>This Month:</strong> Predicts next 30 days</li>
-        <li><strong>This Year:</strong> Predicts next 90 days</li>
-      </ul>
-      <p style="color: #888; margin: 10px 0 0 0; font-size: 0.8rem; font-style: italic;">
-        💡 Falls back to JS Hybrid Ensemble if SARIMA service is offline.
-        Check status at <strong>Overview → SARIMA Status</strong>.
-      </p>
-    </div>
-  </div>
-</div>
-      </div>
-    `;
-    
-    modal.classList.add('active');
-  }
-
 
   // Stop auto-refresh when leaving tab
   window.addEventListener('beforeunload', () => {
@@ -8555,9 +7778,6 @@ function updateCommissionDisplay(rate) {
   });
 
   // Make functions global for onclick handlers
-  window.showStatDetail = showStatDetail;
-  window.closeStatDetail = closeStatDetail;
-  window.closeStatDetailOnBackdrop = closeStatDetailOnBackdrop; // ← ADD THIS
   window.editService = editService;
   window.deleteService = deleteService;
   window.showAvailableTherapists = showAvailableTherapists;
@@ -8595,7 +7815,6 @@ function updateCommissionDisplay(rate) {
   window.closeIncomeDetail = closeIncomeDetail;
   window.exportIncomeReport = exportIncomeReport;
   window.generateBookingRow = generateBookingRow;
-  window.showPredictionsDetail = showPredictionsDetail;
   window.loadTherapistStatusForOverview = loadTherapistStatusForOverview;
   window.displayTherapistStatusInOverview = displayTherapistStatusInOverview;
   window.addEventListener('beforeunload', () => {
@@ -8616,13 +7835,6 @@ function updateCommissionDisplay(rate) {
   window.addAnalyticsButtonsToCharts = addAnalyticsButtonsToCharts;
   window.displayEnhancedPredictionsChart = displayEnhancedPredictionsChart;
   window.createRevenueChart = createRevenueChart;
-  window.updatePredictionsStatCard = updatePredictionsStatCard;
-  window.updateAllStatCardsWithInsights = updateAllStatCardsWithInsights;
-  window.updateBookingsStatCard = updateBookingsStatCard;
-  window.updateCompletedStatCard = updateCompletedStatCard;
-  window.updateRevenueStatCard = updateRevenueStatCard;
-  window.updateCancelledStatCard = updateCancelledStatCard;
-  window.updateTherapistsStatCard = updateTherapistsStatCard;
   window.loadReviewsManagement = loadReviewsManagement;
   window.filterReviews = filterReviews;
   window.clearBookingSearch = clearBookingSearch;
