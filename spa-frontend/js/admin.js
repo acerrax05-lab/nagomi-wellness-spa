@@ -7932,31 +7932,71 @@ document.addEventListener('click', (e) => {
 
 // Wire Socket.IO to notifications
 (function wireNotifSocket() {
-  const checkSocket = setInterval(() => {
-    if (typeof io === 'undefined') return;
-    clearInterval(checkSocket);
+  const BACKEND = 'https://nagomi-backend.onrender.com';
+  let sock = null;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 10;
+
+  function attachEvents(socket) {
+    socket.on('connect', () => {
+      console.log('✅ Connected to server');
+      attempts = 0;
+    });
+    socket.on('new-booking', (data) => {
+      addNotif(`New booking: ${data.guestName || 'Client'} — ${data.service?.name || ''}`, 'booking');
+      showNotification(`📅 New booking from ${data.guestName || 'a client'}!`, 'info');
+    });
+    socket.on('booking-cancelled', (data) => {
+      addNotif(`Cancellation request: ${data.guestName || 'Client'}`, 'cancel');
+    });
+    socket.on('reschedule-request', (data) => {
+      addNotif(`Reschedule request: ${data.guestName || 'Client'}`, 'reschedule');
+    });
+    socket.on('leave-request', (data) => {
+      addNotif(`Leave request from ${data.therapistName || 'a therapist'}`, 'leave');
+      const badge = document.getElementById('leaveSidebarBadge');
+      if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
+      const btn = document.getElementById('leaveTabBtn');
+      if (btn) btn.classList.add('has-badge');
+    });
+    socket.on('connect_error', () => {
+      // Silently suppress — server may still be waking up
+    });
+  }
+
+  function tryConnect() {
+    if (typeof io === 'undefined' || attempts >= MAX_ATTEMPTS) return;
+    attempts++;
     try {
-      const sock = io('https://nagomi-backend.onrender.com');
-      sock.on('new-booking', (data) => {
-        addNotif(`New booking: ${data.guestName || 'Client'} — ${data.service?.name || ''}`, 'booking');
-        showNotification(`📅 New booking from ${data.guestName || 'a client'}!`, 'info');
-      });
-      sock.on('booking-cancelled', (data) => {
-        addNotif(`Cancellation request: ${data.guestName || 'Client'}`, 'cancel');
-      });
-      sock.on('reschedule-request', (data) => {
-        addNotif(`Reschedule request: ${data.guestName || 'Client'}`, 'reschedule');
-      });
-      sock.on('leave-request', (data) => {
-        addNotif(`Leave request from ${data.therapistName || 'a therapist'}`, 'leave');
-        const badge = document.getElementById('leaveSidebarBadge');
-        if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
-        const btn = document.getElementById('leaveTabBtn');
-        if (btn) btn.classList.add('has-badge');
-      });
-    } catch(e) { console.warn('Socket notif setup failed:', e); }
-  }, 1000);
+      // First ping /health — only connect socket if server is actually up
+      fetch(`${BACKEND}/health`, { signal: AbortSignal.timeout(4000) })
+        .then(r => {
+          if (!r.ok) throw new Error('not ready');
+          // Server is up — connect socket
+          if (sock) sock.disconnect();
+          sock = io(BACKEND, {
+            transports: ['websocket'], // skip polling to avoid CORS on 502s
+            reconnectionDelay: 5000,
+            reconnectionAttempts: 5,
+          });
+          attachEvents(sock);
+        })
+        .catch(() => {
+          // Server still sleeping — retry in 8s
+          if (attempts < MAX_ATTEMPTS) setTimeout(tryConnect, 8000);
+        });
+    } catch(e) { /* io not ready yet */ }
+  }
+
+  // Wait 3s after page load before first attempt (let server wake up first)
+  const checkIo = setInterval(() => {
+    if (typeof io !== 'undefined') {
+      clearInterval(checkIo);
+      setTimeout(tryConnect, 3000);
+    }
+  }, 500);
 })();
+
 
 // Sync sidebar admin name
 (function syncSidebarName() {
