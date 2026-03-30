@@ -144,63 +144,7 @@
     <p>Loading your schedule...</p>
   </div>
 
-  <!-- Leave / Overtime Request Button -->
-  <div style="text-align:center;padding:12px 20px 0;">
-    <button onclick="openLeaveModal()"
-      style="background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);
-        color:#fff;padding:10px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;
-        cursor:pointer;transition:0.2s;font-family:'Poppins',sans-serif;"
-      onmouseover="this.style.background='rgba(255,255,255,0.25)'"
-      onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-      🌴 Request Leave / Overtime
-    </button>
-  </div>
-
-  <!-- Leave Request Modal -->
-  <div id="leaveRequestModal" class="modal">
-    <div class="modal-content" style="max-width:500px;text-align:left;">
-      <h3 style="color:#4b2e1e;margin-bottom:6px;">🌴 Leave / Overtime Request</h3>
-      <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">Your request will be sent to the admin for approval.</p>
-
-      <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Request Type</label>
-      <select id="leaveType" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;
-        font-size:0.95rem;margin-bottom:14px;font-family:'Poppins',sans-serif;">
-        <option value="leave">🌴 Leave (sick/personal)</option>
-        <option value="vacation">✈️ Vacation</option>
-        <option value="overtime">⏰ Overtime</option>
-      </select>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-        <div>
-          <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Start Date</label>
-          <input type="date" id="leaveStartDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;
-            border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
-        </div>
-        <div>
-          <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">End Date</label>
-          <input type="date" id="leaveEndDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;
-            border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
-        </div>
-      </div>
-
-      <div id="overtimeHoursRow" style="display:none;margin-bottom:14px;">
-        <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Overtime Hours</label>
-        <input type="number" id="overtimeHours" min="1" max="12" placeholder="e.g. 2"
-          style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;
-            font-size:0.9rem;font-family:'Poppins',sans-serif;">
-      </div>
-
-      <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Reason <span style="color:#dc3545;">*</span></label>
-      <textarea id="leaveReason" rows="3" placeholder="Brief reason for your request..."
-        style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;
-          font-size:0.9rem;resize:vertical;font-family:'Poppins',sans-serif;margin-bottom:20px;"></textarea>
-
-      <div class="modal-actions">
-        <button onclick="submitLeaveRequest()" class="btn-success">📤 Submit Request</button>
-        <button onclick="closeLeaveModal()" class="btn-secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <!-- Complete Modal -->
   <div id="completeModal" class="modal">
     <div class="modal-content">
       <h3>Complete Appointment</h3>
