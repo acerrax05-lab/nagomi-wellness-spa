@@ -3861,3 +3861,286 @@ input:checked + .toggle-slider:before {
   .therapists-grid { grid-template-columns: 1fr; }
 }
 /* ── End mobile improvements ── */
+/* ═══════════════════════════════════════════════════════════════════════
+   NAGOMI REDESIGN — consistent with client-side palette
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Enhanced Navbar ── */
+.navbar {
+  background: linear-gradient(135deg, #3b1f10 0%, #4b2e1e 100%) !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2) !important;
+  padding: 0 2rem !important;
+  height: 64px !important;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #f7c6a5 !important;
+  letter-spacing: 0.5px;
+}
+.user-info { gap: 12px; }
+
+/* ── Notification Bell ── */
+.notif-bell-wrap { position: relative; }
+.notif-bell {
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: white;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.notif-bell:hover { background: rgba(255,255,255,0.22); }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: #e74c3c; color: white;
+  border-radius: 50%; width: 18px; height: 18px;
+  font-size: 0.65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #4b2e1e;
+}
+.notif-panel {
+  position: absolute; top: 48px; right: 0;
+  width: 320px; background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border: 1px solid #ede5da;
+  z-index: 2000;
+  overflow: hidden;
+}
+.notif-panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px;
+  background: #faf6f1;
+  border-bottom: 1px solid #ede5da;
+  font-weight: 700; font-size: 0.9rem; color: #4b2e1e;
+}
+.notif-item {
+  display: flex; gap: 10px; padding: 12px 16px;
+  border-bottom: 1px solid #f5f1eb;
+  transition: background 0.15s;
+}
+.notif-item:hover { background: #faf6f1; }
+.notif-item.notif-read { opacity: 0.6; }
+.notif-item-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.notif-item-msg { font-size: 0.84rem; color: #333; line-height: 1.4; }
+.notif-item-time { font-size: 0.72rem; color: #aaa; margin-top: 3px; }
+
+/* ── Redesigned Sidebar ── */
+.sidebar {
+  background: linear-gradient(180deg, #3b1f10 0%, #4b2e1e 60%, #5a3828 100%) !important;
+  border-right: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  width: 220px !important;
+  top: 64px !important;
+  height: calc(100vh - 64px) !important;
+}
+.admin-content {
+  margin-left: 220px !important;
+  margin-top: 64px !important;
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 20px 18px 16px;
+  color: #f7c6a5;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  letter-spacing: 0.5px;
+}
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.sidebar .tab-btn {
+  width: 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: transparent !important;
+  border: none;
+  border-left: 3px solid transparent;
+  color: rgba(255,255,255,0.7) !important;
+  font-size: 0.9rem; font-weight: 500;
+  text-align: left; cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.sidebar .tab-btn .tab-icon { font-size: 1.1rem; flex-shrink: 0; }
+.sidebar .tab-btn:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+  border-left-color: rgba(247,198,165,0.5);
+}
+.sidebar .tab-btn.active {
+  background: rgba(247,198,165,0.15) !important;
+  color: #f7c6a5 !important;
+  border-left-color: #f7c6a5;
+  font-weight: 700;
+}
+.sidebar-badge {
+  margin-left: auto;
+  background: #e74c3c; color: #fff;
+  border-radius: 20px; padding: 2px 7px;
+  font-size: 0.68rem; font-weight: 700;
+}
+.sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sidebar-admin-info {
+  display: flex; align-items: center; gap: 10px;
+  color: rgba(255,255,255,0.75); font-size: 0.85rem;
+}
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.sidebar-logout-btn {
+  width: 100%;
+  background: rgba(231,76,60,0.2);
+  border: 1.5px solid rgba(231,76,60,0.5);
+  color: #ff8a80;
+  padding: 9px 14px;
+  border-radius: 8px; cursor: pointer;
+  font-size: 0.85rem; font-weight: 600;
+  transition: all 0.2s; text-align: left;
+}
+.sidebar-logout-btn:hover {
+  background: rgba(231,76,60,0.35);
+  border-color: #e74c3c; color: #fff;
+}
+
+/* ── Section headers consistent with client style ── */
+.tab-content h2 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e;
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+.section-header {
+  border-bottom: 2px solid #e8dfd5;
+  padding-bottom: 16px;
+  margin-bottom: 28px;
+}
+
+/* ── Summary bar replaces stat cards ── */
+.summary-bar {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border: 1px solid #ede5da;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.summary-item {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 120px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.summary-item:hover { background: #faf6f1; }
+.summary-icon { font-size: 1.5rem; flex-shrink: 0; }
+.summary-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 700;
+  color: #4b2e1e; line-height: 1;
+}
+.summary-lbl { font-size: 0.72rem; color: #8b6f47; font-weight: 500; margin-top: 2px; }
+.summary-divider {
+  width: 1px; background: #ede5da; height: 40px; flex-shrink: 0;
+}
+
+/* ── Chart boxes ── */
+.chart-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border: 1px solid #ede5da;
+}
+.chart-box h3 {
+  font-family: 'Playfair Display', serif;
+  color: #4b2e1e; font-size: 1.05rem; margin-bottom: 16px;
+}
+
+/* ── Archive list rows ── */
+.archive-list-row {
+  display: flex; align-items: center; gap: 14px;
+  background: #faf6f1;
+  border: 1px solid #ede5da;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+.archive-row-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #e8dfd5;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.archive-row-info { flex: 1; min-width: 0; }
+.archive-row-name { font-weight: 700; color: #4b2e1e; font-size: 0.95rem; }
+.archive-row-email { font-size: 0.78rem; color: #888; }
+.archive-row-reason { font-size: 0.75rem; color: #aaa; }
+.archive-row-btn {
+  flex-shrink: 0; white-space: nowrap;
+  background: #6c757d; color: #fff; border: none;
+  padding: 7px 14px; border-radius: 7px;
+  cursor: pointer; font-size: 0.82rem; font-weight: 600;
+  transition: background 0.2s;
+}
+.archive-row-btn:hover { background: #4b2e1e; }
+
+/* ── Therapist status card — updated for merged view ── */
+.therapist-status-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e8dfd5;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.therapist-status-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.therapist-status-card.available { border-top: 4px solid #28a745; }
+.therapist-status-card.busy      { border-top: 4px solid #dc3545; }
+.therapist-status-card.break     { border-top: 4px solid #ff9800; }
+.therapist-status-card.off       { border-top: 4px solid #aaa; }
+
+/* ── btn-primary / btn-secondary consistent ── */
+.btn-primary {
+  background: linear-gradient(135deg, #8b6f47, #4b2e1e);
+  color: #fff; border: none;
+  padding: 10px 20px; border-radius: 8px;
+  font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ── Responsive updates for new sidebar width ── */
+@media (max-width: 768px) {
+  .sidebar { top: 64px !important; height: calc(100vh - 64px) !important; width: 240px !important; }
+  .admin-content { margin-left: 0 !important; }
+  .summary-bar { gap: 4px; padding: 12px 10px; }
+  .summary-num { font-size: 1.2rem; }
+  .summary-divider { display: none; }
+}
+@media (max-width: 480px) {
+  .summary-item { min-width: 80px; padding: 6px 6px; }
+  .summary-icon { font-size: 1.1rem; }
+  .summary-num { font-size: 1rem; }
+}

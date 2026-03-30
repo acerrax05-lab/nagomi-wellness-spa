@@ -1,5 +1,59 @@
 // js/admin.js 
 const apiBase = 'https://nagomi-backend.onrender.com/api';
+
+// ─── Patch fetch with retry + "server waking up" toast ───────────────────────
+(function () {
+  const _nativeFetch = window.fetch.bind(window);
+  const MAX_RETRIES    = 4;
+  const RETRY_DELAY_MS = 4000;
+
+  function _showWakeToast() {
+    if (document.getElementById('_wakeToast')) return;
+    const t = document.createElement('div');
+    t.id = '_wakeToast';
+    t.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:#4b2e1e;color:#fff;padding:14px 24px;border-radius:10px;
+      font-size:0.95rem;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.25);
+      display:flex;align-items:center;gap:10px;pointer-events:none;`;
+    t.innerHTML = `<span style="font-size:1.2rem;">⏳</span>
+      <span>Server is waking up, please wait…</span>`;
+    document.body.appendChild(t);
+  }
+  function _hideWakeToast() {
+    const t = document.getElementById('_wakeToast');
+    if (t) t.remove();
+  }
+
+  window.fetch = async function (url, options = {}) {
+    // Only retry calls to our own backend
+    if (typeof url !== 'string' || !url.includes('nagomi-backend.onrender.com')) {
+      return _nativeFetch(url, options);
+    }
+    let lastErr;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await _nativeFetch(url, options);
+        if ([502, 503, 504].includes(res.status) && attempt < MAX_RETRIES) {
+          _showWakeToast();
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+          continue;
+        }
+        _hideWakeToast();
+        return res;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < MAX_RETRIES) {
+          _showWakeToast();
+          await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+        }
+      }
+    }
+    _hideWakeToast();
+    throw lastErr;
+  };
+})();
+// ─────────────────────────────────────────────────────────────────────────────
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -14,6 +68,7 @@ const apiBase = 'https://nagomi-backend.onrender.com/api';
   let currentChart = {};
   let filteredBookingsData = []; // Store filtered data for detail views
   let currentIncomePeriod = 'today';
+  let currentCardPeriod   = 'today';
   let incomeRefreshInterval;
   let commissionSettings = {
     rate: 60, // 60% commission
@@ -67,16 +122,20 @@ socket.on('bookingStatusUpdated', () => {
   document.getElementById('bookingSearchInput')?.addEventListener('input', (e) => {
     searchTerm = e.target.value.toLowerCase().trim();
     const clearBtn = document.getElementById('clearSearchBtn');
-    
+    const infoDiv  = document.getElementById('searchResultsInfo');
+
     if (searchTerm) {
       clearBtn.style.display = 'block';
-      // Wait 300ms after user stops typing before searching
+      // Show "searching…" immediately so the UI doesn't appear frozen
+      if (infoDiv) infoDiv.innerHTML = `<span style="color:#999;font-size:0.9rem;">🔍 Searching…</span>`;
       clearTimeout(searchDebounceTimer);
+      // 500ms debounce — waits until user stops typing before filtering
       searchDebounceTimer = setTimeout(() => {
         performBookingSearch();
-      }, 300);
+      }, 500);
     } else {
       clearTimeout(searchDebounceTimer);
+      if (infoDiv) infoDiv.innerHTML = '';
       clearBookingSearch();
     }
   });
@@ -103,160 +162,80 @@ socket.on('bookingStatusUpdated', () => {
   function displaySearchResults(results) {
   const tbody = document.querySelector('#bookingsTable tbody');
   const infoDiv = document.getElementById('searchResultsInfo');
-  
-  console.log('🔍 Displaying', results.length, 'search results');
-  
-  // Update info banner
+
+  // ── Info banner ──────────────────────────────────────────────────
   if (results.length === 0) {
     infoDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #dc3545; font-weight: 600;">
-          ❌ No bookings found matching "${searchTerm}"
-        </span>
-      </div>
-    `;
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#dc3545;font-weight:600;">❌ No bookings found matching "${searchTerm}"</span>
+      </div>`;
   } else {
     infoDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 600; color: #2196f3;">
-          ✅ Found ${results.length} booking${results.length !== 1 ? 's' : ''}
-        </span>
-        <span style="color: #666; font-size: 0.85rem;">
-          👆 Click any booking to view its full details on the calendar
-        </span>
-      </div>
-    `;
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:600;color:#2196f3;">✅ Found ${results.length} booking${results.length !== 1 ? 's' : ''}</span>
+        <span style="color:#666;font-size:0.85rem;">👆 Click any booking to view its full details on the calendar</span>
+      </div>`;
   }
-  
-  // Handle empty results
+
+  // ── Empty state ──────────────────────────────────────────────────
   if (results.length === 0) {
     tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
-          <div style="font-size: 3rem; margin-bottom: 15px;">🔍</div>
-          <p style="font-size: 1.1rem; margin-bottom: 8px;">No bookings found</p>
-          <p style="font-size: 0.9rem;">Try searching by:</p>
-          <ul style="list-style: none; padding: 0; margin-top: 10px; color: #666;">
-            <li>• Guest name</li>
-            <li>• Phone number</li>
-            <li>• Transaction number</li>
-            <li>• Service name</li>
-            <li>• Status (pending, confirmed, etc.)</li>
-          </ul>
-        </td>
-      </tr>
-    `;
+      <tr><td colspan="8" style="text-align:center;padding:40px;color:#999;">
+        <div style="font-size:3rem;margin-bottom:15px;">🔍</div>
+        <p style="font-size:1.1rem;margin-bottom:8px;">No bookings found</p>
+        <p style="font-size:0.9rem;">Try: name, phone, transaction number, service, or status</p>
+      </td></tr>`;
     return;
   }
-  
-  // Sort by date (most recent first)
-  const sorted = results.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-  tbody.innerHTML = '';
-  
-  // Display results with enhanced styling
-  sorted.forEach((booking, index) => {
+
+  // ── Sort once, build ALL rows as one string, set innerHTML ONCE ──
+  // This avoids the O(n) DOM re-parse that caused the lag/crash.
+  const statusColors = { pending:'#ffc107', confirmed:'#2196f3', completed:'#28a745', cancelled:'#dc3545' };
+
+  const sorted = results.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const html = sorted.map((booking, index) => {
     const dateStr = new Date(booking.date).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      weekday:'short', month:'short', day:'numeric', year:'numeric'
     });
-    
-    const therapistDisplay = booking.therapists && booking.therapists.length > 0
+    const therapistDisplay = booking.therapists?.length
       ? booking.therapists.map(t => t.name).join(', ')
-      : booking.therapist
-        ? booking.therapist.name
-        : 'Unassigned';
-    
-    // Determine status color
-    const statusColors = {
-      pending: '#ffc107',
-      confirmed: '#2196f3',
-      completed: '#28a745',
-      cancelled: '#dc3545'
-    };
+      : booking.therapist?.name || 'Unassigned';
     const statusColor = statusColors[booking.status] || '#6c757d';
-    
-    tbody.innerHTML += `
-      <tr 
-        data-booking-id="${booking._id}"
-        style="
-          cursor: pointer; 
-          transition: all 0.3s;
-          border-left: 4px solid ${statusColor};
-          ${index === 0 ? 'background: #f0f7ff;' : ''}
-        " 
-        onmouseover="
-          this.style.background='#f5f1eb';
-          this.style.transform='translateX(4px)';
-          this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';
-        " 
-        onmouseout="
-          this.style.background='${index === 0 ? '#f0f7ff' : ''}';
-          this.style.transform='translateX(0)';
-          this.style.boxShadow='none';
-        "
-        onclick="navigateToBookingDate('${booking._id}')">
-        
+    const genderHtml = (booking.femaleClients > 0 || booking.maleClients > 0)
+      ? `<div style="margin-bottom:4px;">
+           <span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${booking.femaleClients ?? 0}</span>
+           <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${booking.maleClients ?? 0}</span>
+         </div>`
+      : '';
+
+    return `
+      <tr data-booking-id="${booking._id}"
+          style="cursor:pointer;border-left:4px solid ${statusColor};${index === 0 ? 'background:#f0f7ff;' : ''}"
+          onmouseover="this.style.background='#f5f1eb';this.style.transform='translateX(4px)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
+          onmouseout="this.style.background='${index === 0 ? '#f0f7ff' : ''}';this.style.transform='translateX(0)';this.style.boxShadow='none';"
+          onclick="navigateToBookingDate('${booking._id}')">
         <td>
-          <div style="font-weight: 600; font-size: 1rem; margin-bottom: 6px;">
-            ${booking.guestName}
-          </div>
-          ${(booking.femaleClients != null || booking.maleClients != null) && (booking.femaleClients > 0 || booking.maleClients > 0) ? `
-          <div style="margin-bottom:4px;">
-            <span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${booking.femaleClients ?? 0}</span>
-            <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${booking.maleClients ?? 0}</span>
-          </div>` : ''}
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 6px;">
-              <span>📞</span>
-              <span>${booking.guestPhone}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 6px;">
-              <span>🎫</span>
-              <span style="font-family: monospace; background: #f5f5f5; padding: 2px 8px; border-radius: 4px;">
-                ${booking.transactionNumber}
-              </span>
-            </div>
-          </div>
+          <div style="font-weight:600;font-size:1rem;margin-bottom:4px;">${booking.guestName}</div>
+          ${genderHtml}
+          <div style="font-size:0.85rem;color:#666;">📞 ${booking.guestPhone || '—'}</div>
+          <div style="font-size:0.85rem;color:#666;">🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;">${booking.transactionNumber || '—'}</span></div>
         </td>
-        
         <td>
-          <div style="font-weight: 600; color: #4b2e1e;">${dateStr}</div>
-          <div style="font-size: 0.85rem; color: #666; margin-top: 2px;">${booking.time}</div>
+          <div style="font-weight:600;color:#4b2e1e;">${dateStr}</div>
+          <div style="font-size:0.85rem;color:#666;margin-top:2px;">${booking.time || '—'}</div>
         </td>
-        
         <td>${booking.service?.name || 'N/A'}</td>
         <td>${therapistDisplay}</td>
         <td>${booking.durationMinutes} mins</td>
-        <td style="font-weight: 600;">₱${(booking.price || 0).toLocaleString()}</td>
-        
-        <td>
-          <span class="status-badge status-${booking.status}" style="background: ${statusColor}; color: white;">
-            ${booking.status}
-          </span>
-        </td>
-        
-        <td>
-          <div style="
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: #2196f3;
-            font-weight: 600;
-          ">
-            <span>📍</span>
-            <span>View on Calendar</span>
-            <span style="font-size: 1.2rem;">→</span>
-          </div>
-        </td>
-      </tr>
-    `;
-  });
-  
-  console.log('✅ Search results displayed');
+        <td style="font-weight:600;">₱${(booking.price || 0).toLocaleString()}</td>
+        <td><span class="status-badge status-${booking.status}" style="background:${statusColor};color:white;">${booking.status}</span></td>
+        <td><div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:#2196f3;font-weight:600;">📍 View on Calendar →</div></td>
+      </tr>`;
+  }).join('');
+
+  // Single DOM write — no looping innerHTML +=
+  tbody.innerHTML = html;
 }
 
   function navigateToBookingDate(bookingId) {
@@ -399,32 +378,30 @@ socket.on('bookingStatusUpdated', () => {
 
 
   function clearBookingSearch() {
-  console.log('🧹 Clearing search');
-  
   searchTerm = '';
   const searchInput = document.getElementById('bookingSearchInput');
-  const clearBtn = document.getElementById('clearSearchBtn');
-  const infoDiv = document.getElementById('searchResultsInfo');
-  
+  const clearBtn    = document.getElementById('clearSearchBtn');
+  const infoDiv     = document.getElementById('searchResultsInfo');
+  const mobileList  = document.getElementById('mobileBookingList');
+
   if (searchInput) searchInput.value = '';
-  if (clearBtn) clearBtn.style.display = 'none';
-  if (infoDiv) infoDiv.innerHTML = '';
-  
-  // Reload current date or show message
+  if (clearBtn)    clearBtn.style.display = 'none';
+  if (infoDiv)     infoDiv.innerHTML = '';
+  if (mobileList)  mobileList.innerHTML = '';
+
+  // Reload current date or show placeholder
   if (selectedDate) {
-    console.log('📅 Reloading selected date:', selectedDate);
     loadBookingsForDate(selectedDate);
   } else {
     const tbody = document.querySelector('#bookingsTable tbody');
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">📅</div>
-            <p style="font-size: 1.1rem;">Select a date from the calendar to view bookings</p>
+          <td colspan="8" style="text-align:center;padding:40px;color:#999;">
+            <div style="font-size:3rem;margin-bottom:15px;">📅</div>
+            <p style="font-size:1.1rem;">Select a date from the calendar to view bookings</p>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }
   }
 }
@@ -3084,15 +3061,6 @@ const percentChange = comparisonCount > 0
                     </div>
                   </div>
                   <div>
-                    <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Completion Rate</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: ${
-                      t.successRate >= 80 ? '#28a745' : 
-                      t.successRate >= 60 ? '#ffc107' : '#dc3545'
-                    };">
-                      ${t.successRate || 0}%
-                    </div>
-                  </div>
-                  <div>
                     <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">Revenue</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">
                       ₱${(t.totalRevenue || 0).toLocaleString()}
@@ -4716,7 +4684,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (dayBookings.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+          <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
             No bookings for this date
           </td>
         </tr>
@@ -4742,7 +4710,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (onlineBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #e3f2fd; font-weight: 700;">
-          <td colspan="10" style="padding: 12px; color: #1976d2; font-size: 1.1rem;">
+          <td colspan="9" style="padding: 12px; color: #1976d2; font-size: 1.1rem;">
   💻 ONLINE BOOKINGS (${onlineBookings.length})
 </td>
         </tr>
@@ -4759,7 +4727,7 @@ window.getBookingRowActions = getBookingRowActions;
     if (walkInBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #fff3e0; font-weight: 700; border-top: 3px solid #ff9800;">
-          <td colspan="10" style="padding: 12px; color: #f57c00; font-size: 1.1rem;">
+          <td colspan="9" style="padding: 12px; color: #f57c00; font-size: 1.1rem;">
   🚶 WALK-IN BOOKINGS (${walkInBookings.length})
 </td>
         </tr>
@@ -4781,9 +4749,7 @@ window.getBookingRowActions = getBookingRowActions;
     const duration    = b.durationMinutes || 60;
     const price       = (b.price || 0).toLocaleString();
     const startTime   = b.time || '—';
-    const endTime     = b.endTime
-      ? new Date(b.endTime).toLocaleTimeString('en-US', { timeZone:'Asia/Manila', hour:'2-digit', minute:'2-digit' })
-      : '—';
+    const endTime     = formatEndTime(b.endTime);
     const phone = b.guestPhone || 'No phone';
     const txn   = b.transactionNumber || 'N/A';
 
@@ -4945,13 +4911,7 @@ function formatBookingDate(b) {
        <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${maleCount}</span>`
     : '';
   const startTime  = b.time || '—';
-  const endTime    = b.endTime
-    ? new Date(b.endTime).toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Manila',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    : '—';
+  const endTime    = formatEndTime(b.endTime);
 
   // Format date from booking.date
   const bookingDateStr = b.date
@@ -4986,14 +4946,24 @@ function formatBookingDate(b) {
           </span>
         </div>
       </td>
-      <td style="white-space:nowrap;">${bookingDateStr}</td>
       <td style="white-space:nowrap;">${startTime}</td>
       <td style="white-space:nowrap;">${endTime}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;font-size:0.9rem;">${serviceName}</td>
       <td style="word-wrap:break-word;overflow-wrap:break-word;">${therapistDisplay}</td>
       <td style="text-align:center;">${duration} mins</td>
       <td style="text-align:right;">₱${(b.price || 0).toLocaleString()}</td>
-      <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+      <td>${(() => {
+        const statusLabels = {
+          pending:              { label: 'Pending',      cls: 'pending' },
+          confirmed:            { label: 'Confirmed',    cls: 'confirmed' },
+          completed:            { label: 'Completed',    cls: 'completed' },
+          cancelled:            { label: 'Cancelled',    cls: 'cancelled' },
+          pending_reschedule:   { label: 'Reschedule ⏳', cls: 'pending_reschedule' },
+          pending_cancellation: { label: 'Cancel Req ⏳', cls: 'pending_cancellation' },
+        };
+        const s = statusLabels[b.status] || { label: b.status, cls: b.status };
+        return `<span class="status-badge status-${s.cls}" style="font-size:0.75rem;padding:4px 6px;white-space:nowrap;">${s.label}</span>`;
+      })()}</td>
       <td class="action-buttons">${actions || '-'}</td>
     </tr>
   `;
@@ -6230,7 +6200,6 @@ async function confirmAssignTherapist() {
             <div class="therapist-avatar">👤</div>
             <h3>${t.name}</h3>
             <p>${t.email}</p>
-            <p>${t.phone || 'No phone'}</p>
             <p style="margin-top:6px;">
               <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;
                 background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};
@@ -6398,6 +6367,24 @@ async function confirmAssignTherapist() {
         </div>
       `;
     }).join('');
+  }
+
+  // ─── Format endTime regardless of whether it's an ISO string or plain "H:MM AM/PM" ───
+  function formatEndTime(raw) {
+    if (!raw) return '—';
+    // ISO datetime string e.g. "2026-03-31T13:00:00.000Z"
+    // The backend stored Manila local time as UTC digits, so read HH:MM directly from the T part
+    if (raw.includes('T')) {
+      const timePart = raw.split('T')[1]?.substring(0, 5); // "13:00"
+      if (timePart) {
+        let [h, m] = timePart.split(':').map(Number);
+        const per = h >= 12 ? 'PM' : 'AM';
+        const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+        return `${h12}:${String(m).padStart(2, '0')} ${per}`;
+      }
+    }
+    // Already a plain time string like "1:00 PM"
+    return raw;
   }
 
   function convertTo24HourInput(timeStr) {
@@ -6765,8 +6752,12 @@ async function confirmAssignTherapist() {
     document.getElementById('therapistModalTitle').textContent = 'Add New Therapist';
     document.getElementById('therapistName').value = '';
     document.getElementById('therapistEmail').value = '';
-    document.getElementById('therapistPhone').value = '';
-    document.getElementById('genderFemale').checked = true;
+    // Safely set gender — element may not exist in all HTML versions
+    const genderFemaleEl = document.getElementById('genderFemale');
+    if (genderFemaleEl) genderFemaleEl.checked = true;
+    // Also try by name selector as fallback
+    const genderRadio = document.querySelector('input[name="therapistGender"][value="female"]');
+    if (genderRadio) genderRadio.checked = true;
     document.getElementById('editTherapistModal').classList.add('active');
   });
 
@@ -6784,9 +6775,12 @@ async function confirmAssignTherapist() {
       document.getElementById('therapistModalTitle').textContent = 'Edit Therapist';
       document.getElementById('therapistName').value = therapist.name;
       document.getElementById('therapistEmail').value = therapist.email;
-      document.getElementById('therapistPhone').value = therapist.phone || '';
       const gender = therapist.gender || 'female';
-      document.getElementById(gender === 'male' ? 'genderMale' : 'genderFemale').checked = true;
+      const genderEl = document.getElementById(gender === 'male' ? 'genderMale' : 'genderFemale');
+      if (genderEl) genderEl.checked = true;
+      // Also try by name selector as fallback
+      const genderRadioEl = document.querySelector(`input[name="therapistGender"][value="${gender}"]`);
+      if (genderRadioEl) genderRadioEl.checked = true;
       document.getElementById('editTherapistModal').classList.add('active');
     } catch (err) {
       console.error(err);
@@ -6801,7 +6795,6 @@ async function confirmAssignTherapist() {
     const therapistData = {
       name:     document.getElementById('therapistName').value,
       email:    document.getElementById('therapistEmail').value,
-      phone:    document.getElementById('therapistPhone').value,
       gender:   document.querySelector('input[name="therapistGender"]:checked')?.value || 'female',
       role:     'therapist',
       isActive: true
@@ -7329,7 +7322,7 @@ async function confirmAssignTherapist() {
 
   async function loadTherapistPerformance() {
     try {
-      const period = currentIncomePeriod || 'today';
+      const period = currentCardPeriod || 'today';
       console.log(`📊 Loading therapist performance for period: ${period}`);
       
       // Use therapist-status endpoint (timezone-fixed) for live status
@@ -7483,13 +7476,6 @@ async function confirmAssignTherapist() {
             <div class="status-detail-item">
               <span class="status-detail-label">Bookings:</span>
               <span class="status-detail-value">${completedBookings || 0}/${totalBookings || 0} completed</span>
-            </div>
-            
-            <div class="status-detail-item">
-              <span class="status-detail-label">Completion Rate:</span>
-              <span class="status-detail-value" style="color: ${successRate >= 80 ? '#28a745' : successRate >= 60 ? '#ffc107' : '#dc3545'};">
-                ${successRate || 0}%
-              </span>
             </div>
             
             <div class="status-detail-item">
@@ -7885,22 +7871,22 @@ async function confirmAssignTherapist() {
     }
   });
 
-  // Update filter buttons to reload performance
+  // Filter for therapist CARDS (Live Status Dashboard) — independent from income filter
+  function filterCardByPeriod(period) {
+    currentCardPeriod = period;
+    document.querySelectorAll('[data-card-period]').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`[data-card-period="${period}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    loadTherapistPerformance();
+  }
+
+  // Filter for INCOME & COMMISSION table only
   function filterIncomeByPeriod(period) {
     currentIncomePeriod = period;
-    
-    console.log('🔄 Filtering by period:', period);
-    
-    // Update button states
-    document.querySelectorAll('[data-income-period]').forEach(btn => {
-      btn.classList.remove('active');
-    });
+    document.querySelectorAll('[data-income-period]').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.querySelector(`[data-income-period="${period}"]`);
     if (activeBtn) activeBtn.classList.add('active');
-    
-    //  CHANGED: Reload both performance and income
-    loadTherapistPerformance(); // Reload status with new period
-    loadIncomeData();           // Reload income with new period
+    loadIncomeData();
   }
 
   async function saveCommissionSettings() {
@@ -8262,7 +8248,7 @@ function updateCommissionDisplay(rate) {
     if (incomeData.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+          <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
             No income data for this period
           </td>
         </tr>
@@ -8292,9 +8278,6 @@ function updateCommissionDisplay(rate) {
           <td>${therapist.completedServices}</td>
           <td style="font-weight: 600;">₱${therapist.totalRevenue.toLocaleString()}</td>
           <td class="income-amount">₱${therapist.commission.toLocaleString()}</td>
-          <td>
-            <span class="success-rate ${rateClass}">${successRate}%</span>
-          </td>
           <td>
             <button class="btn-edit" onclick="showIncomeDetail('${therapist.id}', '${therapist.name}')">
               View Details
@@ -8644,6 +8627,7 @@ function updateCommissionDisplay(rate) {
   window.loadTherapistAnalytics = loadTherapistAnalytics;
   window.saveCommissionSettings = saveCommissionSettings;
   window.filterIncomeByPeriod = filterIncomeByPeriod;
+  window.filterCardByPeriod   = filterCardByPeriod;
   window.showIncomeDetail = showIncomeDetail;
   window.closeIncomeDetail = closeIncomeDetail;
   window.exportIncomeReport = exportIncomeReport;

@@ -476,6 +476,15 @@ function normalizeDate(date) {
           loadReviewsManagement();
           markTabLoaded('reviews');
           break;
+        case 'income':
+          loadCommissionSettings();
+          loadIncomeData();
+          markTabLoaded('income');
+          break;
+        case 'leave-requests':
+          loadLeaveRequests();
+          markTabLoaded('leave-requests');
+          break;
       }
     });
   });
@@ -7325,38 +7334,34 @@ async function confirmAssignTherapist() {
       const period = currentCardPeriod || 'today';
       console.log(`📊 Loading therapist performance for period: ${period}`);
       
-      // Use therapist-status endpoint (timezone-fixed) for live status
-      const statusRes = await fetch(`${apiBase}/bookings/therapist-status`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Fetch all three sources in parallel
+      const [statusRes, analyticsRes, mgmtRes] = await Promise.all([
+        fetch(`${apiBase}/bookings/therapist-status`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${apiBase}/analytics/therapist-performance?period=${period}`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${apiBase}/therapists`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
 
-      if (!statusRes.ok) {
-        console.error('Failed to load therapist status:', statusRes.status);
-        return;
-      }
+      if (!statusRes.ok) { console.error('Failed to load therapist status:', statusRes.status); return; }
 
       const statusData = await statusRes.json();
+      const analytics  = analyticsRes.ok ? await analyticsRes.json() : [];
+      const mgmtList   = mgmtRes.ok     ? await mgmtRes.json()      : [];
 
-      // Also fetch analytics for booking stats
-      const analyticsRes = await fetch(`${apiBase}/analytics/therapist-performance?period=${period}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      let analytics = [];
-      if (analyticsRes.ok) {
-        analytics = await analyticsRes.json();
-      }
-
-      // Merge: use status from therapist-status, stats from analytics
+      // Merge all three
       const merged = statusData.map(t => {
         const analytic = analytics.find(a => a.name?.toLowerCase() === t.name?.toLowerCase()) || {};
+        const mgmt     = mgmtList.find(m => m.name?.toLowerCase() === t.name?.toLowerCase()) || {};
         return {
           ...t,
+          _id:               mgmt._id               || t._id,
+          email:             mgmt.email             || '',
+          gender:            mgmt.gender            || 'female',
+          isActive:          mgmt.isActive          !== false,
           totalBookings:     analytic.totalBookings     || 0,
           completedBookings: analytic.completedBookings || 0,
           totalRevenue:      analytic.totalRevenue      || 0,
           successRate:       analytic.successRate       || 0,
-          expertise:         analytic.expertise         || t.expertise || [],
+          expertise:         analytic.expertise         || mgmt.expertise || t.expertise || [],
           workingHours:      analytic.workingHours      || t.workingHours || null,
         };
       });
@@ -7385,109 +7390,67 @@ async function confirmAssignTherapist() {
     }
   }
 
-  // NEW: Display therapist performance with enhanced data
+  // Unified card: live status + management controls combined
   function displayTherapistPerformance(analytics) {
     const grid = document.getElementById('therapistStatusGrid');
-    
-    if (!grid) {
-      console.warn('⚠️ therapistStatusGrid element not found');
-      return;
-    }
-    
+    if (!grid) { console.warn('⚠️ therapistStatusGrid element not found'); return; }
     if (!analytics || analytics.length === 0) {
       grid.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">No therapists available</p>';
       return;
     }
-    
     console.log('🎨 Rendering', analytics.length, 'therapist cards');
-    
-    grid.innerHTML = analytics.map(therapist => {
-      const { 
-        name, 
-        status, 
-        statusMessage, 
-        currentBooking, 
-        successRate, 
-        totalBookings, 
-        completedBookings, 
-        totalRevenue, 
-        expertise,
-        workingHours 
-      } = therapist;
-      
-      let statusIcon = '';
-      let statusClass = '';
-      
-      switch (status) {
-        case 'available':
-          statusIcon = '🟢';
-          statusClass = 'available';
-          break;
-        case 'busy':
-          statusIcon = '🔴';
-          statusClass = 'busy';
-          break;
-        case 'break':
-          statusIcon = '🟡';
-          statusClass = 'break';
-          break;
-        case 'off':
-          statusIcon = '⚫';
-          statusClass = 'off';
-          break;
-      }
-      
+
+    const statusMeta = {
+      available: { icon: '🟢', cls: 'available', label: 'Available Now' },
+      busy:      { icon: '🔴', cls: 'busy',      label: 'In Session'    },
+      break:     { icon: '🟡', cls: 'break',     label: 'On Break'      },
+      off:       { icon: '⚫', cls: 'off',        label: 'Off Duty'      },
+    };
+
+    grid.innerHTML = analytics.map(t => {
+      const sm = statusMeta[t.status] || { icon: '⚫', cls: 'off', label: t.statusMessage || 'Unknown' };
+      const expertiseTxt = t.expertise && t.expertise.length > 0
+        ? t.expertise.slice(0, 2).join(', ') + (t.expertise.length > 2 ? ` +${t.expertise.length - 2}` : '')
+        : 'All services';
+      const genderBadge = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.76rem;font-weight:700;background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};color:${t.gender === 'male' ? '#1d4ed8' : '#be185d'};">${t.gender === 'male' ? '♂ Male' : '♀ Female'}</span>`;
+      const tid = (t._id || '').toString();
+      const safeName = (t.name || '').replace(/'/g, "\'");
+
       return `
-        <div class="therapist-status-card ${statusClass}">
-          <div class="status-card-header">
-            <div class="therapist-info">
-              <h4>${name}</h4>
-              <p>${statusMessage}</p>
+        <div class="therapist-status-card ${sm.cls}" style="display:flex;flex-direction:column;">
+
+          <div style="display:flex;align-items:center;gap:14px;padding:16px 18px 12px;">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8b6f47,#4b2e1e);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">👤</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:1rem;color:#4b2e1e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name}</div>
+              <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.email || ''}</div>
+              <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                ${genderBadge}
+                <span style="font-size:0.76rem;font-weight:600;color:${t.status === 'available' ? '#28a745' : t.status === 'busy' ? '#dc3545' : t.status === 'break' ? '#ff9800' : '#666'};">${sm.icon} ${sm.label}</span>
+              </div>
             </div>
-            <div class="status-indicator">
-              <span class="status-dot-large status-${status}"></span>
-              <span>${statusIcon}</span>
+            <div class="status-indicator" style="flex-shrink:0;"><span class="status-dot-large status-${t.status}"></span></div>
+          </div>
+
+          <div class="status-details" style="padding:0 18px 12px;border-top:1px solid rgba(0,0,0,0.06);">
+            ${t.currentBooking ? `<div class="status-detail-item"><span class="status-detail-label">Until:</span><span class="status-detail-value">${t.currentBooking.endTime}</span></div>` : ''}
+            <div class="status-detail-item"><span class="status-detail-label">Expertise:</span><span class="status-detail-value" style="font-size:0.82rem;">${expertiseTxt}</span></div>
+            ${t.workingHours ? `<div class="status-detail-item"><span class="status-detail-label">Today\'s Hours:</span><span class="status-detail-value">${t.workingHours.startTime} - ${t.workingHours.endTime}</span></div>` : ''}
+            <div class="status-detail-item"><span class="status-detail-label">Bookings:</span><span class="status-detail-value">${t.completedBookings || 0}/${t.totalBookings || 0} completed</span></div>
+            <div class="status-detail-item"><span class="status-detail-label">Revenue:</span><span class="status-detail-value">₱${(t.totalRevenue || 0).toLocaleString()}</span></div>
+          </div>
+
+          <div style="padding:10px 18px 14px;border-top:1px solid rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-schedule" style="width:100%;" onclick="openScheduleModal('${tid}')">📅 Manage Schedule</button>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-edit" style="flex:1;" onclick="editTherapist('${tid}')">Edit</button>
+              <button class="btn-archive" style="flex:1;" onclick="archiveTherapist('${tid}', '${safeName}')">🗃️ Archive</button>
             </div>
           </div>
-          
-          <div class="status-details">
-            ${currentBooking ? `
-              <div class="status-detail-item">
-                <span class="status-detail-label">Until:</span>
-                <span class="status-detail-value">${currentBooking.endTime}</span>
-              </div>
-            ` : ''}
-            
-            <div class="status-detail-item">
-              <span class="status-detail-label">Expertise:</span>
-              <span class="status-detail-value" style="font-size: 0.85rem;">
-                ${expertise && expertise.length > 0 ? expertise.slice(0, 2).join(', ') : 'All services'}
-                ${expertise && expertise.length > 2 ? ` +${expertise.length - 2}` : ''}
-              </span>
-            </div>
-            
-            ${workingHours ? `
-              <div class="status-detail-item">
-                <span class="status-detail-label">Today's Hours:</span>
-                <span class="status-detail-value">${workingHours.startTime} - ${workingHours.endTime}</span>
-              </div>
-            ` : ''}
-            
-            <div class="status-detail-item">
-              <span class="status-detail-label">Bookings:</span>
-              <span class="status-detail-value">${completedBookings || 0}/${totalBookings || 0} completed</span>
-            </div>
-            
-            <div class="status-detail-item">
-              <span class="status-detail-label">Revenue:</span>
-              <span class="status-detail-value">₱${(totalRevenue || 0).toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      `;
+
+        </div>`;
     }).join('');
   }
-
   // NEW: Load predictions
   async function loadPredictions() {
     try {
@@ -8685,3 +8648,306 @@ window.openHolidayModal     = openHolidayModal;
 window.closeHolidayModal    = closeHolidayModal;
 window.confirmHolidayToggle = confirmHolidayToggle;
 window.syncClosureEndMin    = syncClosureEndMin;
+// ═══════════════════════════════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════════
+
+const notifStore = [];
+
+function addNotif(message, type = 'booking') {
+  const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
+  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date() });
+  if (notifStore.length > 30) notifStore.pop();
+  renderNotifPanel();
+  // Flash badge
+  const badge = document.getElementById('notifBadge');
+  const unread = notifStore.filter(n => !n.read).length;
+  if (badge) {
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+}
+
+function renderNotifPanel() {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  if (notifStore.length === 0) {
+    list.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:16px;text-align:center;">No new notifications</p>';
+    return;
+  }
+  list.innerHTML = notifStore.map(n => {
+    const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
+    const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
+    return `<div class="notif-item ${n.read ? 'notif-read' : ''}">
+      <span class="notif-item-icon">${n.icon}</span>
+      <div class="notif-item-body">
+        <div class="notif-item-msg">${n.message}</div>
+        <div class="notif-item-time">${ago}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // Mark all read
+    notifStore.forEach(n => n.read = true);
+    const badge = document.getElementById('notifBadge');
+    if (badge) badge.style.display = 'none';
+    renderNotifPanel();
+  }
+}
+
+function clearNotifs() {
+  notifStore.length = 0;
+  renderNotifPanel();
+  const badge = document.getElementById('notifBadge');
+  if (badge) badge.style.display = 'none';
+}
+
+// Close panel when clicking outside
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('notifBellWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const panel = document.getElementById('notifPanel');
+    if (panel) panel.style.display = 'none';
+  }
+});
+
+// Wire Socket.IO to notifications
+(function wireNotifSocket() {
+  const checkSocket = setInterval(() => {
+    if (typeof io === 'undefined') return;
+    clearInterval(checkSocket);
+    try {
+      const sock = io('https://nagomi-backend.onrender.com');
+      sock.on('new-booking', (data) => {
+        addNotif(`New booking: ${data.guestName || 'Client'} — ${data.service?.name || ''}`, 'booking');
+        showNotification(`📅 New booking from ${data.guestName || 'a client'}!`, 'info');
+      });
+      sock.on('booking-cancelled', (data) => {
+        addNotif(`Cancellation request: ${data.guestName || 'Client'}`, 'cancel');
+      });
+      sock.on('reschedule-request', (data) => {
+        addNotif(`Reschedule request: ${data.guestName || 'Client'}`, 'reschedule');
+      });
+      sock.on('leave-request', (data) => {
+        addNotif(`Leave request from ${data.therapistName || 'a therapist'}`, 'leave');
+        const badge = document.getElementById('leaveSidebarBadge');
+        if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
+        const btn = document.getElementById('leaveTabBtn');
+        if (btn) btn.classList.add('has-badge');
+      });
+    } catch(e) { console.warn('Socket notif setup failed:', e); }
+  }, 1000);
+})();
+
+// Sync sidebar admin name
+(function syncSidebarName() {
+  const el = document.getElementById('adminName');
+  const sidebar = document.getElementById('sidebarAdminName');
+  if (el && sidebar) {
+    const obs = new MutationObserver(() => { sidebar.textContent = el.textContent; });
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+    sidebar.textContent = el.textContent;
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════════
+// MANAGE ARCHIVE MODAL
+// ═══════════════════════════════════════════════════════════════════════
+
+let _archiveTab = 'active'; // 'active' | 'archived'
+
+async function openManageArchiveModal() {
+  document.getElementById('manageArchiveModal').classList.add('active');
+  switchArchiveTab('active');
+}
+
+function closeManageArchiveModal() {
+  document.getElementById('manageArchiveModal').classList.remove('active');
+}
+
+function closeManageArchiveOnBackdrop(e) {
+  if (e.target === document.getElementById('manageArchiveModal')) closeManageArchiveModal();
+}
+
+async function switchArchiveTab(tab) {
+  _archiveTab = tab;
+  document.getElementById('archiveTabActive').classList.toggle('active', tab === 'active');
+  document.getElementById('archiveTabArchived').classList.toggle('active', tab === 'archived');
+  const list = document.getElementById('manageArchiveList');
+  list.innerHTML = '<p style="color:#999;text-align:center;padding:32px;">Loading...</p>';
+
+  if (tab === 'active') {
+    // Load active therapists from API
+    try {
+      const res = await fetch(`${apiBase}/therapists`, { headers: { Authorization: `Bearer ${token}` } });
+      const all = await res.json();
+      const archivedIds = new Set(JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]').map(a => a.id));
+      const active = all.filter(t => t.isActive !== false && !archivedIds.has(t._id));
+      if (active.length === 0) {
+        list.innerHTML = '<p style="color:#999;text-align:center;padding:32px;">No active therapists</p>';
+        return;
+      }
+      list.innerHTML = active.map(t => `
+        <div class="archive-list-row">
+          <div class="archive-row-avatar">👤</div>
+          <div class="archive-row-info">
+            <div class="archive-row-name">${t.name}</div>
+            <div class="archive-row-email">${t.email}</div>
+          </div>
+          <button class="btn-archive archive-row-btn"
+            onclick="archiveTherapist('${t._id}','${t.name.replace(/'/g,"\\'")}');closeManageArchiveModal();">
+            🗃️ Archive
+          </button>
+        </div>`).join('');
+    } catch(e) {
+      list.innerHTML = '<p style="color:#dc3545;text-align:center;padding:32px;">Failed to load therapists</p>';
+    }
+  } else {
+    // Show archived from localStorage
+    const archives = JSON.parse(localStorage.getItem('nagomi_archivedTherapists') || '[]').slice().reverse();
+    if (archives.length === 0) {
+      list.innerHTML = '<p style="color:#999;text-align:center;padding:32px;">No archived therapists yet</p>';
+      return;
+    }
+    const realIdxOf = (t) => archives.length - 1 - archives.indexOf(t);
+    list.innerHTML = archives.map((t, i) => {
+      const realIdx = archives.length - 1 - i;
+      const date = new Date(t.archiveDate).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+      return `
+        <div class="archive-list-row">
+          <div class="archive-row-avatar" style="opacity:0.6;">👤</div>
+          <div class="archive-row-info">
+            <div class="archive-row-name" style="color:#888;">${t.name}</div>
+            <div class="archive-row-email">${t.email} · Archived ${date}</div>
+            <div class="archive-row-reason" style="font-size:0.78rem;color:#aaa;margin-top:2px;">${t.archiveReason || ''}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn-schedule" style="font-size:0.78rem;padding:5px 10px;"
+              onclick="unarchiveTherapist(${realIdx});closeManageArchiveModal();">♻️ Restore</button>
+            <button class="btn-delete" style="font-size:0.78rem;padding:5px 10px;"
+              onclick="permanentlyDeleteArchive(${realIdx});switchArchiveTab('archived');">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LEAVE & OVERTIME REQUESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+async function loadLeaveRequests() {
+  const container = document.getElementById('leaveRequestsList');
+  if (!container) return;
+  container.innerHTML = '<p style="color:#999;text-align:center;padding:40px;">Loading requests...</p>';
+
+  try {
+    const res = await fetch(`${apiBase}/therapists/leave-requests/all`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('API not available');
+    const requests = await res.json();
+
+    // Clear badge
+    const badge = document.getElementById('leaveSidebarBadge');
+    if (badge) badge.style.display = 'none';
+
+    if (!requests || requests.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:60px;color:#999;">
+          <div style="font-size:3rem;margin-bottom:12px;">🌴</div>
+          <p style="font-size:1.1rem;">No pending leave or overtime requests</p>
+        </div>`;
+      return;
+    }
+
+    const pending   = requests.filter(r => r.status === 'pending');
+    const reviewed  = requests.filter(r => r.status !== 'pending');
+
+    container.innerHTML = '';
+
+    if (pending.length > 0) {
+      container.innerHTML += `<h3 style="color:#4b2e1e;font-family:'Playfair Display',serif;margin-bottom:12px;">⏳ Pending (${pending.length})</h3>`;
+      container.innerHTML += pending.map(r => renderLeaveCard(r)).join('');
+    }
+
+    if (reviewed.length > 0) {
+      container.innerHTML += `<h3 style="color:#888;font-family:'Playfair Display',serif;margin:24px 0 12px;">📋 Previously Reviewed</h3>`;
+      container.innerHTML += reviewed.map(r => renderLeaveCard(r)).join('');
+    }
+  } catch(e) {
+    container.innerHTML = `
+      <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:24px;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">ℹ️</div>
+        <p style="color:#856404;font-weight:600;">Leave request system not yet connected to the backend.</p>
+        <p style="color:#856404;font-size:0.9rem;margin-top:6px;">Add the <code>/api/therapists/leave-requests/all</code> route to your backend to enable this feature.</p>
+      </div>`;
+  }
+}
+
+function renderLeaveCard(r) {
+  const typeLabel = { leave: '🌴 Leave', vacation: '✈️ Vacation', overtime: '⏰ Overtime' }[r.type] || r.type;
+  const statusColor = { pending:'#ff9800', approved:'#28a745', rejected:'#dc3545' }[r.status] || '#666';
+  const statusLabel = { pending:'⏳ Pending', approved:'✅ Approved', rejected:'❌ Rejected' }[r.status] || r.status;
+
+  return `
+    <div style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);
+      border-left:4px solid ${statusColor};margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-weight:700;font-size:1rem;color:#4b2e1e;">${r.therapistName || 'Therapist'}</div>
+          <div style="font-size:0.85rem;color:#8b6f47;margin-top:2px;">${typeLabel}</div>
+        </div>
+        <span style="background:${statusColor}20;color:${statusColor};padding:4px 12px;border-radius:20px;
+          font-size:0.78rem;font-weight:700;border:1px solid ${statusColor}40;">${statusLabel}</span>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap;font-size:0.85rem;color:#666;">
+        <span>📅 <strong>From:</strong> ${r.startDate ? new Date(r.startDate).toLocaleDateString('en-PH') : '—'}</span>
+        <span>📅 <strong>To:</strong> ${r.endDate ? new Date(r.endDate).toLocaleDateString('en-PH') : '—'}</span>
+        ${r.hours ? `<span>⏱ <strong>Hours:</strong> ${r.hours}</span>` : ''}
+      </div>
+      ${r.reason ? `<div style="margin-top:10px;padding:10px;background:#faf6f1;border-radius:8px;font-size:0.88rem;color:#555;">${r.reason}</div>` : ''}
+      ${r.status === 'pending' ? `
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button onclick="reviewLeaveRequest('${r._id}','approved')"
+            style="background:#28a745;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;">
+            ✅ Approve
+          </button>
+          <button onclick="reviewLeaveRequest('${r._id}','rejected')"
+            style="background:#dc3545;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;">
+            ❌ Reject
+          </button>
+        </div>` : ''}
+    </div>`;
+}
+
+async function reviewLeaveRequest(id, decision) {
+  try {
+    const res = await fetch(`${apiBase}/therapists/leave-requests/${id}/${decision}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed');
+    showNotification(`Request ${decision === 'approved' ? 'approved ✅' : 'rejected ❌'}`, decision === 'approved' ? 'success' : 'error');
+    loadLeaveRequests();
+  } catch(e) {
+    showNotification('Failed to update request', 'error');
+  }
+}
+
+// Expose new functions
+window.toggleNotifPanel      = toggleNotifPanel;
+window.clearNotifs           = clearNotifs;
+window.openManageArchiveModal    = openManageArchiveModal;
+window.closeManageArchiveModal   = closeManageArchiveModal;
+window.closeManageArchiveOnBackdrop = closeManageArchiveOnBackdrop;
+window.switchArchiveTab      = switchArchiveTab;
+window.loadLeaveRequests     = loadLeaveRequests;
+window.reviewLeaveRequest    = reviewLeaveRequest;
