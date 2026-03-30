@@ -264,4 +264,72 @@ router.put('/:id/pay-settings', auth, roles(['admin']), async (req, res) => {
   }
 });
 
+
+// ── LEAVE / OVERTIME REQUEST ROUTES ─────────────────────────────────────────
+
+// In-memory store for now (replace with LeaveRequest model for production)
+// Using a simple approach: store requests in an array on the User model would require schema change
+// So we use a module-level array that resets on server restart — production should use a DB model
+
+const leaveRequests = [];
+let leaveIdCounter  = 1;
+
+// POST /api/therapists/leave-requests — therapist submits a request
+router.post('/leave-requests', auth, roles(['therapist']), async (req, res) => {
+  try {
+    const { type, startDate, endDate, reason, hours } = req.body;
+    if (!type || !startDate || !endDate || !reason) {
+      return res.status(400).json({ msg: 'type, startDate, endDate, and reason are required' });
+    }
+    const therapist = await User.findById(req.user.id).select('name email');
+    const request = {
+      _id:           String(leaveIdCounter++),
+      therapistId:   req.user.id,
+      therapistName: therapist?.name || 'Unknown',
+      therapistEmail:therapist?.email || '',
+      type, startDate, endDate, reason,
+      hours:         hours || null,
+      status:        'pending',
+      submittedAt:   new Date(),
+    };
+    leaveRequests.unshift(request);
+    // Emit socket event so admin gets notified in real time
+    const io = req.app.get('socketio');
+    if (io) io.emit('leave-request', { therapistName: request.therapistName, type });
+    res.status(201).json({ msg: 'Request submitted', request });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// GET /api/therapists/leave-requests/all — admin views all requests
+router.get('/leave-requests/all', auth, roles(['admin']), (req, res) => {
+  res.json(leaveRequests);
+});
+
+// GET /api/therapists/leave-requests/my — therapist views own requests
+router.get('/leave-requests/my', auth, roles(['therapist']), (req, res) => {
+  const mine = leaveRequests.filter(r => r.therapistId === req.user.id);
+  res.json(mine);
+});
+
+// PATCH /api/therapists/leave-requests/:id/approved — admin approves
+router.patch('/leave-requests/:id/approved', auth, roles(['admin']), (req, res) => {
+  const r = leaveRequests.find(r => r._id === req.params.id);
+  if (!r) return res.status(404).json({ msg: 'Request not found' });
+  r.status = 'approved';
+  r.reviewedAt = new Date();
+  res.json({ msg: 'Request approved', request: r });
+});
+
+// PATCH /api/therapists/leave-requests/:id/rejected — admin rejects
+router.patch('/leave-requests/:id/rejected', auth, roles(['admin']), (req, res) => {
+  const r = leaveRequests.find(r => r._id === req.params.id);
+  if (!r) return res.status(404).json({ msg: 'Request not found' });
+  r.status = 'rejected';
+  r.reviewedAt = new Date();
+  res.json({ msg: 'Request rejected', request: r });
+});
+
 module.exports = router;
