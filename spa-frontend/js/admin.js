@@ -2467,11 +2467,15 @@ function buildServicesChartForecast(labels, serviceCounts) {
     const completedCount = bookings.filter(b => b.status === 'completed').length;
     const cancelledCount = bookings.filter(b => b.status === 'cancelled').length;
     
-    // Update main numbers
-    document.getElementById('periodRevenue').textContent = `₱${revenue.toLocaleString()}`;
-    document.getElementById('periodBookings').textContent = bookingCount;
-    document.getElementById('periodCompleted').textContent = completedCount;
-    document.getElementById('periodCancelled').textContent = cancelledCount;
+    // Update main numbers (elements may not exist if summary bar was removed)
+    const elRevenue   = document.getElementById('periodRevenue');
+    const elBookings  = document.getElementById('periodBookings');
+    const elCompleted = document.getElementById('periodCompleted');
+    const elCancelled = document.getElementById('periodCancelled');
+    if (elRevenue)   elRevenue.textContent   = `₱${revenue.toLocaleString()}`;
+    if (elBookings)  elBookings.textContent  = bookingCount;
+    if (elCompleted) elCompleted.textContent = completedCount;
+    if (elCancelled) elCancelled.textContent = cancelledCount;
     
     // ✅ ADD INLINE INSIGHTS
     const avgRevenue = bookingCount > 0 ? Math.round(revenue / bookingCount) : 0;
@@ -7815,8 +7819,6 @@ function updateCommissionDisplay(rate) {
   window.closeIncomeDetail = closeIncomeDetail;
   window.exportIncomeReport = exportIncomeReport;
   window.generateBookingRow = generateBookingRow;
-  window.loadTherapistStatusForOverview = loadTherapistStatusForOverview;
-  window.displayTherapistStatusInOverview = displayTherapistStatusInOverview;
   window.addEventListener('beforeunload', () => {
     if (window.therapistStatusInterval) {
       clearInterval(window.therapistStatusInterval);
