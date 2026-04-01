@@ -22,6 +22,8 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      position: relative;
+      overflow: hidden;
     }
     .gender-col--female { border-top: 3px solid #e8a0b4; }
     .gender-col--male   { border-top: 3px solid #90b4e8; }
@@ -166,11 +168,43 @@
 
         <div id="dateAvailWarning" class="date-avail-warning" style="display:none;"></div>
 
+        <!-- Gender note -->
+        <div id="genderNote" style="
+          background: rgba(247,198,165,0.12);
+          border: 1px solid rgba(247,198,165,0.35);
+          border-radius: 10px;
+          padding: 10px 16px;
+          margin-bottom: 14px;
+          font-size: 0.82rem;
+          color: rgba(255,255,255,0.85);
+          line-height: 1.5;
+          display: flex; align-items: flex-start; gap: 8px;
+        ">
+          <span style="font-size:1rem;flex-shrink:0;margin-top:1px;">⚠️</span>
+          <span><strong>Note:</strong> Strictly female clients are for <strong>female therapists only</strong>, and male clients are for <strong>male therapists only</strong>.</span>
+        </div>
+
         <!-- Gender columns -->
         <div class="gender-columns">
 
           <!-- FEMALE COLUMN -->
-          <div class="gender-col gender-col--female">
+          <div class="gender-col gender-col--female" id="femaleGenderCol">
+            <!-- No-availability overlay -->
+            <div id="femaleNoAvailOverlay" style="
+              display:none; position:absolute; inset:0;
+              background:rgba(30,15,5,0.72);
+              border-radius:inherit;
+              z-index:10;
+              flex-direction:column;
+              align-items:center; justify-content:center;
+              text-align:center; padding:20px; gap:8px;
+            ">
+              <span style="font-size:1.6rem;">🚫</span>
+              <p style="color:#f7c6a5;font-size:0.82rem;font-weight:600;line-height:1.4;">
+                No female therapists available at this time.<br>
+                <span style="font-weight:400;opacity:0.8;">Please consider choosing another time or date.</span>
+              </p>
+            </div>
             <div class="gender-col-header">
               <span class="gender-icon">♀</span>
               <span class="gender-title">Female</span>
@@ -183,7 +217,7 @@
               <button type="button" class="cc-btn" id="ccFPlus" onclick="adjustFemaleClients(1)">+</button>
             </div>
             <div class="field-group field-group-locked" id="femaleTherapistFieldGroup">
-              <span class="field-label">Female Therapist</span>
+              <span class="field-label">Female Therapist <span style="font-weight:400;font-size:0.78rem;opacity:0.7;">(Optional)</span></span>
               <div class="therapist-selector">
                 <div class="therapist-dropdown" id="femaleTherapistDropdown">
                   <div class="dropdown-display" id="femaleDropdownDisplay">
@@ -204,7 +238,23 @@
           </div>
 
           <!-- MALE COLUMN -->
-          <div class="gender-col gender-col--male">
+          <div class="gender-col gender-col--male" id="maleGenderCol">
+            <!-- No-availability overlay -->
+            <div id="maleNoAvailOverlay" style="
+              display:none; position:absolute; inset:0;
+              background:rgba(30,15,5,0.72);
+              border-radius:inherit;
+              z-index:10;
+              flex-direction:column;
+              align-items:center; justify-content:center;
+              text-align:center; padding:20px; gap:8px;
+            ">
+              <span style="font-size:1.6rem;">🚫</span>
+              <p style="color:#f7c6a5;font-size:0.82rem;font-weight:600;line-height:1.4;">
+                No male therapists available at this time.<br>
+                <span style="font-weight:400;opacity:0.8;">Please consider choosing another time or date.</span>
+              </p>
+            </div>
             <div class="gender-col-header">
               <span class="gender-icon">♂</span>
               <span class="gender-title">Male</span>
@@ -217,7 +267,7 @@
               <button type="button" class="cc-btn" id="ccMPlus" onclick="adjustMaleClients(1)">+</button>
             </div>
             <div class="field-group field-group-locked" id="maleTherapistFieldGroup">
-              <span class="field-label">Male Therapist</span>
+              <span class="field-label">Male Therapist <span style="font-weight:400;font-size:0.78rem;opacity:0.7;">(Optional)</span></span>
               <div class="therapist-selector">
                 <div class="therapist-dropdown" id="maleTherapistDropdown">
                   <div class="dropdown-display" id="maleDropdownDisplay">

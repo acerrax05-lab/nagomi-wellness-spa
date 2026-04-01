@@ -792,6 +792,7 @@ function applyDayOffGreyout(dateStr) {
 
     // Re-apply limit greyout on top
     updateGenderGreyout(gender);
+    checkGenderColAvailability(gender);
   });
 }
 
@@ -884,11 +885,32 @@ function applyBookingAvailabilityGreyout(availableList) {
     });
 
     updateGenderGreyout(gender);
+    checkGenderColAvailability(gender);
   });
 }
 
+// ── Show/hide the "no therapists available" overlay on each gender column ──
+function checkGenderColAvailability(gender) {
+  const anyId     = gender === 'female' ? 'any-female-therapist' : 'any-male-therapist';
+  const optionsEl = document.getElementById(gender === 'female' ? 'femaleDropdownOptions' : 'maleDropdownOptions');
+  const overlay   = document.getElementById(gender === 'female' ? 'femaleNoAvailOverlay' : 'maleNoAvailOverlay');
+  const col       = document.getElementById(gender === 'female' ? 'femaleGenderCol' : 'maleGenderCol');
+  if (!optionsEl || !overlay) return;
 
-// ── Progressive field unlock ───────────────────────────────────────────────
+  const cbs = Array.from(optionsEl.querySelectorAll(`input[type="checkbox"]:not(#${anyId})`));
+  if (cbs.length === 0) { overlay.style.display = 'none'; return; }
+
+  // Only show overlay when both date AND time are selected
+  if (!dateInputEl?.value || !timeSelectEl?.value || timeSelectEl.value === 'Select time...') {
+    overlay.style.display = 'none';
+    if (col) col.style.opacity = '1';
+    return;
+  }
+
+  const allUnavailable = cbs.every(cb => cb.disabled);
+  overlay.style.display = allUnavailable ? 'flex' : 'none';
+  if (col) col.style.opacity = allUnavailable ? '0.75' : '1';
+}
 function unlockFemaleTherapistField() {
   var el   = document.getElementById('femaleTherapistFieldGroup');
   var hint = document.getElementById('femaleTherapistLockHint');
