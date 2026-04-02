@@ -263,35 +263,36 @@ function buildServiceCard(svc) {
     ? `⭐ ${svc.averageRating.toFixed(1)}  ·  ${svc.bookingCount || 0} bookings`
     : (svc.bookingCount > 0 ? `${svc.bookingCount} bookings` : '');
 
-  // Resolve image URL — same logic as service-catalog-simple.js
+  // Resolve image URL
   const BACKEND = 'https://nagomi-backend.onrender.com';
-  const PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='180' viewBox='0 0 400 180'%3E%3Crect fill='%234b2e1e' width='400' height='180'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Poppins,sans-serif' font-size='18' fill='%23f7c6a5'%3E${encodeURIComponent(svc.name)}%3C/text%3E%3C/svg%3E`;
-
+  const PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect fill='%234b2e1e' width='120' height='120'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Poppins,sans-serif' font-size='11' fill='%23f7c6a5'%3ESpa%3C/text%3E%3C/svg%3E`;
   let imgSrc = PLACEHOLDER;
   if (svc.image && svc.image.trim()) {
     imgSrc = svc.image.startsWith('/') ? `${BACKEND}${svc.image}` : svc.image;
   }
 
-  const priceStr = (() => {
-    const p = svc.pricing || {};
-    const prices = [p[60] || p['60'], p[90] || p['90'], p[120] || p['120'], svc.price].filter(Boolean);
-    if (!prices.length) return '';
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    return min === max ? `₱${min.toLocaleString()}` : `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
-  })();
+  // Build pricing pills
+  const pricing = svc.pricing || {};
+  const durations = svc.allowedDurations || [60, 90, 120];
+  const pricePills = durations.map(d => {
+    const p = pricing[d] || pricing[String(d)] || svc.price || 0;
+    return `<span class="svc-price-pill ${d === Math.min(...durations) ? 'svc-price-pill--active' : ''}">
+      ${d} min: ₱${Number(p).toLocaleString()}
+    </span>`;
+  }).join('');
+
+  const availNote = durations.length === 1
+    ? `<div class="svc-avail-note">ℹ️ Available: ${durations[0]} minutes only</div>` : '';
 
   card.innerHTML = `
-    <div class="service-card-img-wrap">
-      <img class="service-card-img" src="${imgSrc}"
-        alt="${svc.name}"
-        loading="lazy"
-        onerror="this.src='${PLACEHOLDER}';this.onerror=null;">
-    </div>
+    <img class="service-card-img" src="${imgSrc}" alt="${svc.name}"
+      loading="lazy" onerror="this.src='${PLACEHOLDER}';this.onerror=null;">
     <div class="service-card-body">
       <div class="service-card-name">${svc.name}</div>
+      ${svc.category ? `<span class="svc-category-tag">${svc.category}</span>` : ''}
       ${svc.description ? `<div class="service-card-desc">${svc.description}</div>` : ''}
-      ${priceStr ? `<div class="service-card-price">${priceStr}</div>` : ''}
+      <div class="svc-price-row">${pricePills}</div>
+      ${availNote}
       ${ratingStr ? `<div class="service-card-ratings">${ratingStr}</div>` : ''}
     </div>
   `;
