@@ -246,6 +246,26 @@ function renderBookingCard(booking, canModify) {
            : booking.status === 'pending_reschedule'   ? '⏳ Reschedule request is under review'
            : ''}
         </div>`}
+
+      ${booking.status === 'completed' ? `
+        <div style="margin-top:10px;">
+          <a href="index.html#reviews?openReview=1&service=${encodeURIComponent(booking.service?.name || '')}&txn=${encodeURIComponent(booking.transactionNumber || '')}"
+            style="display:block;width:100%;text-align:center;padding:12px;
+              background:linear-gradient(135deg,#8b6f47,#4b2e1e);
+              color:#fff;border-radius:10px;font-weight:600;font-size:0.95rem;
+              text-decoration:none;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            ✍️ Write a Review
+          </a>
+        </div>` : booking.status !== 'cancelled' ? `
+        <div style="margin-top:10px;">
+          <button disabled style="display:block;width:100%;text-align:center;padding:12px;
+            background:#e0e0e0;color:#aaa;border:none;border-radius:10px;
+            font-weight:600;font-size:0.95rem;cursor:not-allowed;"
+            title="Available once your appointment is completed">
+            ✍️ Write a Review <span style="font-size:0.78rem;font-weight:400;">(after appointment)</span>
+          </button>
+        </div>` : ''}
     </div>`;
 }
 
