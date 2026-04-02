@@ -249,14 +249,14 @@ function renderBookingCard(booking, canModify) {
 
       ${booking.status === 'completed' ? `
         <div style="margin-top:10px;">
-          <a href="index.html#reviews?openReview=1&service=${encodeURIComponent(booking.service?.name || '')}&txn=${encodeURIComponent(booking.transactionNumber || '')}"
+          <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}')"
             style="display:block;width:100%;text-align:center;padding:12px;
               background:linear-gradient(135deg,#8b6f47,#4b2e1e);
-              color:#fff;border-radius:10px;font-weight:600;font-size:0.95rem;
-              text-decoration:none;transition:opacity 0.2s;"
+              color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
+              cursor:pointer;transition:opacity 0.2s;"
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             ✍️ Write a Review
-          </a>
+          </button>
         </div>` : booking.status !== 'cancelled' ? `
         <div style="margin-top:10px;">
           <button disabled style="display:block;width:100%;text-align:center;padding:12px;
@@ -442,3 +442,245 @@ style.textContent = `
   .reason-required-note { font-size:0.82rem; color:#888; margin-top:4px; font-style:italic; }
 `;
 document.head.appendChild(style);
+// ═══════════════════════════════════════════════════════════════════════
+// REVIEW MODAL — self-contained, opens directly on manage-booking page
+// ═══════════════════════════════════════════════════════════════════════
+
+const REVIEW_API = 'https://nagomi-backend.onrender.com/api';
+let _reviewSelectedRating = 0;
+
+function openManageReviewModal(serviceName, txn) {
+  // Build modal if not yet in DOM
+  if (!document.getElementById('manageReviewModal')) {
+    _buildReviewModal();
+  }
+  const modal = document.getElementById('manageReviewModal');
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Pre-fill service if provided
+  if (serviceName) {
+    const trySelect = (tries) => {
+      if (tries > 12) return;
+      const select = document.getElementById('mgReviewService');
+      if (!select || select.options.length <= 1) {
+        setTimeout(() => trySelect(tries + 1), 300);
+        return;
+      }
+      const target = serviceName.toLowerCase();
+      for (const opt of select.options) {
+        if (opt.value.toLowerCase().includes(target) || target.includes(opt.value.toLowerCase())) {
+          select.value = opt.value;
+          break;
+        }
+      }
+    };
+    setTimeout(() => trySelect(0), 300);
+  }
+}
+
+function closeManageReviewModal() {
+  const modal = document.getElementById('manageReviewModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    document.getElementById('mgReviewForm')?.reset();
+    _setReviewRating(0);
+  }
+}
+
+function _setReviewRating(rating) {
+  _reviewSelectedRating = rating;
+  const stars = document.querySelectorAll('#mgStarRow i');
+  stars.forEach((s, i) => {
+    s.className = i < rating ? 'fas fa-star' : 'far fa-star';
+    s.style.color = i < rating ? '#f4a435' : '#ccc';
+  });
+  const hidden = document.getElementById('mgRatingValue');
+  if (hidden) hidden.value = rating || '';
+}
+
+async function _loadServicesForMgReview() {
+  const select = document.getElementById('mgReviewService');
+  if (!select) return;
+  try {
+    const res  = await fetch(`${REVIEW_API}/services`);
+    const list = await res.json();
+    list.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.name;
+      opt.textContent = s.name;
+      select.appendChild(opt);
+    });
+  } catch(e) { console.warn('Could not load services for review'); }
+}
+
+async function submitManageReview(e) {
+  e.preventDefault();
+  const name    = document.getElementById('mgReviewerName')?.value.trim();
+  const service = document.getElementById('mgReviewService')?.value;
+  const rating  = _reviewSelectedRating;
+  const text    = document.getElementById('mgReviewText')?.value.trim();
+
+  if (!name || !service || !rating || !text || text.length < 20) {
+    alert('Please fill in all fields, select a rating, and write at least 20 characters.');
+    return;
+  }
+
+  const btn = document.querySelector('#mgReviewForm .mg-review-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  try {
+    const res = await fetch(`${REVIEW_API}/reviews/public`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guestName: name, service, rating, comment: text })
+    });
+    if (!res.ok) throw new Error('Failed');
+    closeManageReviewModal();
+    // Show success toast
+    showNotification('🌸 Thank you! Your review has been submitted.', 'success');
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Submit Review'; }
+    alert('Failed to submit review. Please try again.');
+  }
+}
+
+function _buildReviewModal() {
+  // Inject CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    #manageReviewModal {
+      display:none; position:fixed; inset:0; z-index:10100;
+      background:rgba(0,0,0,0.55); align-items:center; justify-content:center;
+      padding:20px;
+    }
+    #manageReviewModal.active { display:flex; }
+    .mg-review-panel {
+      background:#fff; border-radius:18px; width:100%; max-width:480px;
+      max-height:90vh; overflow-y:auto; padding:32px 28px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.3);
+      font-family:'Poppins',sans-serif;
+    }
+    .mg-review-header { text-align:center; margin-bottom:24px; }
+    .mg-review-header h2 {
+      font-family:'Playfair Display',serif; color:#4b2e1e;
+      font-size:1.5rem; margin-bottom:6px;
+    }
+    .mg-review-header p { color:#888; font-size:0.88rem; }
+    .mg-review-close {
+      position:absolute; top:16px; right:18px;
+      background:none; border:none; font-size:1.4rem;
+      cursor:pointer; color:#999; line-height:1;
+    }
+    .mg-review-close:hover { color:#4b2e1e; }
+    .mg-form-group { margin-bottom:18px; }
+    .mg-form-group label {
+      display:block; font-weight:600; color:#4b2e1e;
+      font-size:0.88rem; margin-bottom:6px;
+    }
+    .mg-form-group input,
+    .mg-form-group select,
+    .mg-form-group textarea {
+      width:100%; padding:10px 13px;
+      border:1.5px solid #ddd; border-radius:9px;
+      font-size:0.92rem; font-family:'Poppins',sans-serif;
+      color:#333; transition:border 0.2s;
+      box-sizing:border-box;
+    }
+    .mg-form-group input:focus,
+    .mg-form-group select:focus,
+    .mg-form-group textarea:focus {
+      outline:none; border-color:#8b6f47;
+    }
+    .mg-form-group textarea { resize:vertical; }
+    .mg-star-row { display:flex; gap:8px; font-size:1.6rem; cursor:pointer; }
+    .mg-star-row i { color:#ccc; transition:color 0.15s; }
+    .mg-star-row i:hover,
+    .mg-star-row i.fas { color:#f4a435; }
+    .mg-review-actions {
+      display:flex; gap:10px; margin-top:20px;
+    }
+    .mg-review-cancel {
+      flex:1; padding:12px; border:1.5px solid #ddd;
+      background:#fff; color:#666; border-radius:9px;
+      font-weight:600; cursor:pointer; font-size:0.9rem;
+      transition:background 0.2s;
+    }
+    .mg-review-cancel:hover { background:#f5f5f5; }
+    .mg-review-submit {
+      flex:2; padding:12px;
+      background:linear-gradient(135deg,#8b6f47,#4b2e1e);
+      color:#fff; border:none; border-radius:9px;
+      font-weight:600; cursor:pointer; font-size:0.9rem;
+      transition:opacity 0.2s;
+    }
+    .mg-review-submit:hover { opacity:0.88; }
+    .mg-review-submit:disabled { opacity:0.5; cursor:not-allowed; }
+  `;
+  document.head.appendChild(style);
+
+  // Build modal DOM
+  const modal = document.createElement('div');
+  modal.id = 'manageReviewModal';
+  modal.innerHTML = `
+    <div class="mg-review-panel" style="position:relative;">
+      <button class="mg-review-close" onclick="closeManageReviewModal()">✕</button>
+      <div class="mg-review-header">
+        <div style="font-size:2rem;margin-bottom:8px;">✍️</div>
+        <h2>Share Your Experience</h2>
+        <p>Help others by sharing your spa experience</p>
+      </div>
+      <form id="mgReviewForm" onsubmit="submitManageReview(event)">
+        <div class="mg-form-group">
+          <label>Your Name <span style="color:#dc3545;">*</span></label>
+          <input type="text" id="mgReviewerName" placeholder="Enter your name" maxlength="50" required>
+        </div>
+        <div class="mg-form-group">
+          <label>Email <span style="font-weight:400;color:#999;">(optional)</span></label>
+          <input type="email" id="mgReviewerEmail" placeholder="your@email.com">
+        </div>
+        <div class="mg-form-group">
+          <label>Service You Tried <span style="color:#dc3545;">*</span></label>
+          <select id="mgReviewService" required>
+            <option value="">-- Select Service --</option>
+          </select>
+        </div>
+        <div class="mg-form-group">
+          <label>Your Rating <span style="color:#dc3545;">*</span></label>
+          <div class="mg-star-row" id="mgStarRow">
+            <i class="far fa-star" onclick="_setReviewRating(1)"></i>
+            <i class="far fa-star" onclick="_setReviewRating(2)"></i>
+            <i class="far fa-star" onclick="_setReviewRating(3)"></i>
+            <i class="far fa-star" onclick="_setReviewRating(4)"></i>
+            <i class="far fa-star" onclick="_setReviewRating(5)"></i>
+          </div>
+          <input type="hidden" id="mgRatingValue" required>
+        </div>
+        <div class="mg-form-group">
+          <label>Your Review <span style="color:#dc3545;">*</span></label>
+          <textarea id="mgReviewText" rows="4" minlength="20" maxlength="500"
+            placeholder="Tell us about your experience… (minimum 20 characters)" required></textarea>
+        </div>
+        <div class="mg-review-actions">
+          <button type="button" class="mg-review-cancel" onclick="closeManageReviewModal()">Cancel</button>
+          <button type="submit" class="mg-review-submit">📤 Submit Review</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Load services into dropdown
+  _loadServicesForMgReview();
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeManageReviewModal();
+  });
+}
+
+window.openManageReviewModal  = openManageReviewModal;
+window.closeManageReviewModal = closeManageReviewModal;
+window.submitManageReview     = submitManageReview;
+window._setReviewRating       = _setReviewRating;

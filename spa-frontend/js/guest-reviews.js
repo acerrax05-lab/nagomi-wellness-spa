@@ -15,9 +15,6 @@
     // Load existing reviews
     await loadGuestReviews();
     
-    // Initialize review form modal
-    initializeReviewModal();
-    
     console.log('✅ Guest review system ready');
   });
 
@@ -201,9 +198,6 @@ const userName = review.guestName || review.user?.name || 'Guest';
         <div class="placeholder-icon">📝</div>
         <h3>No Reviews Yet</h3>
         <p>Be the first to share your spa experience!</p>
-        <button class="btn-write-review" onclick="window.openReviewModal()">
-          <i class="fas fa-pen"></i> Write First Review
-        </button>
       </div>
     `;
     
@@ -504,61 +498,5 @@ const userName = review.guestName || review.user?.name || 'Guest';
     }, 16);
   }
 
-  // ── Auto-open review modal when redirected from manage-booking ──────────────
-  // URL format: index.html#reviews?openReview=1&service=ServiceName&txn=NWS...
-  (function checkAutoOpenReview() {
-    const hash = window.location.hash || '';
-    if (!hash.includes('openReview=1')) return;
-
-    // Parse params from hash (e.g. #reviews?openReview=1&service=Thai+Massage)
-    const queryStr = hash.includes('?') ? hash.split('?')[1] : '';
-    const params   = new URLSearchParams(queryStr);
-    const service  = params.get('service') || '';
-
-    // Wait for modal + services to be ready then open
-    const tryOpen = (attempts) => {
-      if (attempts > 20) return;
-      const modal = document.getElementById('reviewModal');
-      if (!modal) { setTimeout(() => tryOpen(attempts + 1), 300); return; }
-
-      // Open modal
-      window.openReviewModal();
-
-      // Scroll to reviews section
-      const reviewsSection = document.getElementById('reviews');
-      if (reviewsSection) reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      // Pre-select service if provided
-      if (service) {
-        const trySelect = (tries) => {
-          if (tries > 10) return;
-          const select = document.getElementById('reviewService');
-          if (!select || select.options.length <= 1) {
-            setTimeout(() => trySelect(tries + 1), 400);
-            return;
-          }
-          // Find matching option (case-insensitive partial match)
-          const target = service.toLowerCase();
-          for (const opt of select.options) {
-            if (opt.value.toLowerCase().includes(target) || target.includes(opt.value.toLowerCase())) {
-              select.value = opt.value;
-              break;
-            }
-          }
-        };
-        setTimeout(() => trySelect(0), 500);
-      }
-
-      // Clean URL so refreshing doesn't re-open the modal
-      history.replaceState(null, '', window.location.pathname + '#reviews');
-    };
-
-    // Wait for DOMContentLoaded if not ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(() => tryOpen(0), 600));
-    } else {
-      setTimeout(() => tryOpen(0), 600);
-    }
-  })();
 
 })();
