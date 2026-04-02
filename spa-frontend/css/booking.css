@@ -373,7 +373,7 @@ h1, h2, h3 {
   display: flex;
   align-items: flex-start;
   gap: 18px;
-  text-align: left;
+  text-align: right;
 }
 .service-card:hover {
   border-color: rgba(247,198,165,0.55);
