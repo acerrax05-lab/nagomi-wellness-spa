@@ -121,6 +121,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const firstCat = Object.keys(CAT_META)[0];
     selectCategory(firstCat);
   }
+
+  // If this is the walk-in page, unlock time + therapist fields immediately
+  if (window.__isWalkIn) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${y}-${m}-${d}`;
+    if (dateInputEl) {
+      dateInputEl.value = todayStr;
+      dateInputEl.setAttribute('min', todayStr);
+      dateInputEl.setAttribute('max', todayStr);
+    }
+    dateSelected = true;
+    dateFullyBooked = false;
+    unlockTimeField();
+    applyDayOffGreyout(todayStr);
+  }
 });
 
 // ─── DOM Binding ──────────────────────────────────────────────────────────────
