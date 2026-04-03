@@ -786,7 +786,7 @@ h1, h2, h3 {
   background: #2e1c10;
   border: 2px solid rgba(247,198,165,0.3);
   border-radius: 10px;
-  z-index: 200;
+  z-index: 1000;
   max-height: 220px;
   overflow-y: auto;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
