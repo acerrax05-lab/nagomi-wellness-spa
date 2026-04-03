@@ -75,7 +75,7 @@ let selectedTherapists = [];
 let selectedFemaleTherapists = [];
 let selectedMaleTherapists   = [];
 let allTherapists    = [];
-let bookingType      = 'online';
+let bookingType = window.location.pathname.includes('walkin') ? 'walk-in' : 'online';
 let dateSelected     = false;
 let therapistConfirmed = false;
 let femaleTherapistConfirmed = false;
@@ -544,9 +544,9 @@ function goToStep(step) {
 // ─── Booking type ─────────────────────────────────────────────────────────────
 function setBookingType(type) {
   bookingType = type;
-  document.getElementById('btnOnline').classList.toggle('active', type === 'online');
-  document.getElementById('btnWalkin').classList.toggle('active', type === 'walk-in');
-  document.getElementById('walkinNotice').classList.toggle('visible', type === 'walk-in');
+  document.getElementById('btnOnline')?.classList.toggle('active', type === 'online');
+  document.getElementById('btnWalkin')?.classList.toggle('active', type === 'walk-in');
+  document.getElementById('walkinNotice')?.classList.toggle('visible', type === 'walk-in');
 }
 window.setBookingType = setBookingType;
 

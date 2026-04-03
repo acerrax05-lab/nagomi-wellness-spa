@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Book Your Appointment | Nagomi Wellness Spa</title>
+  <title>Walk-in Booking | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/booking.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -62,15 +62,18 @@
         <span></span><span></span><span></span>
       </div>
       <ul class="nav-links" id="navLinks">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="manage-booking.html" class="staff-login">Manage Booking</a></li>
+        <li><a href="admin.html">← Admin</a></li>
       </ul>
     </nav>
   </header>
 
   <section class="booking-section">
     <div class="booking-container">
-      <h2>Book Your Appointment</h2>
+      <div style="background:rgba(247,198,165,0.15);border:1.5px solid rgba(247,198,165,0.4);border-radius:12px;padding:12px 20px;margin-bottom:20px;text-align:center;">
+        <span style="font-size:1.1rem;font-weight:700;color:#f7c6a5;">🚶 Walk-in Booking</span>
+        <p style="color:rgba(255,255,255,0.75);font-size:0.82rem;margin-top:4px;">For in-spa use only. Today's date is pre-filled. Payment collected at the spa.</p>
+      </div>
+      <h2>Walk-in Appointment</h2>
 
       <!-- Progress Bar -->
       <div class="progress-bar" id="progressBar">
@@ -126,8 +129,8 @@
 
       <!-- STEP 2 — Schedule Your Visit -->
       <div class="booking-step" id="step-2">
-        <p class="step-heading">Schedule Your Visit</p>
-        <p class="step-subheading">Choose when you'd like to come in and who you'd like to see</p>
+        <p class="step-heading">Schedule Walk-in</p>
+        <p class="step-subheading">Today's date is pre-filled — just choose a time and therapist</p>
 
         <div class="couples-notice" id="couplesNotice">
           👫 You've selected a Couples Package. A minimum of 2 clients is required.
@@ -136,8 +139,9 @@
         <!-- Date + Time row -->
         <div class="schedule-grid">
           <div>
-            <span class="field-label">Preferred Date <span class="req">*</span></span>
-            <input type="date" id="preferredDate" class="spa-input" required />
+            <span class="field-label">Date (Today) <span class="req">*</span></span>
+            <input type="date" id="preferredDate" class="spa-input" required readonly
+              style="opacity:0.7;cursor:default;" />
           </div>
           <div class="field-group-inline field-group-locked" id="timeFieldGroup">
             <span class="field-label">Preferred Time <span class="req">*</span></span>
@@ -499,6 +503,21 @@
     if (typeof AOS === "undefined") {
       window.AOS = { init: function(){}, refresh: function(){}, refreshHard: function(){} };
     }
+  </script>
+  <script>
+    // Walk-in page init — runs BEFORE booking.js to set today's date
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      const dateInput = document.getElementById('preferredDate');
+      if (dateInput) {
+        dateInput.value = `${y}-${m}-${d}`;
+        dateInput.setAttribute('min', `${y}-${m}-${d}`);
+        dateInput.setAttribute('max', `${y}-${m}-${d}`); // lock to today
+      }
+    });
   </script>
   <script src="js/booking.js"></script>
   <script src="js/booking-fix.js"></script>
