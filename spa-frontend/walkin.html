@@ -505,21 +505,28 @@
     }
   </script>
   <script>
-    // Walk-in page init — runs BEFORE booking.js to set today's date
+    // Walk-in page init — pre-fill today's date AFTER booking.js loads and inits
+    window.__isWalkIn = true; // flag for booking.js
+  </script>
+  <script src="js/booking.js"></script>
+  <script>
+    // Fire AFTER booking.js has set up its listeners
     document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const y = today.getFullYear();
       const m = String(today.getMonth() + 1).padStart(2, '0');
       const d = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${y}-${m}-${d}`;
       const dateInput = document.getElementById('preferredDate');
       if (dateInput) {
-        dateInput.value = `${y}-${m}-${d}`;
-        dateInput.setAttribute('min', `${y}-${m}-${d}`);
-        dateInput.setAttribute('max', `${y}-${m}-${d}`); // lock to today
+        dateInput.value = todayStr;
+        dateInput.setAttribute('min', todayStr);
+        dateInput.setAttribute('max', todayStr);
+        // Trigger change event so booking.js unlocks the time field
+        dateInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
   </script>
-  <script src="js/booking.js"></script>
   <script src="js/booking-fix.js"></script>
   <script src="js/booking-autoselect.js"></script>
   <script src="js/enhanced-features.js"></script>

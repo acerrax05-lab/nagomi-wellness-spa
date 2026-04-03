@@ -276,7 +276,7 @@ function buildServiceCard(svc) {
   const durations = svc.allowedDurations || [60, 90, 120];
   const pricePills = durations.map(d => {
     const p = pricing[d] || pricing[String(d)] || svc.price || 0;
-    return `<span class="svc-price-pill ${d === Math.min(...durations) ? 'svc-price-pill--active' : ''}">
+    return `<span class="svc-price-pill">
       ${d} min: ₱${Number(p).toLocaleString()}
     </span>`;
   }).join('');
@@ -289,7 +289,6 @@ function buildServiceCard(svc) {
       loading="lazy" onerror="this.src='${PLACEHOLDER}';this.onerror=null;">
     <div class="service-card-body">
       <div class="service-card-name">${svc.name}</div>
-      ${svc.category ? `<span class="svc-category-tag">${svc.category}</span>` : ''}
       ${svc.description ? `<div class="service-card-desc">${svc.description}</div>` : ''}
       <div class="svc-price-row">${pricePills}</div>
       ${availNote}
