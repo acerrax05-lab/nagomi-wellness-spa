@@ -1355,3 +1355,300 @@ select option:disabled {
   .step-heading { font-size: 1.1rem; }
   .booking-section { padding: 68px 10px 40px; }
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   FIX 5 — UI REDESIGN: consistent with homepage + admin palette
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Navbar — match homepage scrolled state ── */
+.navbar {
+  background: linear-gradient(135deg, #3b1f10 0%, #4b2e1e 100%) !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25) !important;
+  padding: 0 60px !important;
+  height: 64px !important;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: #f7c6a5 !important;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.logo span { font-size: 0.72rem; color: rgba(247,198,165,0.6); display: block; font-family: 'Poppins',sans-serif; font-weight: 400; }
+.nav-links a { color: rgba(255,255,255,0.8) !important; font-size: 0.9rem; }
+.nav-links a:hover { color: #f7c6a5 !important; }
+.staff-login {
+  background: rgba(247,198,165,0.15) !important;
+  color: #f7c6a5 !important;
+  border: 1.5px solid rgba(247,198,165,0.4) !important;
+  border-radius: 8px !important;
+  padding: 8px 18px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+.staff-login:hover {
+  background: rgba(247,198,165,0.28) !important;
+  transform: translateY(-1px) !important;
+}
+.hamburger span { background: #f7c6a5 !important; }
+
+/* ── Booking section background ── */
+.booking-section {
+  background: linear-gradient(170deg, #3b1f10 0%, #4b2e1e 40%, #5a3828 100%) !important;
+  padding-top: 80px !important;
+}
+
+/* ── Container max-width ── */
+.booking-container {
+  max-width: 860px !important;
+  margin: 0 auto !important;
+}
+
+/* ── Main heading ── */
+.booking-container > h2 {
+  font-size: 2.2rem !important;
+  color: #f7c6a5 !important;
+  letter-spacing: 0.5px;
+  margin-bottom: 28px !important;
+}
+
+/* ── Progress bar refinement ── */
+.progress-step .step-circle {
+  width: 44px !important;
+  height: 44px !important;
+  border: 2px solid rgba(247,198,165,0.3) !important;
+  font-size: 1rem !important;
+}
+.progress-step.active .step-circle {
+  background: linear-gradient(135deg, #c8a882, #8b6f47) !important;
+  border-color: #c8a882 !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 6px rgba(200,168,130,0.18) !important;
+}
+.progress-step.done .step-circle {
+  background: #623e2a !important;
+  border-color: #8b6f47 !important;
+  color: #f7c6a5 !important;
+}
+.progress-step.done .step-label { color: #c8a882 !important; }
+.progress-connector { background: rgba(200,168,130,0.2) !important; }
+.progress-connector.done { background: #8b6f47 !important; }
+
+/* ── Step headings ── */
+.step-heading {
+  font-size: 1.6rem !important;
+  color: #f7c6a5 !important;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid rgba(247,198,165,0.15);
+  padding-bottom: 10px;
+  margin-bottom: 8px !important;
+}
+.step-subheading {
+  color: rgba(255,255,255,0.65) !important;
+  margin-bottom: 24px !important;
+}
+
+/* ── Category tabs ── */
+.cat-tab {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1.5px solid rgba(247,198,165,0.2) !important;
+  color: rgba(255,255,255,0.75) !important;
+  border-radius: 24px !important;
+  padding: 8px 18px !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+.cat-tab:hover {
+  border-color: rgba(247,198,165,0.55) !important;
+  color: #fff !important;
+}
+.cat-tab.active {
+  background: linear-gradient(135deg, #8b6f47, #4b2e1e) !important;
+  border-color: #8b6f47 !important;
+  color: #fff !important;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.25) !important;
+}
+
+/* ── Sort filter ── */
+#sortFilter {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1.5px solid rgba(247,198,165,0.25) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
+  font-size: 0.82rem !important;
+}
+
+/* ── Date/time inputs ── */
+.spa-input, .spa-select {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1.5px solid rgba(247,198,165,0.25) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  padding: 13px 16px !important;
+  font-size: 0.95rem !important;
+  transition: border-color 0.2s !important;
+}
+.spa-input:focus, .spa-select:focus {
+  border-color: rgba(247,198,165,0.7) !important;
+  outline: none !important;
+}
+.spa-input::placeholder { color: rgba(255,255,255,0.4) !important; }
+.field-label {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(247,198,165,0.85) !important;
+  text-transform: uppercase !important;
+}
+
+/* ── Duration grid buttons ── */
+.dur-btn {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1.5px solid rgba(247,198,165,0.2) !important;
+  color: rgba(255,255,255,0.8) !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s !important;
+}
+.dur-btn:hover {
+  border-color: rgba(247,198,165,0.55) !important;
+  background: rgba(255,255,255,0.1) !important;
+}
+.dur-btn.active {
+  background: linear-gradient(135deg, #8b6f47, #4b2e1e) !important;
+  border-color: #8b6f47 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
+}
+
+/* ── Gender columns ── */
+.gender-col {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1.5px solid rgba(247,198,165,0.15) !important;
+  border-radius: 14px !important;
+}
+.gender-col--female { border-top: 3px solid rgba(232,160,180,0.7) !important; }
+.gender-col--male   { border-top: 3px solid rgba(144,180,232,0.7) !important; }
+.gender-title { font-size: 1rem !important; font-weight: 700 !important; }
+
+/* Client counter buttons */
+.cc-btn {
+  background: rgba(255,255,255,0.08) !important;
+  border: 1.5px solid rgba(247,198,165,0.25) !important;
+  color: #f7c6a5 !important;
+  border-radius: 8px !important;
+  width: 40px !important; height: 40px !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  transition: all 0.2s !important;
+}
+.cc-btn:hover:not(:disabled) {
+  background: rgba(247,198,165,0.15) !important;
+  border-color: rgba(247,198,165,0.5) !important;
+}
+
+/* ── Dropdown ── */
+.dropdown-display {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1.5px solid rgba(247,198,165,0.22) !important;
+  border-radius: 10px !important;
+}
+
+/* ── Step nav buttons ── */
+.btn-next, .btn-back, .btn-step-nav {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  padding: 14px 28px !important;
+  transition: all 0.2s !important;
+}
+
+/* ── Step 3 inputs ── */
+#guestName, #guestPhone, #guestNotes, .step-input, .guest-input {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1.5px solid rgba(247,198,165,0.25) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.95rem !important;
+}
+#guestName::placeholder, #guestPhone::placeholder,
+#guestNotes::placeholder { color: rgba(255,255,255,0.4) !important; }
+#guestName:focus, #guestPhone:focus, #guestNotes:focus {
+  border-color: rgba(247,198,165,0.65) !important;
+  outline: none !important;
+}
+
+/* ── Arrival notice ── */
+.arrival-notice {
+  background: rgba(247,150,30,0.12) !important;
+  border-left: 4px solid #f09030 !important;
+  border-radius: 10px !important;
+  color: rgba(255,255,255,0.85) !important;
+}
+
+/* ── Summary modal ── */
+.summary-modal-content,
+.booking-summary {
+  background: #faf6f1 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35) !important;
+}
+.summary-header {
+  background: linear-gradient(135deg, #4b2e1e, #623e2a) !important;
+  border-radius: 16px 16px 0 0 !important;
+  color: #f7c6a5 !important;
+}
+
+/* ── Selection summary bar ── */
+.selection-summary-bar {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(247,198,165,0.2) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Notification toast ── */
+.notification {
+  border-radius: 10px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.2) !important;
+}
+
+/* ── End-time badge ── */
+.end-time-badge {
+  background: rgba(247,198,165,0.12) !important;
+  border: 1px solid rgba(247,198,165,0.3) !important;
+  border-radius: 20px !important;
+  color: rgba(247,198,165,0.9) !important;
+  font-size: 0.78rem !important;
+  padding: 4px 12px !important;
+}
+
+/* ── Date availability warning ── */
+.date-avail-warning {
+  background: rgba(220,53,69,0.12) !important;
+  border: 1px solid rgba(220,53,69,0.4) !important;
+  border-radius: 10px !important;
+}
+
+/* ── Couples notice ── */
+.couples-notice {
+  background: rgba(247,198,165,0.1) !important;
+  border: 1px solid rgba(247,198,165,0.3) !important;
+  border-radius: 10px !important;
+  color: #f7c6a5 !important;
+}
+
+/* ── Mobile responsive navbar ── */
+@media (max-width: 768px) {
+  .navbar { padding: 0 20px !important; }
+  .nav-links {
+    background: #3b1f10 !important;
+    border-top: 1px solid rgba(247,198,165,0.15) !important;
+  }
+  .nav-links a { color: rgba(255,255,255,0.85) !important; }
+}
