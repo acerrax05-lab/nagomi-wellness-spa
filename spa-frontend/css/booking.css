@@ -1399,8 +1399,9 @@ select option:disabled {
 
 /* ── Container max-width ── */
 .booking-container {
-  max-width: 860px !important;
+  max-width: 720px !important;
   margin: 0 auto !important;
+  padding: 0 20px !important;
 }
 
 /* ── Main heading ── */
