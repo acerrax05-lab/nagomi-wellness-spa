@@ -105,6 +105,7 @@ h1, h2, h3 {
 .booking-section {
   background: #4b2e1e;
   color: #fff;
+  padding: 100px 20px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
