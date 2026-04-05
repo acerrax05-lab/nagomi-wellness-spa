@@ -136,7 +136,6 @@ h1, h2, h3 {
 .booking-container {
   background: transparent;
   width: 100%;
-  max-width: 960px;
   margin: 0 auto;
   text-align: center;
   line-height: 1.6;
