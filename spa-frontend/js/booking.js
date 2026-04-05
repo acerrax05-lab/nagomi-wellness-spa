@@ -1672,17 +1672,17 @@ function showSuccessMessage(txn) {
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <button onclick="window.location.href='manage-booking.html'"
-        style="padding:12px 24px;background:#3498db;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+        style="padding:12px 24px;background:linear-gradient(135deg,#6b3f2a,#4b2e1e);color:#f5e6cc;border:none;border-radius:8px;font-weight:600;cursor:pointer">
         Manage Booking
       </button>
       <button onclick="window.location.href='index.html'"
-        style="padding:12px 24px;background:#95a5a6;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+        style="padding:12px 24px;background:#e8d9c4;color:#4b2e1e;border:1.5px solid #d4c0a0;border-radius:8px;font-weight:600;cursor:pointer">
         Back to Home
       </button>
     </div>
   `;
   document.body.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; setTimeout(() => el.remove(), 400); }, 12000);
+  // Auto-close removed — client must manually dismiss to read transaction number
 }
 
 function resetForm() {
