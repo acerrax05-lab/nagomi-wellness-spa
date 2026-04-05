@@ -227,7 +227,7 @@
 /* ── 8. Stats section ────────────────────────────────────────────────────── */
 .stats-section    { padding: 80px 40px; background: #623e2a; }
 .stats-container  { display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
-.stat-item        { text-align: center; color: #fff; }
+.stat-item        { text-align: center; color: #623e2a; }
 .stat-icon        { font-size: 2rem; margin-bottom: 12px; opacity: 0.85; }
 
 /* Override the white color enhanced-features.css sets on .stat-number */
@@ -240,7 +240,7 @@
   margin-bottom: 8px;
 }
 
-.stat-item p { font-size: 0.9rem; opacity: 0.85; color: #fff; font-weight: 500; }
+.stat-item p { font-size: 0.9rem; opacity: 0.85; color: #000000; font-weight: 500; }
 
 /* ── 9. Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
