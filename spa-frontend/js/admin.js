@@ -64,6 +64,18 @@ const apiBase = 'https://nagomi-backend.onrender.com/api';
   const loader = document.getElementById("loader");
   let currentPeriod = 'today';
   let selectedDate = null;
+  let activeBookingStatusFilter = 'all'; // 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'pending_reschedule' | 'pending_cancellation'
+
+  // ── Booking status filter (called from HTML buttons) ──────────────────────
+  window.setBookingFilter = function(status) {
+    activeBookingStatusFilter = status;
+    // Update button styles
+    document.querySelectorAll('.bsf-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.status === status);
+    });
+    // Re-render current date with new filter
+    if (selectedDate) loadBookingsForDate(selectedDate);
+  };
   let allBookings = [];
   let currentChart = {};
   let filteredBookingsData = []; // Store filtered data for detail views
@@ -102,19 +114,41 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     socket.emit('join', { userId: user._id, role: user.role });
   });
 
-  socket.on('newBooking', () => {
-  showNotification('New booking received!', 'success');
-  // Only reload if currently on overview or bookings tab
-  const activeTab = document.querySelector('.tab-content.active')?.id;
-  if (activeTab === 'overview-tab') loadOverviewData();
-  else if (activeTab === 'bookings-tab') loadBookingsCalendar();
-});
+  socket.on('newBooking', (data) => {
+    showNotification('New booking received!', 'success');
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
 
-socket.on('bookingStatusUpdated', () => {
-  const activeTab = document.querySelector('.tab-content.active')?.id;
-  if (activeTab === 'overview-tab') loadOverviewData();
-  else if (activeTab === 'bookings-tab') loadBookingsCalendar();
-});
+  socket.on('new-booking', (data) => {
+    showNotification('New booking received!', 'success');
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
+
+  socket.on('bookingStatusUpdated', () => {
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
+
+  socket.on('booking-cancelled', (data) => {
+    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
+  });
+
+  socket.on('reschedule-request', (data) => {
+    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
+  });
+
+  socket.on('leave-request', (data) => {
+    addNotif(`🌴 Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
+    const badge = document.getElementById('leaveSidebarBadge');
+    if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
+  });
 
   // Debounce helper — prevents search firing on every single keystroke
   let searchDebounceTimer = null;
@@ -2461,10 +2495,14 @@ function buildServicesChartForecast(labels, serviceCounts) {
       .filter(b => b.status === 'completed')
       .reduce((sum, b) => sum + (b.price || 0), 0);
     
-    const bookingCount = bookings.length;
-    const completedCount = bookings.filter(b => b.status === 'completed').length;
-    const cancelledCount = bookings.filter(b => b.status === 'cancelled').length;
-    
+    const bookingCount    = bookings.length;
+    const pendingCount    = bookings.filter(b => b.status === 'pending').length;
+    const confirmedCount  = bookings.filter(b => b.status === 'confirmed').length;
+    const completedCount  = bookings.filter(b => b.status === 'completed').length;
+    const cancelledCount  = bookings.filter(b => b.status === 'cancelled').length;
+    const rescheduleCount = bookings.filter(b => b.status === 'pending_reschedule').length;
+    const cancelReqCount  = bookings.filter(b => b.status === 'pending_cancellation').length;
+
     // Update main numbers (elements may not exist if summary bar was removed)
     const elRevenue   = document.getElementById('periodRevenue');
     const elBookings  = document.getElementById('periodBookings');
@@ -2474,6 +2512,19 @@ function buildServicesChartForecast(labels, serviceCounts) {
     if (elBookings)  elBookings.textContent  = bookingCount;
     if (elCompleted) elCompleted.textContent = completedCount;
     if (elCancelled) elCancelled.textContent = cancelledCount;
+
+    // ── Booking Status Summary Cards ──────────────────────────────────────────
+    const setCard = (id, subId, count, subText) => {
+      const el = document.getElementById(id);
+      const sub = document.getElementById(subId);
+      if (el) el.textContent = count;
+      if (sub) sub.textContent = subText;
+    };
+    const pct = (n) => bookingCount > 0 ? `${((n/bookingCount)*100).toFixed(0)}% of total` : '';
+    setCard('bscPending',   'bscPendingSub',   pendingCount,   rescheduleCount > 0 ? `+ ${rescheduleCount} reschedule req.` : pct(pendingCount));
+    setCard('bscConfirmed', 'bscConfirmedSub', confirmedCount, cancelReqCount > 0  ? `+ ${cancelReqCount} cancel req.`     : pct(confirmedCount));
+    setCard('bscCompleted', 'bscCompletedSub', completedCount, `₱${revenue.toLocaleString()} revenue`);
+    setCard('bscCancelled', 'bscCancelledSub', cancelledCount, pct(cancelledCount));
     
     // ✅ ADD INLINE INSIGHTS
     const avgRevenue = bookingCount > 0 ? Math.round(revenue / bookingCount) : 0;
@@ -4081,10 +4132,15 @@ window.getBookingRowActions = getBookingRowActions;
   }
 
   function loadBookingsForDate(dateStr) {
-    const dayBookings = allBookings.filter(b => {
+    const allDayBookings = allBookings.filter(b => {
       const bookingDate = new Date(b.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
       return bookingDate === dateStr;
     });
+
+    // Apply active status filter
+    const dayBookings = activeBookingStatusFilter === 'all'
+      ? allDayBookings
+      : allDayBookings.filter(b => b.status === activeBookingStatusFilter);
 
     const sortedBookings = sortBookingsByStatusAndTime(dayBookings);
     
@@ -4094,19 +4150,25 @@ window.getBookingRowActions = getBookingRowActions;
       month: 'long',
       day: 'numeric'
     });
-    
-    document.getElementById('selectedDateTitle').textContent = `Bookings for ${formattedDate}`;
+
+    const filterLabel = activeBookingStatusFilter === 'all' ? '' : ` · ${activeBookingStatusFilter.replace('_',' ')} only`;
+    document.getElementById('selectedDateTitle').textContent = `Bookings for ${formattedDate}${filterLabel} (${dayBookings.length} of ${allDayBookings.length})`;
     
     const tbody = document.querySelector('#bookingsTable tbody');
     
     if (dayBookings.length === 0) {
+      const emptyMsg = activeBookingStatusFilter === 'all'
+        ? 'No bookings for this date'
+        : `No <strong>${activeBookingStatusFilter.replace('_',' ')}</strong> bookings for this date`;
       tbody.innerHTML = `
         <tr>
           <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
-            No bookings for this date
+            ${emptyMsg}
           </td>
         </tr>
       `;
+      const mobileList = document.getElementById('mobileBookingList');
+      if (mobileList) mobileList.innerHTML = `<p style="text-align:center;padding:30px;color:#999;">${emptyMsg}</p>`;
       return;
     }
     
@@ -4115,7 +4177,9 @@ window.getBookingRowActions = getBookingRowActions;
     const onlineBookings = dayBookings.filter(b => b.bookingType === 'online' || !b.bookingType);
     
     console.log(`📊 ${formattedDate}:`, {
-      total: dayBookings.length,
+      total: allDayBookings.length,
+      filtered: dayBookings.length,
+      filter: activeBookingStatusFilter,
       walkIn: walkInBookings.length,
       online: onlineBookings.length
     });
@@ -7866,10 +7930,26 @@ window.syncClosureEndMin    = syncClosureEndMin;
 
 const notifStore = [];
 
-function addNotif(message, type = 'booking') {
+// ── Notification persistence helpers ─────────────────────────────────────────
+function saveNotifStore() {
+  try { localStorage.setItem('nagomi_notifs', JSON.stringify(notifStore.slice(0,30))); } catch(e) {}
+}
+function loadNotifStore() {
+  try {
+    const saved = localStorage.getItem('nagomi_notifs');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      parsed.forEach(n => notifStore.push(n));
+    }
+  } catch(e) {}
+}
+loadNotifStore(); // Restore on page load
+
+function addNotif(message, type = 'booking', targetTab = null) {
   const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
-  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date() });
+  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab });
   if (notifStore.length > 30) notifStore.pop();
+  saveNotifStore();
   renderNotifPanel();
   // Flash badge
   const badge = document.getElementById('notifBadge');
@@ -7877,6 +7957,12 @@ function addNotif(message, type = 'booking') {
   if (badge) {
     badge.textContent = unread > 9 ? '9+' : unread;
     badge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+  // Pulse animation on bell
+  const bellBtn = document.querySelector('#notifBellWrap button');
+  if (bellBtn) {
+    bellBtn.classList.add('notif-bell-pulse');
+    setTimeout(() => bellBtn.classList.remove('notif-bell-pulse'), 1000);
   }
 }
 
@@ -7887,17 +7973,33 @@ function renderNotifPanel() {
     list.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:16px;text-align:center;">No new notifications</p>';
     return;
   }
-  list.innerHTML = notifStore.map(n => {
+  list.innerHTML = notifStore.map((n, i) => {
     const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
-    const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
-    return `<div class="notif-item ${n.read ? 'notif-read' : ''}">
+    const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins/60)}h ago` : `${Math.floor(mins/1440)}d ago`;
+    const clickable = n.targetTab ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
+    const arrow = n.targetTab ? `<span style="color:#c9a882;font-size:0.8rem;margin-left:auto;padding-left:8px;">→</span>` : '';
+    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickable}>
       <span class="notif-item-icon">${n.icon}</span>
-      <div class="notif-item-body">
+      <div class="notif-item-body" style="flex:1;min-width:0;">
         <div class="notif-item-msg">${n.message}</div>
         <div class="notif-item-time">${ago}</div>
       </div>
+      ${arrow}
     </div>`;
   }).join('');
+}
+
+function handleNotifClick(index) {
+  const n = notifStore[index];
+  if (!n) return;
+  n.read = true;
+  saveNotifStore();
+  renderNotifPanel();
+  // Close panel
+  const panel = document.getElementById('notifPanel');
+  if (panel) panel.style.display = 'none';
+  // Navigate to target tab
+  if (n.targetTab) switchTab(n.targetTab);
 }
 
 function toggleNotifPanel() {
@@ -7942,22 +8044,11 @@ document.addEventListener('click', (e) => {
       console.log('✅ Connected to server');
       attempts = 0;
     });
-    socket.on('new-booking', (data) => {
-      addNotif(`New booking: ${data.guestName || 'Client'} — ${data.service?.name || ''}`, 'booking');
-      showNotification(`📅 New booking from ${data.guestName || 'a client'}!`, 'info');
-    });
-    socket.on('booking-cancelled', (data) => {
-      addNotif(`Cancellation request: ${data.guestName || 'Client'}`, 'cancel');
-    });
-    socket.on('reschedule-request', (data) => {
-      addNotif(`Reschedule request: ${data.guestName || 'Client'}`, 'reschedule');
-    });
-    socket.on('leave-request', (data) => {
-      addNotif(`Leave request from ${data.therapistName || 'a therapist'}`, 'leave');
-      const badge = document.getElementById('leaveSidebarBadge');
-      if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
-      const btn = document.getElementById('leaveTabBtn');
-      if (btn) btn.classList.add('has-badge');
+    // Note: new-booking, booking-cancelled, reschedule-request, leave-request
+    // are now handled by the primary socket at the top of the file.
+    // wireNotifSocket only handles connect/error for the secondary health-check socket.
+    socket.on('connect', () => {
+      console.log('[notif-socket] connected');
     });
     socket.on('connect_error', () => {
       // Silently suppress — server may still be waking up

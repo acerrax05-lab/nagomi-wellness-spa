@@ -6,6 +6,7 @@
   <title>Admin Dashboard | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Navbar -->
@@ -132,8 +133,43 @@
   <span id="dateRangeSub" style="color:#8b6045; font-size:0.82rem; opacity:0.85;"></span>
 </div>
 
-      <!-- 7 Stat Cards -->
-            <!-- Charts Grid -->
+      <!-- Booking Status Summary Cards -->
+      <div id="bookingStatusCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+        <div class="bsc-card bsc-pending" onclick="switchTab('bookings')">
+          <div class="bsc-icon">⏳</div>
+          <div class="bsc-body">
+            <div class="bsc-label">Pending</div>
+            <div class="bsc-count" id="bscPending">—</div>
+            <div class="bsc-sub" id="bscPendingSub"></div>
+          </div>
+        </div>
+        <div class="bsc-card bsc-confirmed" onclick="switchTab('bookings')">
+          <div class="bsc-icon">📋</div>
+          <div class="bsc-body">
+            <div class="bsc-label">Confirmed</div>
+            <div class="bsc-count" id="bscConfirmed">—</div>
+            <div class="bsc-sub" id="bscConfirmedSub"></div>
+          </div>
+        </div>
+        <div class="bsc-card bsc-completed" onclick="switchTab('bookings')">
+          <div class="bsc-icon">🎉</div>
+          <div class="bsc-body">
+            <div class="bsc-label">Completed</div>
+            <div class="bsc-count" id="bscCompleted">—</div>
+            <div class="bsc-sub" id="bscCompletedSub"></div>
+          </div>
+        </div>
+        <div class="bsc-card bsc-cancelled" onclick="switchTab('bookings')">
+          <div class="bsc-icon">❌</div>
+          <div class="bsc-body">
+            <div class="bsc-label">Cancelled</div>
+            <div class="bsc-count" id="bscCancelled">—</div>
+            <div class="bsc-sub" id="bscCancelledSub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
       <div class="charts-container">
         <div class="data-timestamp" style="grid-column: 1 / -1; margin-bottom: 0;">
           <span style="color: #28a745;">●</span> Loading data...
@@ -202,6 +238,18 @@
           <button id="nextMonth">▶</button>
         </div>
         <div id="calendar" class="calendar-grid"></div>
+      </div>
+
+      <!-- Booking Status Filter -->
+      <div id="bookingStatusFilter" style="display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0 0;padding:14px 16px;background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(75,46,30,0.08);">
+        <span style="font-size:0.8rem;font-weight:700;color:#8b6045;text-transform:uppercase;letter-spacing:0.05em;align-self:center;margin-right:4px;">Filter:</span>
+        <button class="bsf-btn active" data-status="all" onclick="setBookingFilter('all')">All</button>
+        <button class="bsf-btn" data-status="pending" onclick="setBookingFilter('pending')">⏳ Pending</button>
+        <button class="bsf-btn" data-status="confirmed" onclick="setBookingFilter('confirmed')">📋 Confirmed</button>
+        <button class="bsf-btn" data-status="completed" onclick="setBookingFilter('completed')">🎉 Completed</button>
+        <button class="bsf-btn" data-status="cancelled" onclick="setBookingFilter('cancelled')">❌ Cancelled</button>
+        <button class="bsf-btn" data-status="pending_reschedule" onclick="setBookingFilter('pending_reschedule')">🔄 Reschedule Req.</button>
+        <button class="bsf-btn" data-status="pending_cancellation" onclick="setBookingFilter('pending_cancellation')">🚫 Cancel Req.</button>
       </div>
 
       <div class="bookings-table-section">

@@ -1103,3 +1103,184 @@ select option:disabled { color: rgba(75,46,30,0.3); font-style: italic; }
   .tab-btn:first-child { border-radius: 10px 10px 0 0; }
   .tab-btn:last-child  { border-radius: 0 0 10px 10px; }
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   JAPANESE / WA-STYLE THEME — Booking page (booking.css)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Variables (reuse wa-theme vars) ── */
+:root {
+  --wa-ink:    #1a1008;
+  --wa-cream:  #f5f0e8;
+  --wa-red:    #8b1a1a;
+  --wa-red-lt: #b52a2a;
+  --wa-gold:   #c9a84c;
+  --wa-paper:  #fdfaf5;
+  --wa-border: rgba(26,16,8,0.13);
+  --wa-muted:  rgba(26,16,8,0.5);
+}
+
+/* ── Page background ── */
+body { background: var(--wa-cream) !important; }
+.booking-section { background: var(--wa-cream) !important; }
+.booking-container { background: transparent !important; }
+
+/* ── Page title ── */
+.booking-container > h2 {
+  color: var(--wa-ink) !important;
+  font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* ── Progress bar → ink / gold ── */
+.progress-step .step-circle {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+  color: var(--wa-muted) !important;
+}
+.progress-step.active .step-circle {
+  background: var(--wa-red) !important;
+  border-color: var(--wa-red) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 5px rgba(139,26,26,0.12) !important;
+}
+.progress-step.done .step-circle {
+  background: var(--wa-ink) !important;
+  border-color: var(--wa-ink) !important;
+  color: var(--wa-gold) !important;
+}
+.progress-step.active .step-label { color: var(--wa-red) !important; }
+.progress-step.done .step-label   { color: var(--wa-ink) !important; opacity: 0.6; }
+.progress-connector { background: var(--wa-border) !important; }
+.progress-connector.done { background: var(--wa-ink) !important; }
+
+/* ── Step headings ── */
+.step-heading {
+  color: var(--wa-ink) !important;
+  border-bottom-color: var(--wa-gold) !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+.step-subheading { color: var(--wa-muted) !important; }
+
+/* ── Category tabs → paper / ink / red-active ── */
+.cat-tab {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+  color: var(--wa-muted) !important;
+  border-radius: 3px !important;
+}
+.cat-tab:hover { border-color: var(--wa-red) !important; color: var(--wa-red) !important; }
+.cat-tab.active {
+  background: var(--wa-red) !important;
+  border-color: var(--wa-red) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 10px rgba(139,26,26,0.25) !important;
+}
+
+/* ── Sort select ── */
+.sort-row label { color: var(--wa-muted) !important; }
+.sort-row select {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+  color: var(--wa-ink) !important;
+}
+
+/* ── Service cards stay dark brown — intentional contrast ── */
+/* (No override — they look great on the cream background)  */
+
+/* ── Duration buttons → paper / ink / red-active ── */
+.dur-btn {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.dur-btn .dur-min { color: var(--wa-ink) !important; }
+.dur-btn .dur-price { color: var(--wa-muted) !important; }
+.dur-btn:hover:not(:disabled) { border-color: var(--wa-red) !important; }
+.dur-btn.active {
+  background: var(--wa-red) !important;
+  border-color: var(--wa-red) !important;
+  box-shadow: 0 4px 12px rgba(139,26,26,0.25) !important;
+}
+.dur-btn.active .dur-min   { color: #fff !important; }
+.dur-btn.active .dur-price { color: rgba(255,255,255,0.82) !important; }
+
+/* ── Form inputs ── */
+.spa-input, .spa-select, .spa-textarea {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+  color: var(--wa-ink) !important;
+}
+.spa-input::placeholder, .spa-textarea::placeholder { color: var(--wa-muted) !important; opacity: 0.55; }
+.spa-input:focus, .spa-select:focus, .spa-textarea:focus {
+  border-color: var(--wa-red) !important;
+  box-shadow: 0 0 0 3px rgba(139,26,26,0.1) !important;
+}
+.field-label { color: var(--wa-muted) !important; }
+
+/* ── Dropdowns ── */
+.dropdown-display {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.dropdown-display .placeholder { color: var(--wa-muted) !important; }
+.dropdown-options {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.option-item:hover { background: var(--wa-cream) !important; }
+.option-item label { color: var(--wa-ink) !important; }
+
+/* ── Next / confirm buttons → red ── */
+.btn-next {
+  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(139,26,26,0.3) !important;
+  border-radius: 4px !important;
+}
+.btn-next:hover { box-shadow: 0 6px 20px rgba(139,26,26,0.4) !important; }
+.btn-prev {
+  border-color: var(--wa-border) !important;
+  color: var(--wa-muted) !important;
+  border-radius: 4px !important;
+}
+.btn-prev:hover { border-color: var(--wa-ink) !important; color: var(--wa-ink) !important; }
+
+/* ── Selection summary bar ── */
+.selection-summary-bar {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.ssb-service { color: var(--wa-ink) !important; }
+.ssb-price   { color: var(--wa-red) !important; }
+.ssb-dur     { color: var(--wa-muted) !important; }
+
+/* ── Total card ── */
+.total-card {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.total-card-value { color: var(--wa-red) !important; }
+.total-card-label { color: var(--wa-muted) !important; }
+
+/* ── Summary modal header ── */
+.summary-header {
+  background: linear-gradient(135deg, var(--wa-ink), #2d1a0e) !important;
+}
+.summary-header h2 { color: var(--wa-gold) !important; }
+.btn-confirm-final {
+  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
+  color: #fff !important;
+}
+
+/* ── Gender columns ── */
+.gender-col {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+}
+.gender-title { color: var(--wa-ink) !important; }
+.gender-col--female { border-top-color: #c06080 !important; }
+.gender-col--male   { border-top-color: #4a6898 !important; }
+
+/* ── CC counter ── */
+.client-counter { border-color: var(--wa-border) !important; background: var(--wa-paper) !important; }
+.cc-btn { background: var(--wa-cream) !important; color: var(--wa-ink) !important; }
+.cc-value { color: var(--wa-ink) !important; }

@@ -4109,3 +4109,241 @@ input:checked + .toggle-slider:before {
 @media (max-width: 480px) {
 
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BOOKING STATUS CARDS (Overview tab)
+   ═══════════════════════════════════════════════════════════════════════ */
+.bsc-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  border: 1.5px solid #e8dfd5;
+  box-shadow: 0 2px 8px rgba(75,46,30,0.07);
+  position: relative;
+  overflow: hidden;
+}
+.bsc-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+.bsc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(75,46,30,0.13); }
+.bsc-pending::before    { background: #ff9800; }
+.bsc-confirmed::before  { background: #2196f3; }
+.bsc-completed::before  { background: #28a745; }
+.bsc-cancelled::before  { background: #dc3545; }
+.bsc-icon { font-size: 1.6rem; flex-shrink: 0; }
+.bsc-body { flex: 1; min-width: 0; }
+.bsc-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8b6045; margin-bottom: 4px; }
+.bsc-count { font-size: 2rem; font-weight: 800; color: var(--primary-brown, #4b2e1e); line-height: 1; }
+.bsc-sub { font-size: 0.75rem; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 900px) {
+  #bookingStatusCards { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width: 500px) {
+  #bookingStatusCards { grid-template-columns: 1fr !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BOOKING STATUS FILTER (Bookings tab)
+   ═══════════════════════════════════════════════════════════════════════ */
+.bsf-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #d8c3b2;
+  background: #f9f5f0;
+  color: #6b3f2a;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.bsf-btn:hover { border-color: #4b2e1e; color: #4b2e1e; background: #f0e8df; }
+.bsf-btn.active {
+  background: #4b2e1e;
+  border-color: #4b2e1e;
+  color: #f7c6a5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NOTIFICATION BELL PULSE
+   ═══════════════════════════════════════════════════════════════════════ */
+@keyframes bellPulse {
+  0%   { transform: scale(1);    }
+  25%  { transform: scale(1.25) rotate(-12deg); }
+  50%  { transform: scale(1.25) rotate(12deg);  }
+  75%  { transform: scale(1.1)  rotate(-6deg);  }
+  100% { transform: scale(1);    }
+}
+.notif-bell-pulse { animation: bellPulse 0.6s ease; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   JAPANESE / WA-STYLE THEME — Admin dashboard (admin.css)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --wa-ink:    #1a1008;
+  --wa-cream:  #f5f0e8;
+  --wa-red:    #8b1a1a;
+  --wa-red-lt: #b52a2a;
+  --wa-gold:   #c9a84c;
+  --wa-paper:  #fdfaf5;
+  --wa-border: rgba(26,16,8,0.12);
+  --wa-muted:  rgba(26,16,8,0.5);
+}
+
+/* ── Body / main content background ── */
+body { background: var(--wa-cream) !important; }
+.admin-content { background: var(--wa-cream) !important; }
+
+/* ── Navbar → deep ink with gold accent ── */
+.navbar, .admin-navbar {
+  background: linear-gradient(135deg, var(--wa-ink) 0%, #2d1a0e 100%) !important;
+  border-bottom: 2px solid var(--wa-gold) !important;
+}
+
+/* ── Sidebar → ink with gold active states ── */
+.sidebar {
+  background: linear-gradient(180deg, var(--wa-ink) 0%, #2d1a0e 100%) !important;
+  border-right: 1px solid rgba(201,168,76,0.2) !important;
+}
+.sidebar .tab-btn {
+  color: rgba(245,240,232,0.7) !important;
+  border-left-color: transparent !important;
+}
+.sidebar .tab-btn:hover {
+  background: rgba(201,168,76,0.1) !important;
+  color: var(--wa-gold) !important;
+}
+.sidebar .tab-btn.active {
+  background: rgba(201,168,76,0.15) !important;
+  color: var(--wa-gold) !important;
+  border-left-color: var(--wa-gold) !important;
+}
+/* Admin name in sidebar */
+.sidebar-user-info, .sidebar-user { color: rgba(245,240,232,0.65) !important; }
+
+/* Logout button */
+.btn-logout, .sidebar .btn-logout {
+  background: rgba(139,26,26,0.3) !important;
+  color: #f5a5a5 !important;
+  border-color: rgba(139,26,26,0.5) !important;
+}
+.btn-logout:hover { background: var(--wa-red) !important; color: #fff !important; }
+
+/* ── Section headings ── */
+.tab-content h2, .section-header h2 {
+  color: var(--wa-ink) !important;
+  font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
+  border-bottom: 2px solid var(--wa-gold) !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 20px !important;
+}
+
+/* ── White cards (modals, tables, chart boxes) → washi paper ── */
+.chart-box, .modal-content, .modal-box,
+.bookings-table-section, .services-list .service-item,
+.income-card, .grace-period-card, .review-card-admin {
+  background: var(--wa-paper) !important;
+  border: 1px solid var(--wa-border) !important;
+  border-radius: 6px !important;
+}
+
+/* ── Filter buttons → paper / ink / red-active ── */
+.filter-btn {
+  background: var(--wa-paper) !important;
+  border: 1.5px solid var(--wa-border) !important;
+  color: var(--wa-muted) !important;
+  border-radius: 4px !important;
+  transition: all 0.2s !important;
+}
+.filter-btn:hover { border-color: var(--wa-red) !important; color: var(--wa-red) !important; }
+.filter-btn.active {
+  background: var(--wa-red) !important;
+  border-color: var(--wa-red) !important;
+  color: #fff !important;
+}
+
+/* ── Primary buttons → urushi red ── */
+.btn-primary, #addServiceBtn, #addTherapistBtn {
+  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: 0 3px 10px rgba(139,26,26,0.25) !important;
+}
+.btn-primary:hover { opacity: 0.9 !important; box-shadow: 0 5px 16px rgba(139,26,26,0.35) !important; }
+
+/* ── Confirm / approve buttons ── */
+.btn-confirm, .btn-approve, .btn-complete {
+  background: var(--wa-matcha, #4a6741) !important;
+  color: #fff !important;
+}
+
+/* ── Booking status badges ── */
+.status-pending       { background: #fff3e0 !important; color: #b56a00 !important; }
+.status-confirmed     { background: #e3f2fd !important; color: #1565c0 !important; }
+.status-completed     { background: #e8f5e9 !important; color: #2e7d32 !important; }
+.status-cancelled     { background: #ffebee !important; color: #c62828 !important; }
+
+/* ── Table ── */
+.bookings-table th {
+  background: var(--wa-ink) !important;
+  color: var(--wa-gold) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+}
+.bookings-table td { border-bottom-color: var(--wa-border) !important; }
+.bookings-table tbody tr:hover { background: rgba(201,168,76,0.05) !important; }
+
+/* ── Calendar ── */
+.calendar-header button { color: var(--wa-ink) !important; border-color: var(--wa-border) !important; }
+.calendar-header h3 { color: var(--wa-ink) !important; }
+.calendar-day.has-bookings { background: rgba(139,26,26,0.08) !important; }
+.calendar-day.selected     { background: var(--wa-red) !important; color: #fff !important; border-color: var(--wa-red) !important; }
+.calendar-day:hover { border-color: var(--wa-red) !important; }
+
+/* ── BSC cards → override for wa-theme ── */
+.bsc-count { color: var(--wa-ink) !important; }
+.bsc-pending::before   { background: #c17a00 !important; }
+.bsc-confirmed::before { background: #1565c0 !important; }
+.bsc-completed::before { background: #2e7d32 !important; }
+.bsc-cancelled::before { background: var(--wa-red) !important; }
+
+/* ── Notification panel ── */
+.notif-panel, #notifPanel {
+  background: var(--wa-paper) !important;
+  border: 1px solid var(--wa-border) !important;
+  border-top: 3px solid var(--wa-gold) !important;
+}
+.notif-item:hover { background: var(--wa-cream) !important; }
+.notif-item-msg   { color: var(--wa-ink) !important; }
+.notif-item-time  { color: var(--wa-muted) !important; }
+
+/* ── Forecast/Insights button ── */
+.btn-insights {
+  background: linear-gradient(135deg, #4a6741, #3a5232) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+}
+
+/* ── Inputs ── */
+input[type="text"], input[type="number"], input[type="date"],
+input[type="time"], input[type="email"], select, textarea {
+  background: var(--wa-paper) !important;
+  border-color: var(--wa-border) !important;
+  color: var(--wa-ink) !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--wa-red) !important;
+  box-shadow: 0 0 0 3px rgba(139,26,26,0.1) !important;
+}
