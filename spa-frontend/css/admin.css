@@ -2129,7 +2129,7 @@ body {
 }
 
 .review-rating-display {
-  color: #ffc107;
+  color: #b8933a;
   font-size: 1.3rem;
   margin-bottom: 10px;
 }
@@ -4111,19 +4111,210 @@ input:checked + .toggle-slider:before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BOOKING STATUS CARDS (Overview tab)
+   NAGOMI WA-THEME — Admin Dashboard (admin.css)
+   Unified brown palette — consistent with homepage & booking
    ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --nw-ink:       #2d1a0e;
+  --nw-brown:     #4b2e1e;
+  --nw-brown-md:  #6b3f2a;
+  --nw-brown-lt:  #8b6f47;
+  --nw-gold:      #b8933a;
+  --nw-gold-lt:   #d4aa55;
+  --nw-cream:     #f5f0e8;
+  --nw-parchment: #fdfaf5;
+  --nw-border:    rgba(45,26,14,0.13);
+  --nw-muted:     rgba(45,26,14,0.52);
+  --nw-beige:     #e8d9c4;
+  --nw-beige-dk:  #d4c0a0;
+}
+
+/* ── Body ── */
+body { background: var(--nw-cream) !important; }
+.admin-content { background: var(--nw-cream) !important; }
+
+/* ── Navbar: warm ink-brown gradient matching homepage dark navbar ── */
+.navbar {
+  background: linear-gradient(135deg, var(--nw-ink) 0%, var(--nw-brown) 100%) !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
+  box-shadow: 0 2px 16px rgba(45,26,14,0.25) !important;
+}
+.logo { color: #f5e6cc !important; font-family: 'Playfair Display', serif !important; }
+.user-info, .user-info span { color: rgba(245,230,204,0.85) !important; }
+.logout-btn, .btn-walkin {
+  background: rgba(184,147,58,0.18) !important;
+  color: var(--nw-gold-lt) !important;
+  border-color: rgba(184,147,58,0.4) !important;
+  border-radius: 5px !important;
+  transition: all 0.22s !important;
+}
+.logout-btn:hover, .btn-walkin:hover {
+  background: rgba(184,147,58,0.32) !important;
+  color: #fff !important;
+}
+
+/* ── Sidebar: parchment background, brown active ── */
+.sidebar {
+  background: var(--nw-parchment) !important;
+  border-right: 2px solid var(--nw-beige) !important;
+}
+/* Sidebar logo / user area */
+.sidebar-header, .sidebar-brand, .sidebar-logo-area {
+  background: linear-gradient(135deg, var(--nw-ink), var(--nw-brown)) !important;
+  padding: 16px !important;
+}
+.sidebar .tab-btn {
+  color: var(--nw-muted) !important;
+  border-left-color: transparent !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+.sidebar .tab-btn:hover {
+  background: var(--nw-beige) !important;
+  color: var(--nw-brown) !important;
+}
+.sidebar .tab-btn.active {
+  background: linear-gradient(90deg, var(--nw-beige-dk), var(--nw-beige)) !important;
+  color: var(--nw-brown) !important;
+  border-left-color: var(--nw-brown) !important;
+  font-weight: 700 !important;
+}
+/* Logout in sidebar */
+.btn-logout, .sidebar-footer .btn-logout, .sidebar .logout-btn {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+}
+.btn-logout:hover { background: var(--nw-ink) !important; }
+/* Admin avatar in sidebar */
+.sidebar-user-name { color: var(--nw-muted) !important; }
+
+/* ── Page section headings ── */
+.tab-content h2, .section-header h2 {
+  font-family: 'Playfair Display', serif !important;
+  color: var(--nw-ink) !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
+  padding-bottom: 8px !important;
+}
+
+/* ── Period filter buttons: brown active ── */
+.filter-btn {
+  background: var(--nw-parchment) !important;
+  border: 1.5px solid var(--nw-border) !important;
+  color: var(--nw-muted) !important;
+  border-radius: 5px !important;
+  transition: all 0.2s !important;
+}
+.filter-btn:hover { border-color: var(--nw-brown) !important; color: var(--nw-brown) !important; }
+.filter-btn.active {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  border-color: var(--nw-brown) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(75,46,30,0.28) !important;
+}
+
+/* ── Primary action buttons: brown ── */
+.btn-primary, #addServiceBtn, #addTherapistBtn, .btn-add {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 5px !important;
+  box-shadow: 0 3px 10px rgba(75,46,30,0.28) !important;
+  transition: all 0.22s !important;
+}
+.btn-primary:hover, #addServiceBtn:hover, #addTherapistBtn:hover {
+  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── White cards → parchment ── */
+.chart-box, .bookings-table-section,
+.grace-period-card, .income-section,
+.services-list .service-item,
+.tab-content > .overview-card,
+.date-range-display {
+  background: var(--nw-parchment) !important;
+  border: 1px solid var(--nw-border) !important;
+}
+
+/* ── Table header → ink with gold text ── */
+.bookings-table th {
+  background: linear-gradient(135deg, var(--nw-ink), var(--nw-brown)) !important;
+  color: var(--nw-gold-lt) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  padding: 12px 10px !important;
+}
+.bookings-table td { border-bottom: 1px solid var(--nw-beige) !important; }
+.bookings-table tbody tr:hover { background: rgba(184,147,58,0.05) !important; }
+
+/* ── Calendar ── */
+.calendar-day {
+  background: var(--nw-beige) !important;
+  color: var(--nw-ink) !important;
+  border-radius: 6px !important;
+  transition: all 0.2s !important;
+  border: 1px solid transparent !important;
+}
+.calendar-day:hover {
+  background: var(--nw-beige-dk) !important;
+  border-color: var(--nw-brown-lt) !important;
+}
+/* Has bookings → soft green */
+.calendar-day.has-bookings {
+  background: #c8ebc8 !important;
+  color: #1a4a1a !important;
+  font-weight: 700 !important;
+  border: 1.5px solid #88c888 !important;
+}
+.calendar-day.has-bookings:hover {
+  background: #a8d8a8 !important;
+  border-color: #5a9e5a !important;
+}
+/* Selected → rich green */
+.calendar-day.selected {
+  background: linear-gradient(135deg, #3a7a3a, #2d5f2d) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-color: #2d5f2d !important;
+  box-shadow: 0 3px 10px rgba(45,95,45,0.35) !important;
+}
+
+/* ── Booking status filter pills ── */
+.bsf-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--nw-beige-dk);
+  background: var(--nw-parchment);
+  color: var(--nw-brown);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.bsf-btn:hover { border-color: var(--nw-brown); color: var(--nw-ink); background: var(--nw-beige); }
+.bsf-btn.active {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown));
+  border-color: var(--nw-brown);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(75,46,30,0.25);
+}
+
+/* ── Booking Status Summary Cards (Overview) ── */
 .bsc-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--nw-parchment);
+  border-radius: 10px;
   padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
   cursor: pointer;
   transition: all 0.22s ease;
-  border: 1.5px solid #e8dfd5;
-  box-shadow: 0 2px 8px rgba(75,46,30,0.07);
+  border: 1.5px solid var(--nw-beige);
+  box-shadow: 0 2px 8px rgba(45,26,14,0.07);
   position: relative;
   overflow: hidden;
 }
@@ -4132,218 +4323,84 @@ input:checked + .toggle-slider:before {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 4px;
+  border-radius: 4px 0 0 4px;
 }
-.bsc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(75,46,30,0.13); }
-.bsc-pending::before    { background: #ff9800; }
-.bsc-confirmed::before  { background: #2196f3; }
-.bsc-completed::before  { background: #28a745; }
-.bsc-cancelled::before  { background: #dc3545; }
-.bsc-icon { font-size: 1.6rem; flex-shrink: 0; }
-.bsc-body { flex: 1; min-width: 0; }
-.bsc-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8b6045; margin-bottom: 4px; }
-.bsc-count { font-size: 2rem; font-weight: 800; color: var(--primary-brown, #4b2e1e); line-height: 1; }
-.bsc-sub { font-size: 0.75rem; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bsc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(45,26,14,0.12); }
+.bsc-pending::before    { background: var(--nw-gold); }
+.bsc-confirmed::before  { background: var(--nw-brown-lt); }
+.bsc-completed::before  { background: #3a7a3a; }
+.bsc-cancelled::before  { background: #8b1a1a; }
+.bsc-icon  { font-size: 1.6rem; flex-shrink: 0; }
+.bsc-body  { flex: 1; min-width: 0; }
+.bsc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--nw-muted); margin-bottom: 3px; }
+.bsc-count { font-size: 2rem; font-weight: 800; color: var(--nw-ink); line-height: 1; }
+.bsc-sub   { font-size: 0.73rem; color: var(--nw-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-@media (max-width: 900px) {
-  #bookingStatusCards { grid-template-columns: repeat(2,1fr) !important; }
-}
-@media (max-width: 500px) {
-  #bookingStatusCards { grid-template-columns: 1fr !important; }
-}
+@media (max-width: 900px)  { #bookingStatusCards { grid-template-columns: repeat(2,1fr) !important; } }
+@media (max-width: 500px)  { #bookingStatusCards { grid-template-columns: 1fr !important; } }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   BOOKING STATUS FILTER (Bookings tab)
-   ═══════════════════════════════════════════════════════════════════════ */
-.bsf-btn {
-  padding: 7px 16px;
-  border-radius: 20px;
-  border: 1.5px solid #d8c3b2;
-  background: #f9f5f0;
-  color: #6b3f2a;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-.bsf-btn:hover { border-color: #4b2e1e; color: #4b2e1e; background: #f0e8df; }
-.bsf-btn.active {
-  background: #4b2e1e;
-  border-color: #4b2e1e;
-  color: #f7c6a5;
-}
+/* ── Status badges ── */
+.status-pending             { background: #fff8e6 !important; color: #7a5800 !important; border: 1px solid #e5c87a !important; }
+.status-confirmed           { background: #e6f0ff !important; color: #1a3d7a !important; border: 1px solid #7aaae5 !important; }
+.status-completed           { background: #e6f5e6 !important; color: #1a5a1a !important; border: 1px solid #7ac87a !important; }
+.status-cancelled           { background: #fdecea !important; color: #7a1a1a !important; border: 1px solid #e57a7a !important; }
+.status-pending_reschedule  { background: #f5e6ff !important; color: #4a1a7a !important; border: 1px solid #b87ae5 !important; }
+.status-pending_cancellation{ background: #fff0e6 !important; color: #7a3a1a !important; border: 1px solid #e5a07a !important; }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   NOTIFICATION BELL PULSE
-   ═══════════════════════════════════════════════════════════════════════ */
+/* ── Confirm / Complete / Cancel action buttons ── */
+.btn-confirm, .btn-approve   { background: #3a7a3a !important; color: #fff !important; border: none !important; border-radius: 5px !important; }
+.btn-complete                { background: var(--nw-brown-lt) !important; color: #fff !important; border: none !important; border-radius: 5px !important; }
+.btn-cancel-booking          { background: #fff !important; color: #7a1a1a !important; border: 1px solid #c87a7a !important; border-radius: 5px !important; }
+.btn-cancel-booking:hover    { background: #fdecea !important; }
+
+/* ── Notification bell ── */
+.notif-panel, #notifPanel {
+  background: var(--nw-parchment) !important;
+  border: 1px solid var(--nw-border) !important;
+  border-top: 3px solid var(--nw-gold) !important;
+  border-radius: 0 0 10px 10px !important;
+  box-shadow: 0 8px 24px rgba(45,26,14,0.15) !important;
+}
+.notif-item:hover { background: var(--nw-beige) !important; }
+.notif-item-msg   { color: var(--nw-ink) !important; font-size: 0.87rem !important; }
+.notif-item-time  { color: var(--nw-muted) !important; font-size: 0.75rem !important; }
+
 @keyframes bellPulse {
-  0%   { transform: scale(1);    }
-  25%  { transform: scale(1.25) rotate(-12deg); }
-  50%  { transform: scale(1.25) rotate(12deg);  }
-  75%  { transform: scale(1.1)  rotate(-6deg);  }
-  100% { transform: scale(1);    }
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.2) rotate(-10deg); }
+  50%  { transform: scale(1.2) rotate(10deg); }
+  75%  { transform: scale(1.05) rotate(-4deg); }
+  100% { transform: scale(1); }
 }
 .notif-bell-pulse { animation: bellPulse 0.6s ease; }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   JAPANESE / WA-STYLE THEME — Admin dashboard (admin.css)
-   ═══════════════════════════════════════════════════════════════════════ */
-
-:root {
-  --wa-ink:    #1a1008;
-  --wa-cream:  #f5f0e8;
-  --wa-red:    #8b1a1a;
-  --wa-red-lt: #b52a2a;
-  --wa-gold:   #c9a84c;
-  --wa-paper:  #fdfaf5;
-  --wa-border: rgba(26,16,8,0.12);
-  --wa-muted:  rgba(26,16,8,0.5);
-}
-
-/* ── Body / main content background ── */
-body { background: var(--wa-cream) !important; }
-.admin-content { background: var(--wa-cream) !important; }
-
-/* ── Navbar → deep ink with gold accent ── */
-.navbar, .admin-navbar {
-  background: linear-gradient(135deg, var(--wa-ink) 0%, #2d1a0e 100%) !important;
-  border-bottom: 2px solid var(--wa-gold) !important;
-}
-
-/* ── Sidebar → ink with gold active states ── */
-.sidebar {
-  background: linear-gradient(180deg, var(--wa-ink) 0%, #2d1a0e 100%) !important;
-  border-right: 1px solid rgba(201,168,76,0.2) !important;
-}
-.sidebar .tab-btn {
-  color: rgba(245,240,232,0.7) !important;
-  border-left-color: transparent !important;
-}
-.sidebar .tab-btn:hover {
-  background: rgba(201,168,76,0.1) !important;
-  color: var(--wa-gold) !important;
-}
-.sidebar .tab-btn.active {
-  background: rgba(201,168,76,0.15) !important;
-  color: var(--wa-gold) !important;
-  border-left-color: var(--wa-gold) !important;
-}
-/* Admin name in sidebar */
-.sidebar-user-info, .sidebar-user { color: rgba(245,240,232,0.65) !important; }
-
-/* Logout button */
-.btn-logout, .sidebar .btn-logout {
-  background: rgba(139,26,26,0.3) !important;
-  color: #f5a5a5 !important;
-  border-color: rgba(139,26,26,0.5) !important;
-}
-.btn-logout:hover { background: var(--wa-red) !important; color: #fff !important; }
-
-/* ── Section headings ── */
-.tab-content h2, .section-header h2 {
-  color: var(--wa-ink) !important;
-  font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
-  border-bottom: 2px solid var(--wa-gold) !important;
-  padding-bottom: 8px !important;
-  margin-bottom: 20px !important;
-}
-
-/* ── White cards (modals, tables, chart boxes) → washi paper ── */
-.chart-box, .modal-content, .modal-box,
-.bookings-table-section, .services-list .service-item,
-.income-card, .grace-period-card, .review-card-admin {
-  background: var(--wa-paper) !important;
-  border: 1px solid var(--wa-border) !important;
-  border-radius: 6px !important;
-}
-
-/* ── Filter buttons → paper / ink / red-active ── */
-.filter-btn {
-  background: var(--wa-paper) !important;
-  border: 1.5px solid var(--wa-border) !important;
-  color: var(--wa-muted) !important;
-  border-radius: 4px !important;
-  transition: all 0.2s !important;
-}
-.filter-btn:hover { border-color: var(--wa-red) !important; color: var(--wa-red) !important; }
-.filter-btn.active {
-  background: var(--wa-red) !important;
-  border-color: var(--wa-red) !important;
-  color: #fff !important;
-}
-
-/* ── Primary buttons → urushi red ── */
-.btn-primary, #addServiceBtn, #addTherapistBtn {
-  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
-  border: none !important;
-  border-radius: 4px !important;
-  box-shadow: 0 3px 10px rgba(139,26,26,0.25) !important;
-}
-.btn-primary:hover { opacity: 0.9 !important; box-shadow: 0 5px 16px rgba(139,26,26,0.35) !important; }
-
-/* ── Confirm / approve buttons ── */
-.btn-confirm, .btn-approve, .btn-complete {
-  background: var(--wa-matcha, #4a6741) !important;
-  color: #fff !important;
-}
-
-/* ── Booking status badges ── */
-.status-pending       { background: #fff3e0 !important; color: #b56a00 !important; }
-.status-confirmed     { background: #e3f2fd !important; color: #1565c0 !important; }
-.status-completed     { background: #e8f5e9 !important; color: #2e7d32 !important; }
-.status-cancelled     { background: #ffebee !important; color: #c62828 !important; }
-
-/* ── Table ── */
-.bookings-table th {
-  background: var(--wa-ink) !important;
-  color: var(--wa-gold) !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.03em !important;
-}
-.bookings-table td { border-bottom-color: var(--wa-border) !important; }
-.bookings-table tbody tr:hover { background: rgba(201,168,76,0.05) !important; }
-
-/* ── Calendar ── */
-.calendar-header button { color: var(--wa-ink) !important; border-color: var(--wa-border) !important; }
-.calendar-header h3 { color: var(--wa-ink) !important; }
-.calendar-day.has-bookings { background: rgba(139,26,26,0.08) !important; }
-.calendar-day.selected     { background: var(--wa-red) !important; color: #fff !important; border-color: var(--wa-red) !important; }
-.calendar-day:hover { border-color: var(--wa-red) !important; }
-
-/* ── BSC cards → override for wa-theme ── */
-.bsc-count { color: var(--wa-ink) !important; }
-.bsc-pending::before   { background: #c17a00 !important; }
-.bsc-confirmed::before { background: #1565c0 !important; }
-.bsc-completed::before { background: #2e7d32 !important; }
-.bsc-cancelled::before { background: var(--wa-red) !important; }
-
-/* ── Notification panel ── */
-.notif-panel, #notifPanel {
-  background: var(--wa-paper) !important;
-  border: 1px solid var(--wa-border) !important;
-  border-top: 3px solid var(--wa-gold) !important;
-}
-.notif-item:hover { background: var(--wa-cream) !important; }
-.notif-item-msg   { color: var(--wa-ink) !important; }
-.notif-item-time  { color: var(--wa-muted) !important; }
-
-/* ── Forecast/Insights button ── */
+/* ── Forecast / Insights button ── */
 .btn-insights {
-  background: linear-gradient(135deg, #4a6741, #3a5232) !important;
+  background: linear-gradient(135deg, var(--nw-brown-lt), var(--nw-brown-md)) !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 4px !important;
+  border-radius: 5px !important;
+  box-shadow: 0 3px 10px rgba(75,46,30,0.25) !important;
+}
+.btn-insights:hover { background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important; }
+
+/* ── Form inputs ── */
+input[type="text"]:focus, input[type="number"]:focus,
+input[type="date"]:focus, input[type="time"]:focus,
+select:focus, textarea:focus {
+  border-color: var(--nw-brown) !important;
+  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
+  outline: none !important;
 }
 
-/* ── Inputs ── */
-input[type="text"], input[type="number"], input[type="date"],
-input[type="time"], input[type="email"], select, textarea {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-  color: var(--wa-ink) !important;
+/* ── Star ratings (review section) ── */
+.review-rating, .star-rating, [class*="rating"] .stars {
+  color: var(--nw-gold) !important;
+  font-size: 1rem !important;
 }
-input:focus, select:focus, textarea:focus {
-  border-color: var(--wa-red) !important;
-  box-shadow: 0 0 0 3px rgba(139,26,26,0.1) !important;
+.filter-btn[onclick*="filterReviews"] { min-width: 60px; }
+
+/* ── Mobile responsive sidebar ── */
+@media (max-width: 768px) {
+  .sidebar { background: var(--nw-parchment) !important; }
 }

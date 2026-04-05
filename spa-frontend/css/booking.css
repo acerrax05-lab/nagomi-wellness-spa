@@ -1103,184 +1103,439 @@ select option:disabled { color: rgba(75,46,30,0.3); font-style: italic; }
   .tab-btn:first-child { border-radius: 10px 10px 0 0; }
   .tab-btn:last-child  { border-radius: 0 0 10px 10px; }
 }
+
 /* ═══════════════════════════════════════════════════════════════════════
-   JAPANESE / WA-STYLE THEME — Booking page (booking.css)
+   NAGOMI WA-THEME — Booking page (booking.css)
+   Unified brown palette — no red, consistent with homepage & admin
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── Variables (reuse wa-theme vars) ── */
 :root {
-  --wa-ink:    #1a1008;
-  --wa-cream:  #f5f0e8;
-  --wa-red:    #8b1a1a;
-  --wa-red-lt: #b52a2a;
-  --wa-gold:   #c9a84c;
-  --wa-paper:  #fdfaf5;
-  --wa-border: rgba(26,16,8,0.13);
-  --wa-muted:  rgba(26,16,8,0.5);
+  --nw-ink:       #2d1a0e;
+  --nw-brown:     #4b2e1e;
+  --nw-brown-md:  #6b3f2a;
+  --nw-brown-lt:  #8b6f47;
+  --nw-gold:      #b8933a;
+  --nw-gold-lt:   #d4aa55;
+  --nw-cream:     #f5f0e8;
+  --nw-parchment: #fdfaf5;
+  --nw-border:    rgba(45,26,14,0.13);
+  --nw-muted:     rgba(45,26,14,0.52);
+  --nw-beige:     #e8d9c4;
+  --nw-beige-dk:  #cdb896;
 }
 
-/* ── Page background ── */
-body { background: var(--wa-cream) !important; }
-.booking-section { background: var(--wa-cream) !important; }
-.booking-container { background: transparent !important; }
+/* ── Body / page background ── */
+body            { background: var(--nw-cream) !important; }
+.booking-section{ background: var(--nw-cream) !important; }
+
+/* ── Navbar (same dark ink-brown as homepage/admin) ── */
+.navbar {
+  background: linear-gradient(135deg, var(--nw-ink) 0%, var(--nw-brown) 100%) !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
+  box-shadow: 0 2px 16px rgba(45,26,14,0.25) !important;
+}
+.logo { color: #f5e6cc !important; }
+.logo span { color: rgba(245,230,204,0.6) !important; }
+.nav-links a { color: rgba(255,255,255,0.85) !important; }
+.nav-links a:hover { color: var(--nw-gold-lt) !important; }
+.staff-login {
+  background: rgba(184,147,58,0.15) !important;
+  color: var(--nw-gold-lt) !important;
+  border: 1.5px solid rgba(184,147,58,0.45) !important;
+  border-radius: 5px !important;
+}
+.staff-login:hover { background: rgba(184,147,58,0.3) !important; }
+.hamburger span { background: var(--nw-gold-lt) !important; }
 
 /* ── Page title ── */
 .booking-container > h2 {
-  color: var(--wa-ink) !important;
-  font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
-  letter-spacing: 0.03em !important;
+  color: var(--nw-ink) !important;
+  font-family: 'Playfair Display', serif !important;
 }
 
-/* ── Progress bar → ink / gold ── */
+/* ── Progress bar ── */
 .progress-step .step-circle {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-  color: var(--wa-muted) !important;
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+  color: var(--nw-muted) !important;
+  box-shadow: 0 1px 4px rgba(45,26,14,0.08) !important;
 }
 .progress-step.active .step-circle {
-  background: var(--wa-red) !important;
-  border-color: var(--wa-red) !important;
-  color: #fff !important;
-  box-shadow: 0 0 0 5px rgba(139,26,26,0.12) !important;
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  border-color: var(--nw-brown) !important;
+  color: #f5e6cc !important;
+  box-shadow: 0 0 0 5px rgba(75,46,30,0.12) !important;
 }
 .progress-step.done .step-circle {
-  background: var(--wa-ink) !important;
-  border-color: var(--wa-ink) !important;
-  color: var(--wa-gold) !important;
+  background: var(--nw-brown-lt) !important;
+  border-color: var(--nw-brown-lt) !important;
+  color: #fff !important;
 }
-.progress-step.active .step-label { color: var(--wa-red) !important; }
-.progress-step.done .step-label   { color: var(--wa-ink) !important; opacity: 0.6; }
-.progress-connector { background: var(--wa-border) !important; }
-.progress-connector.done { background: var(--wa-ink) !important; }
+.progress-step.active .step-label { color: var(--nw-brown) !important; font-weight: 600 !important; }
+.progress-step.done .step-label   { color: var(--nw-brown-lt) !important; }
+.progress-step .step-label        { color: var(--nw-muted) !important; }
+.progress-connector      { background: var(--nw-border) !important; }
+.progress-connector.done { background: var(--nw-brown-lt) !important; }
 
-/* ── Step headings ── */
+/* ── Step heading / subheading ── */
 .step-heading {
-  color: var(--wa-ink) !important;
-  border-bottom-color: var(--wa-gold) !important;
-  font-family: 'Playfair Display', Georgia, serif !important;
+  color: var(--nw-ink) !important;
+  font-family: 'Playfair Display', serif !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
 }
-.step-subheading { color: var(--wa-muted) !important; }
+.step-subheading { color: var(--nw-muted) !important; }
 
-/* ── Category tabs → paper / ink / red-active ── */
+/* ── Category tabs ── */
 .cat-tab {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-  color: var(--wa-muted) !important;
-  border-radius: 3px !important;
+  background: var(--nw-parchment) !important;
+  border: 1.5px solid var(--nw-border) !important;
+  color: var(--nw-muted) !important;
+  border-radius: 4px !important;
 }
-.cat-tab:hover { border-color: var(--wa-red) !important; color: var(--wa-red) !important; }
+.cat-tab:hover { border-color: var(--nw-brown) !important; color: var(--nw-brown) !important; }
 .cat-tab.active {
-  background: var(--wa-red) !important;
-  border-color: var(--wa-red) !important;
-  color: #fff !important;
-  box-shadow: 0 3px 10px rgba(139,26,26,0.25) !important;
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  border-color: var(--nw-brown) !important;
+  color: #f5e6cc !important;
+  box-shadow: 0 3px 10px rgba(75,46,30,0.25) !important;
 }
 
-/* ── Sort select ── */
-.sort-row label { color: var(--wa-muted) !important; }
+/* ── Sort row ── */
+.sort-row label { color: var(--nw-muted) !important; }
 .sort-row select {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-  color: var(--wa-ink) !important;
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+  color: var(--nw-ink) !important;
 }
+.sort-row select:focus { border-color: var(--nw-brown) !important; }
 
-/* ── Service cards stay dark brown — intentional contrast ── */
-/* (No override — they look great on the cream background)  */
-
-/* ── Duration buttons → paper / ink / red-active ── */
-.dur-btn {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
+/* ── SERVICE CARDS — warm darker beige (not dark brown, not hurtful) ── */
+.service-card {
+  background: var(--nw-beige) !important;
+  border: 1.5px solid var(--nw-beige-dk) !important;
+  box-shadow: 0 2px 10px rgba(45,26,14,0.1) !important;
 }
-.dur-btn .dur-min { color: var(--wa-ink) !important; }
-.dur-btn .dur-price { color: var(--wa-muted) !important; }
-.dur-btn:hover:not(:disabled) { border-color: var(--wa-red) !important; }
-.dur-btn.active {
-  background: var(--wa-red) !important;
-  border-color: var(--wa-red) !important;
-  box-shadow: 0 4px 12px rgba(139,26,26,0.25) !important;
+.service-card:hover {
+  background: #dbc8a8 !important;
+  border-color: var(--nw-brown-lt) !important;
+  box-shadow: 0 6px 22px rgba(45,26,14,0.15) !important;
+  transform: translateY(-2px) !important;
 }
-.dur-btn.active .dur-min   { color: #fff !important; }
-.dur-btn.active .dur-price { color: rgba(255,255,255,0.82) !important; }
-
-/* ── Form inputs ── */
-.spa-input, .spa-select, .spa-textarea {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-  color: var(--wa-ink) !important;
+.service-card.selected {
+  background: linear-gradient(135deg, #d4e8d4, #c0dcc0) !important;
+  border-color: #5a9a5a !important;
+  box-shadow: 0 0 0 3px rgba(90,154,90,0.22), 0 6px 20px rgba(45,26,14,0.1) !important;
 }
-.spa-input::placeholder, .spa-textarea::placeholder { color: var(--wa-muted) !important; opacity: 0.55; }
-.spa-input:focus, .spa-select:focus, .spa-textarea:focus {
-  border-color: var(--wa-red) !important;
-  box-shadow: 0 0 0 3px rgba(139,26,26,0.1) !important;
-}
-.field-label { color: var(--wa-muted) !important; }
-
-/* ── Dropdowns ── */
-.dropdown-display {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-}
-.dropdown-display .placeholder { color: var(--wa-muted) !important; }
-.dropdown-options {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
-}
-.option-item:hover { background: var(--wa-cream) !important; }
-.option-item label { color: var(--wa-ink) !important; }
-
-/* ── Next / confirm buttons → red ── */
-.btn-next {
-  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
+.service-card.selected::after {
+  background: #3a7a3a !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(139,26,26,0.3) !important;
-  border-radius: 4px !important;
 }
-.btn-next:hover { box-shadow: 0 6px 20px rgba(139,26,26,0.4) !important; }
-.btn-prev {
-  border-color: var(--wa-border) !important;
-  color: var(--wa-muted) !important;
-  border-radius: 4px !important;
+/* Card text: dark ink on beige background */
+.service-card-name  { color: var(--nw-ink) !important; padding-right: 80px; }
+.service-card-desc  { color: var(--nw-muted) !important; }
+.service-card.selected .service-card-name { color: #1a3a1a !important; }
+.service-card.selected .service-card-desc { color: rgba(26,58,26,0.72) !important; }
+
+/* Category tag on card */
+.svc-category-tag {
+  border-color: rgba(45,26,14,0.3) !important;
+  color: var(--nw-brown-md) !important;
 }
-.btn-prev:hover { border-color: var(--wa-ink) !important; color: var(--wa-ink) !important; }
+
+/* Pricing pills on beige card */
+.svc-price-pill {
+  background: rgba(45,26,14,0.07) !important;
+  border-color: rgba(45,26,14,0.18) !important;
+  color: var(--nw-brown) !important;
+}
+.svc-price-pill--active {
+  background: rgba(107,63,42,0.15) !important;
+  border-color: var(--nw-brown-lt) !important;
+  color: var(--nw-brown) !important;
+  font-weight: 700 !important;
+}
+.service-card.selected .svc-price-pill--active {
+  background: rgba(90,154,90,0.2) !important;
+  border-color: #5a9a5a !important;
+  color: #1a4a1a !important;
+}
+
+.svc-avail-note    { color: var(--nw-brown-lt) !important; }
+.service-card-ratings { color: var(--nw-muted) !important; }
+.services-loading  { color: var(--nw-muted) !important; }
+
+/* ── Duration section ── */
+.duration-section {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+}
+.duration-section label { color: var(--nw-muted) !important; }
+.dur-btn {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+}
+.dur-btn .dur-min   { color: var(--nw-ink) !important; }
+.dur-btn .dur-price { color: var(--nw-muted) !important; }
+.dur-btn .dur-label { color: rgba(45,26,14,0.38) !important; }
+.dur-btn:hover:not(:disabled) { border-color: var(--nw-brown) !important; background: var(--nw-beige) !important; }
+.dur-btn.active {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  border-color: var(--nw-brown) !important;
+  box-shadow: 0 4px 12px rgba(75,46,30,0.28) !important;
+}
+.dur-btn.active .dur-min   { color: #f5e6cc !important; }
+.dur-btn.active .dur-price { color: rgba(245,230,204,0.85) !important; }
+.dur-btn.active .dur-label { color: rgba(245,230,204,0.65) !important; }
 
 /* ── Selection summary bar ── */
 .selection-summary-bar {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
 }
-.ssb-service { color: var(--wa-ink) !important; }
-.ssb-price   { color: var(--wa-red) !important; }
-.ssb-dur     { color: var(--wa-muted) !important; }
+.ssb-service { color: var(--nw-ink) !important; }
+.ssb-dur     { color: var(--nw-muted) !important; }
+.ssb-price   { color: var(--nw-brown) !important; }
 
-/* ── Total card ── */
-.total-card {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
+/* ── Next / Prev buttons ── */
+.btn-next {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  color: #f5e6cc !important;
+  box-shadow: 0 4px 14px rgba(75,46,30,0.3) !important;
+  border-radius: 5px !important;
 }
-.total-card-value { color: var(--wa-red) !important; }
-.total-card-label { color: var(--wa-muted) !important; }
+.btn-next:hover {
+  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
+  box-shadow: 0 6px 20px rgba(45,26,14,0.38) !important;
+}
+.btn-prev {
+  border-color: var(--nw-border) !important;
+  color: var(--nw-muted) !important;
+  border-radius: 5px !important;
+}
+.btn-prev:hover { border-color: var(--nw-brown) !important; color: var(--nw-brown) !important; }
 
-/* ── Summary modal header ── */
-.summary-header {
-  background: linear-gradient(135deg, var(--wa-ink), #2d1a0e) !important;
+/* ── Form inputs ── */
+.field-label { color: var(--nw-muted) !important; }
+.spa-input, .spa-select, .spa-textarea {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+  color: var(--nw-ink) !important;
 }
-.summary-header h2 { color: var(--wa-gold) !important; }
-.btn-confirm-final {
-  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
-  color: #fff !important;
+.spa-input::placeholder, .spa-textarea::placeholder { color: rgba(45,26,14,0.3) !important; }
+.spa-input:focus, .spa-select:focus, .spa-textarea:focus {
+  border-color: var(--nw-brown) !important;
+  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
+  background: var(--nw-parchment) !important;
 }
+.spa-select option { color: var(--nw-ink) !important; background: var(--nw-parchment) !important; }
+
+/* ── Guest info inputs (step 3) ── */
+#guestName, #guestPhone, #guestNotes {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+  color: var(--nw-ink) !important;
+}
+#guestName::placeholder, #guestPhone::placeholder, #guestNotes::placeholder { color: rgba(45,26,14,0.3) !important; }
+#guestName:focus, #guestPhone:focus, #guestNotes:focus {
+  border-color: var(--nw-brown) !important;
+  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
+}
+
+/* ── End time badge ── */
+.end-time-badge {
+  background: rgba(45,26,14,0.07) !important;
+  border-color: var(--nw-border) !important;
+  color: var(--nw-brown) !important;
+}
+
+/* ── Therapist dropdown ── */
+.dropdown-display {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+}
+.dropdown-display:hover { border-color: var(--nw-brown) !important; }
+.dropdown-display .placeholder { color: var(--nw-muted) !important; }
+.dropdown-display .dropdown-arrow { color: var(--nw-muted) !important; }
+.dropdown-options {
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
+  box-shadow: 0 8px 24px rgba(45,26,14,0.14) !important;
+}
+.option-item:hover { background: var(--nw-beige) !important; }
+.option-item label { color: var(--nw-ink) !important; }
+.option-item input[type="checkbox"] { accent-color: var(--nw-brown) !important; }
+.selection-info { color: var(--nw-muted) !important; }
 
 /* ── Gender columns ── */
 .gender-col {
-  background: var(--wa-paper) !important;
-  border-color: var(--wa-border) !important;
+  background: var(--nw-parchment) !important;
+  border-color: var(--nw-border) !important;
 }
-.gender-title { color: var(--wa-ink) !important; }
-.gender-col--female { border-top-color: #c06080 !important; }
-.gender-col--male   { border-top-color: #4a6898 !important; }
+.gender-col--female { border-top-color: #c07090 !important; }
+.gender-col--male   { border-top-color: #507090 !important; }
+.gender-title { color: var(--nw-ink) !important; }
 
-/* ── CC counter ── */
-.client-counter { border-color: var(--wa-border) !important; background: var(--wa-paper) !important; }
-.cc-btn { background: var(--wa-cream) !important; color: var(--wa-ink) !important; }
-.cc-value { color: var(--wa-ink) !important; }
+/* ── Client counter ── */
+.client-counter { background: var(--nw-parchment) !important; border-color: var(--nw-border) !important; }
+.cc-btn   { background: var(--nw-beige) !important; color: var(--nw-ink) !important; }
+.cc-btn:hover { background: var(--nw-beige-dk) !important; }
+.cc-value { color: var(--nw-ink) !important; }
+
+/* ── Total card ── */
+.total-card {
+  background: linear-gradient(135deg, var(--nw-parchment), var(--nw-beige)) !important;
+  border-color: var(--nw-border) !important;
+}
+.total-card-label { color: var(--nw-muted) !important; }
+.total-card-value { color: var(--nw-brown) !important; font-size: 1.6rem !important; }
+
+/* ── Confirm booking button ── */
+.btn-confirm-final {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  color: #f5e6cc !important;
+  box-shadow: 0 4px 14px rgba(75,46,30,0.3) !important;
+}
+.btn-confirm-final:not(:disabled):hover {
+  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
+  box-shadow: 0 6px 20px rgba(45,26,14,0.38) !important;
+}
+
+/* ── Summary modal ── */
+.summary-header {
+  background: linear-gradient(135deg, var(--nw-ink), var(--nw-brown)) !important;
+}
+.summary-header h2 { color: var(--nw-gold-lt) !important; }
+.summary-section h3 { color: var(--nw-brown) !important; }
+.summary-row .label { color: #888 !important; }
+.summary-row .value { color: #333 !important; }
+.summary-row.total .label,
+.summary-row.total .value { color: var(--nw-brown) !important; }
+.summary-notes { border-left-color: var(--nw-brown-lt) !important; }
+
+/* ── Date availability warning ── */
+.date-avail-warning.daw-error   { background: #fdf2f2 !important; border-color: rgba(120,26,26,0.25) !important; color: #7a1a1a !important; }
+.date-avail-warning.daw-caution { background: #fffbeb !important; border-color: rgba(120,90,0,0.25) !important; color: #7a5a00 !important; }
+.date-avail-warning.daw-checking{ background: var(--nw-beige) !important; border-color: var(--nw-border) !important; color: var(--nw-muted) !important; }
+
+/* ── Walkin notice ── */
+.walkin-notice { background: #fffbeb !important; border-left-color: var(--nw-gold) !important; color: #7a5800 !important; }
+
+/* ── Couples notice ── */
+.couples-notice { background: var(--nw-beige) !important; border-color: var(--nw-border) !important; color: var(--nw-brown) !important; }
+
+/* ── Terms checkbox ── */
+#termsCheckbox { accent-color: var(--nw-brown) !important; }
+
+/* ── Star rating widget (manage-booking review modal) ── */
+.star-rating-widget { display: flex; gap: 4px; flex-direction: row-reverse; justify-content: flex-end; margin: 8px 0; }
+.star-rating-widget input[type="radio"] { display: none; }
+.star-rating-widget label {
+  font-size: 2rem;
+  color: var(--nw-beige-dk);
+  cursor: pointer;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.star-rating-widget label:hover,
+.star-rating-widget label:hover ~ label,
+.star-rating-widget input:checked ~ label {
+  color: var(--nw-gold) !important;
+}
+/* fallback for plain ★ text display */
+.review-stars, .rating-stars, [class*="star"] { color: var(--nw-gold) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STAR RATING — covers manage-booking review modal and all rating widgets
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Display-only stars (★☆ characters) */
+.review-rating-display,
+.star-display,
+[class*="rating-display"],
+[class*="star-display"] {
+  color: #b8933a !important;
+  font-size: 1.25rem !important;
+}
+
+/* Interactive star radio widget — common CSS-only star pattern */
+.star-rating,
+.stars-widget,
+.rating-input,
+[class*="star-rating"] {
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  margin: 8px 0 !important;
+}
+
+/* Hide the actual radio inputs but keep them functional */
+.star-rating input[type="radio"],
+.stars-widget input[type="radio"],
+.rating-input input[type="radio"],
+[class*="star-rating"] input[type="radio"] {
+  display: none !important;
+}
+
+/* Star labels */
+.star-rating label,
+.stars-widget label,
+.rating-input label,
+[class*="star-rating"] label {
+  font-size: 2rem !important;
+  color: #d4c0a0 !important;
+  cursor: pointer !important;
+  transition: color 0.15s ease !important;
+  line-height: 1 !important;
+  user-select: none !important;
+}
+
+/* Hover + checked states (reversed flex = right-to-left hover) */
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label,
+.stars-widget label:hover,
+.stars-widget label:hover ~ label,
+.stars-widget input:checked ~ label,
+.rating-input label:hover,
+.rating-input label:hover ~ label,
+.rating-input input:checked ~ label,
+[class*="star-rating"] label:hover,
+[class*="star-rating"] label:hover ~ label,
+[class*="star-rating"] input:checked ~ label {
+  color: #b8933a !important;
+}
+
+/* Fallback: if stars use span/button pattern instead of radio */
+.star-btn, .star-icon, [data-star], .rate-star {
+  color: #d4c0a0 !important;
+  font-size: 1.8rem !important;
+  cursor: pointer !important;
+  transition: color 0.15s !important;
+  background: none !important;
+  border: none !important;
+  padding: 2px !important;
+  line-height: 1 !important;
+}
+.star-btn:hover, .star-btn.active, .star-btn.selected,
+.star-icon:hover, .star-icon.active, .star-icon.filled,
+[data-star]:hover, [data-star].active, [data-star].filled,
+.rate-star:hover, .rate-star.active, .rate-star.filled {
+  color: #b8933a !important;
+}
+
+/* Review modal submit button */
+.btn-submit-review, button[onclick*="submitReview"], button[onclick*="submit_review"] {
+  background: linear-gradient(135deg, #6b3f2a, #4b2e1e) !important;
+  color: #f5e6cc !important;
+  border: none !important;
+  border-radius: 5px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.22s !important;
+  box-shadow: 0 3px 10px rgba(75,46,30,0.28) !important;
+}
+.btn-submit-review:hover, button[onclick*="submitReview"]:hover {
+  background: linear-gradient(135deg, #4b2e1e, #2d1a0e) !important;
+}

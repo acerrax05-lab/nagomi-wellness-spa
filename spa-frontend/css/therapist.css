@@ -769,3 +769,239 @@ body {
   .stat-number { font-size: 1.3rem; }
   .main-content { padding: 0 10px 16px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NAGOMI WA-THEME — Therapist Dashboard (therapist.css)
+   Unified brown palette — consistent with homepage, booking & admin
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --nw-ink:       #2d1a0e;
+  --nw-brown:     #4b2e1e;
+  --nw-brown-md:  #6b3f2a;
+  --nw-brown-lt:  #8b6f47;
+  --nw-gold:      #b8933a;
+  --nw-gold-lt:   #d4aa55;
+  --nw-cream:     #f5f0e8;
+  --nw-parchment: #fdfaf5;
+  --nw-border:    rgba(45,26,14,0.13);
+  --nw-muted:     rgba(45,26,14,0.52);
+  --nw-beige:     #e8d9c4;
+  --nw-beige-dk:  #d4c0a0;
+}
+
+/* ── Body: warm cream background instead of harsh brown gradient ── */
+body {
+  background: linear-gradient(160deg, var(--nw-brown) 0%, #3b2010 60%, #2d1a0e 100%) !important;
+  color: var(--nw-ink) !important;
+}
+
+/* ── Mobile navbar ── */
+.therapist-navbar {
+  background: linear-gradient(135deg, var(--nw-ink) 0%, var(--nw-brown) 100%) !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
+}
+.therapist-navbar .logo { color: #f5e6cc !important; }
+.therapist-navbar .hamburger span { background: #f5e6cc !important; }
+.therapist-mobile-menu {
+  background: rgba(45,26,14,0.98) !important;
+  border-top: 1px solid rgba(184,147,58,0.2) !important;
+}
+.mobile-menu-header { color: var(--nw-gold-lt) !important; border-bottom-color: rgba(184,147,58,0.2) !important; }
+.mobile-logout-btn  { color: rgba(245,230,204,0.9) !important; }
+.mobile-logout-btn:hover { background: rgba(184,147,58,0.12) !important; }
+
+/* ── Hero section ── */
+.hero-section::before {
+  background: rgba(20,10,4,0.72) !important;
+}
+.hero-content h1 {
+  color: #ffffff !important;
+  font-family: 'Playfair Display', serif !important;
+  text-shadow: 2px 2px 16px rgba(0,0,0,0.7) !important;
+}
+.hero-content p {
+  color: rgba(255,255,255,0.88) !important;
+  text-shadow: 1px 1px 8px rgba(0,0,0,0.5) !important;
+}
+.logout-btn {
+  background: rgba(184,147,58,0.18) !important;
+  border-color: rgba(184,147,58,0.5) !important;
+  color: var(--nw-gold-lt) !important;
+  border-radius: 6px !important;
+}
+.logout-btn:hover {
+  background: var(--nw-gold) !important;
+  color: var(--nw-ink) !important;
+}
+
+/* ── Stat cards: parchment white ── */
+.stat-card {
+  background: var(--nw-parchment) !important;
+  border: 1px solid var(--nw-beige) !important;
+  box-shadow: 0 4px 16px rgba(45,26,14,0.15) !important;
+}
+.stat-number { color: var(--nw-brown) !important; }
+.stat-label  { color: var(--nw-muted) !important; }
+/* Stat icon backgrounds: softer tones */
+.stat-card:nth-child(1) .stat-icon { background: #d4e8d4 !important; }
+.stat-card:nth-child(2) .stat-icon { background: var(--nw-beige) !important; }
+.stat-card:nth-child(3) .stat-icon { background: #d0e8d0 !important; }
+.stat-card:nth-child(4) .stat-icon { background: #e8dfc8 !important; }
+
+/* ── Section title (calendar heading) ── */
+.section-title {
+  color: #f5e6cc !important;
+  font-family: 'Playfair Display', serif !important;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 40px; height: 2px;
+  background: var(--nw-gold);
+}
+
+/* ── Legend ── */
+.legend-item { color: rgba(245,230,204,0.88) !important; }
+.legend-dot.booked  { background: #6aaa6a !important; }
+.legend-dot.day-off { background: #b07070 !important; }
+
+/* ── Calendar container ── */
+.calendar-container {
+  background: rgba(45,26,14,0.88) !important;
+  border: 1px solid rgba(184,147,58,0.25) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.calendar-header h3 { color: var(--nw-gold-lt) !important; font-family: 'Playfair Display', serif !important; }
+.nav-btn {
+  background: rgba(184,147,58,0.15) !important;
+  border-color: rgba(184,147,58,0.35) !important;
+  color: var(--nw-gold-lt) !important;
+}
+.nav-btn:hover {
+  background: rgba(184,147,58,0.28) !important;
+  border-color: var(--nw-gold) !important;
+}
+.day-label { color: rgba(245,230,204,0.88) !important; background: rgba(184,147,58,0.1) !important; }
+
+/* ── Calendar days ── */
+.calendar-day {
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(245,230,204,0.45) !important;
+  border-color: transparent !important;
+}
+.calendar-day.current-month { color: rgba(245,230,204,0.9) !important; }
+.calendar-day:hover:not(.other-month):not(.day-off) {
+  background: rgba(184,147,58,0.18) !important;
+  border-color: rgba(184,147,58,0.4) !important;
+}
+.calendar-day.today {
+  background: var(--nw-parchment) !important;
+  color: var(--nw-brown) !important;
+  border-color: var(--nw-gold) !important;
+  box-shadow: 0 4px 14px rgba(184,147,58,0.3) !important;
+}
+.calendar-day.has-appointments {
+  background: #4a8a4a !important;
+  color: #fff !important;
+  border-color: #6aaa6a !important;
+}
+.calendar-day.has-appointments:hover { background: #3a7a3a !important; }
+.calendar-day.day-off {
+  background: rgba(120,50,50,0.5) !important;
+  color: rgba(245,200,200,0.85) !important;
+}
+.calendar-day.day-off:hover { background: rgba(120,50,50,0.65) !important; }
+.calendar-day.selected {
+  box-shadow: 0 0 0 3px var(--nw-gold), 0 4px 14px rgba(184,147,58,0.3) !important;
+}
+
+/* ── Appointment cards ── */
+.appointment-card {
+  background: var(--nw-parchment) !important;
+  border: 1px solid var(--nw-beige) !important;
+  box-shadow: 0 4px 14px rgba(45,26,14,0.12) !important;
+}
+.appointment-time { color: var(--nw-brown) !important; font-family: 'Playfair Display', serif !important; }
+.client-name  { color: var(--nw-ink) !important; }
+.service-name { color: var(--nw-muted) !important; }
+.appointment-details { color: var(--nw-muted) !important; }
+
+/* Status badges */
+.status-badge  { border-radius: 6px !important; }
+.status-upcoming  { background: var(--nw-beige) !important; color: var(--nw-brown) !important; }
+.status-completed { background: #d4e8d4 !important; color: #1a4a1a !important; }
+.status-pending   { background: #f0e8c8 !important; color: #6a4a00 !important; }
+
+/* Note section */
+.note-section { background: rgba(184,147,58,0.08) !important; border-left-color: var(--nw-gold) !important; }
+.note-label { color: var(--nw-brown) !important; }
+
+/* Complete button */
+.btn-complete {
+  background: linear-gradient(135deg, var(--nw-beige), var(--nw-beige-dk)) !important;
+  color: var(--nw-brown) !important;
+  border-radius: 6px !important;
+}
+.btn-complete:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--nw-beige-dk), #c4a880) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── Modals ── */
+.modal-content {
+  background: var(--nw-parchment) !important;
+  border-top: 3px solid var(--nw-gold) !important;
+}
+.modal-content h3 { color: var(--nw-brown) !important; font-family: 'Playfair Display', serif !important; }
+.modal-content p  { color: var(--nw-muted) !important; }
+
+/* Leave modal labels */
+.modal-content label  { color: var(--nw-brown) !important; }
+.modal-content select,
+.modal-content input,
+.modal-content textarea {
+  border-color: var(--nw-beige-dk) !important;
+  color: var(--nw-ink) !important;
+  background: #fff !important;
+  border-radius: 7px !important;
+}
+.modal-content select:focus,
+.modal-content input:focus,
+.modal-content textarea:focus {
+  border-color: var(--nw-brown) !important;
+  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
+  outline: none !important;
+}
+
+/* Modal action buttons */
+.btn-success {
+  background: linear-gradient(135deg, #4a7a4a, #2d5f2d) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+.btn-success:hover { background: linear-gradient(135deg, #3a6a3a, #1e4a1e) !important; }
+.btn-secondary {
+  background: var(--nw-beige) !important;
+  color: var(--nw-brown) !important;
+  border-radius: 6px !important;
+}
+.btn-secondary:hover { background: var(--nw-beige-dk) !important; }
+
+/* Leave/overtime request button */
+div[style*="text-align:center"] button[onclick*="openLeaveModal"] {
+  background: rgba(184,147,58,0.18) !important;
+  border-color: rgba(184,147,58,0.5) !important;
+  color: var(--nw-gold-lt) !important;
+  border-radius: 6px !important;
+}
+div[style*="text-align:center"] button[onclick*="openLeaveModal"]:hover {
+  background: rgba(184,147,58,0.3) !important;
+}
+
+/* Payroll panel */
+#payrollPanel { color: var(--nw-ink) !important; }

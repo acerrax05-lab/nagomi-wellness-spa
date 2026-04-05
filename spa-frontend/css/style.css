@@ -21,7 +21,7 @@ body {
 
 h1, h2, h3 {
   font-family: 'Playfair Display', serif;
-  color: #ffffff;
+  color: #4b2e1e;
 }
 
 /* === NAVBAR === */
@@ -195,7 +195,7 @@ h1, h2, h3 {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 1;
 }
 
@@ -224,7 +224,7 @@ h1, h2, h3 {
   font-weight: 300;
   margin-bottom: 15px;
   font-family: Georgia, 'Times New Roman', serif;
-  color: #ffffff;
+  color: #fff;
   opacity: 0.95;
   font-style: italic;
 }
@@ -236,7 +236,7 @@ h1, h2, h3 {
   color: #ffffff;
   margin: 0 auto 30px auto;
   font-style: italic;
-  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.6);
+  text-shadow: 3px 3px 18px rgba(0,0,0,0.85), 0 0 60px rgba(0,0,0,0.5);
   line-height: 1.2;
 }
 
@@ -1551,161 +1551,160 @@ footer {
     border: 2px solid #000;
   }
 }
+
 /* ═══════════════════════════════════════════════════════════════════════
-   JAPANESE / WA-STYLE THEME — Homepage (style.css)
-   Palette: Sumi ink #1a1008, Washi cream #f5f0e8, Urushi red #8b1a1a,
-            Matcha #4a6741, Gold #c9a84c, Light cream #fdfaf5
-   Fonts: Add 'Noto Serif JP' (loaded via HTML link tag) or fallback serif
+   NAGOMI WA-THEME — Homepage (style.css)
+   Palette: Deep ink brown, washi cream, antique gold, parchment white
+   All reds replaced with rich brown tones for a warm Japanese aesthetic
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --wa-ink:    #1a1008;
-  --wa-cream:  #f5f0e8;
-  --wa-red:    #8b1a1a;
-  --wa-red-lt: #b52a2a;
-  --wa-gold:   #c9a84c;
-  --wa-matcha: #4a6741;
-  --wa-paper:  #fdfaf5;
-  --wa-border: rgba(26,16,8,0.12);
-  --wa-brown:  #4b2e1e;
+  --nw-ink:       #2d1a0e;   /* deep sumi ink brown */
+  --nw-brown:     #4b2e1e;   /* primary brand brown */
+  --nw-brown-md:  #6b3f2a;   /* medium brown */
+  --nw-brown-lt:  #8b6f47;   /* light brown / tan */
+  --nw-gold:      #b8933a;   /* antique gold accent */
+  --nw-gold-lt:   #d4aa55;   /* lighter gold */
+  --nw-cream:     #f5f0e8;   /* washi paper cream */
+  --nw-parchment: #fdfaf5;   /* lightest parchment */
+  --nw-border:    rgba(45,26,14,0.13);
+  --nw-muted:     rgba(45,26,14,0.52);
+  --nw-beige:     #e8d9c4;   /* warm beige for cards */
+  --nw-beige-dk:  #d4c0a0;   /* darker beige */
 }
 
-/* ── Body ── */
-body {
-  background: var(--wa-cream) !important;
-  color: var(--wa-ink) !important;
-}
-
-/* ── Seigaiha (overlapping semicircle) divider pattern on section transitions ── */
-.services-section::before,
-.why-choose-section::before,
-.reviews-section::before {
-  content: '';
-  display: block;
-  height: 20px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20'%3E%3Cellipse cx='20' cy='20' rx='20' ry='14' fill='none' stroke='%23c9a84c' stroke-width='1' opacity='0.3'/%3E%3C/svg%3E") repeat-x center;
-  margin-bottom: 8px;
-}
-
-/* ── Headings: serif + ink ── */
+/* ── Body & base ── */
+body { background: var(--nw-cream) !important; color: var(--nw-ink) !important; }
 h1, h2, h3, h4 {
   font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
-  color: var(--wa-ink) !important;
-  letter-spacing: 0.02em;
+  color: var(--nw-ink) !important;
 }
 
-/* ── Navbar scrolled state → washi paper ── */
+/* ── Hero: ensure text is always white & visible over dark video ── */
+.hero::before {
+  background: rgba(10, 5, 2, 0.52) !important;  /* slightly darker overlay */
+}
+.hero-text h1 {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 16px rgba(0,0,0,0.75), 0 0 40px rgba(0,0,0,0.5) !important;
+}
+.hero-text h2 {
+  color: rgba(255,255,255,0.95) !important;
+  text-shadow: 1px 1px 8px rgba(0,0,0,0.6) !important;
+}
+.hero-text p {
+  color: rgba(255,255,255,0.92) !important;
+  text-shadow: 1px 1px 8px rgba(0,0,0,0.55) !important;
+}
+
+/* ── Navbar ── */
 .navbar.scrolled {
-  background: var(--wa-paper) !important;
-  border-bottom: 1px solid var(--wa-gold) !important;
-  box-shadow: 0 2px 12px rgba(26,16,8,0.1) !important;
+  background: var(--nw-parchment) !important;
+  border-bottom: 2px solid var(--nw-gold) !important;
+  box-shadow: 0 2px 16px rgba(45,26,14,0.12) !important;
 }
 .navbar.scrolled .logo,
-.navbar.scrolled .nav-links a { color: var(--wa-ink) !important; }
-.navbar.scrolled .nav-links a:hover { color: var(--wa-red) !important; }
-.navbar.scrolled .hamburger span { background: var(--wa-ink) !important; }
-
-/* Hero nav links color fix */
+.navbar.scrolled .nav-links a { color: var(--nw-ink) !important; }
+.navbar.scrolled .nav-links a:hover { color: var(--nw-brown-md) !important; }
+.navbar.scrolled .hamburger span { background: var(--nw-ink) !important; }
 .navbar:not(.scrolled) .nav-links a { color: rgba(255,255,255,0.92) !important; }
-.navbar:not(.scrolled) .nav-links a:hover { color: #f7dea8 !important; }
+.navbar:not(.scrolled) .nav-links a:hover { color: #f0d9a8 !important; }
 
-/* ── CTA / primary buttons → urushi red ── */
-.btn-primary-cta,
-.btn-book,
-.cta-btn,
-.book-btn,
-a[href*="booking"].btn,
-.service-book-btn,
-.btn-book-now {
-  background: linear-gradient(135deg, var(--wa-red-lt), var(--wa-red)) !important;
+/* ── Manage Booking btn in navbar ── */
+.btn-manage-booking,
+a[href*="manage-booking"],
+.nav-links a[href*="manage"] {
+  border: 1.5px solid var(--nw-gold) !important;
+  border-radius: 5px !important;
+  padding: 6px 16px !important;
+  color: var(--nw-gold) !important;
+  font-weight: 600 !important;
+  transition: all 0.22s !important;
+}
+.btn-manage-booking:hover,
+a[href*="manage-booking"]:hover {
+  background: var(--nw-gold) !important;
+  color: var(--nw-ink) !important;
+}
+
+/* ── Hero buttons: brown instead of red ── */
+.btn-primary-cta, .hero .btn-primary, .cta-primary, .btn-book-hero,
+a.btn[href*="booking"], .hero-buttons a:first-child {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 4px !important;
+  border-radius: 5px !important;
   font-weight: 600 !important;
-  letter-spacing: 0.04em !important;
-  box-shadow: 0 3px 12px rgba(139,26,26,0.3) !important;
+  letter-spacing: 0.03em !important;
+  box-shadow: 0 3px 14px rgba(75,46,30,0.35) !important;
   transition: all 0.25s !important;
 }
-.btn-primary-cta:hover, .btn-book:hover, .cta-btn:hover,
-.book-btn:hover, .service-book-btn:hover, .btn-book-now:hover {
+.btn-primary-cta:hover, .hero .btn-primary:hover, .cta-primary:hover {
+  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
+  box-shadow: 0 6px 20px rgba(45,26,14,0.4) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(139,26,26,0.4) !important;
 }
 
-/* ── Section backgrounds alternate ── */
-.services-section,
-.testimonials-section,
-.reviews-section { background: var(--wa-paper) !important; }
-
-.why-choose-section,
-.stats-section,
-.contact-section { background: var(--wa-cream) !important; }
+/* ── Sections: alternating cream / parchment ── */
+.services-section, .reviews-section, .testimonials-section { background: var(--nw-parchment) !important; }
+.why-choose-section, .stats-section                        { background: var(--nw-cream) !important; }
+.contact-section, footer, .footer                          { background: var(--nw-ink) !important; }
 
 /* ── Section headings with gold underline ── */
-.section-title, .section-heading, .services-section h2,
-.why-choose-section h2, .reviews-section h2, .contact-section h2 {
+.services-section h2, .why-choose-section h2,
+.reviews-section h2, .contact-section h2, .section-title {
   position: relative;
   display: inline-block;
   padding-bottom: 12px;
+  color: var(--nw-ink) !important;
 }
-.section-title::after, .section-heading::after,
 .services-section h2::after, .why-choose-section h2::after,
-.reviews-section h2::after, .contact-section h2::after {
+.reviews-section h2::after, .section-title::after {
   content: '';
   position: absolute;
   bottom: 0; left: 50%;
   transform: translateX(-50%);
-  width: 48px; height: 2px;
-  background: var(--wa-gold);
+  width: 52px; height: 2px;
+  background: var(--nw-gold);
 }
 
-/* ── Service cards → paper white with ink border ── */
-.service-card-home, .service-item, .featured-service {
-  background: var(--wa-paper) !important;
-  border: 1px solid var(--wa-border) !important;
+/* ── Service / review cards ── */
+.service-card-home, .service-item, .featured-service, .review-card {
+  background: var(--nw-parchment) !important;
+  border: 1px solid var(--nw-border) !important;
   border-radius: 6px !important;
-  box-shadow: 0 2px 12px rgba(26,16,8,0.07) !important;
+  box-shadow: 0 2px 10px rgba(45,26,14,0.07) !important;
   transition: all 0.25s !important;
 }
 .service-card-home:hover, .service-item:hover, .featured-service:hover {
-  border-color: var(--wa-gold) !important;
-  box-shadow: 0 6px 24px rgba(26,16,8,0.12) !important;
+  border-color: var(--nw-gold) !important;
+  box-shadow: 0 6px 22px rgba(45,26,14,0.12) !important;
   transform: translateY(-3px) !important;
 }
 
-/* ── Review cards ── */
-.review-card, .testimonial-card {
-  background: var(--wa-paper) !important;
-  border: 1px solid var(--wa-border) !important;
-  border-radius: 6px !important;
+/* ── Book Now btn on service cards ── */
+.btn-book-service, .book-btn, .service-book-btn, .btn-book-now {
+  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 5px !important;
+  box-shadow: 0 2px 8px rgba(75,46,30,0.28) !important;
+  transition: all 0.22s !important;
+}
+.btn-book-service:hover, .book-btn:hover, .service-book-btn:hover {
+  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
+  transform: translateY(-1px) !important;
 }
 
-/* ── Stats section numbers ── */
-.stat-number, .stat-value { color: var(--wa-red) !important; }
-.stat-label { color: var(--wa-ink) !important; opacity: 0.75; }
+/* ── Stats ── */
+.stat-number, .stat-value { color: var(--nw-brown-md) !important; font-weight: 800 !important; }
+.stat-label               { color: var(--nw-ink) !important; opacity: 0.72; }
 
 /* ── Footer ── */
 footer, .footer {
-  background: var(--wa-ink) !important;
-  color: rgba(245,240,232,0.85) !important;
-  border-top: 3px solid var(--wa-gold) !important;
+  color: rgba(245,240,232,0.82) !important;
+  border-top: 3px solid var(--nw-gold) !important;
 }
-footer h3, footer h4, .footer h3, .footer h4 { color: var(--wa-gold) !important; }
-footer a, .footer a { color: rgba(245,240,232,0.7) !important; }
-footer a:hover, .footer a:hover { color: var(--wa-gold) !important; }
-
-/* ── Manage Booking button in navbar ── */
-.manage-booking-btn, .nav-links .staff-login,
-a[href*="manage-booking"].btn {
-  background: transparent !important;
-  color: inherit !important;
-  border: 1.5px solid var(--wa-gold) !important;
-  border-radius: 4px !important;
-  padding: 7px 16px !important;
-  font-weight: 600 !important;
-  transition: all 0.2s !important;
-}
-.manage-booking-btn:hover, a[href*="manage-booking"].btn:hover {
-  background: var(--wa-gold) !important;
-  color: var(--wa-ink) !important;
-}
+footer h3, footer h4, .footer h3, .footer h4 { color: var(--nw-gold) !important; }
+footer a, .footer a { color: rgba(245,240,232,0.68) !important; }
+footer a:hover, .footer a:hover { color: var(--nw-gold) !important; }

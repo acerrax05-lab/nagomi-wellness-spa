@@ -251,7 +251,7 @@ function renderBookingCard(booking, canModify) {
         <div style="margin-top:10px;">
           <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}')"
             style="display:block;width:100%;text-align:center;padding:12px;
-              background:linear-gradient(135deg,#8b6f47,#4b2e1e);
+              background:linear-gradient(135deg,#6b3f2a,#4b2e1e);
               color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
               cursor:pointer;transition:opacity 0.2s;"
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
@@ -494,7 +494,7 @@ function _setReviewRating(rating) {
   const stars = document.querySelectorAll('#mgStarRow i');
   stars.forEach((s, i) => {
     s.className = i < rating ? 'fas fa-star' : 'far fa-star';
-    s.style.color = i < rating ? '#f4a435' : '#ccc';
+    s.style.color = i < rating ? '#b8933a' : '#ccc';
   });
   const hidden = document.getElementById('mgRatingValue');
   if (hidden) hidden.value = rating || '';
@@ -597,7 +597,7 @@ function _buildReviewModal() {
     .mg-star-row { display:flex; gap:8px; font-size:1.6rem; cursor:pointer; }
     .mg-star-row i { color:#ccc; transition:color 0.15s; }
     .mg-star-row i:hover,
-    .mg-star-row i.fas { color:#f4a435; }
+    .mg-star-row i.fas { color:#b8933a; }
     .mg-review-actions {
       display:flex; gap:10px; margin-top:20px;
     }
@@ -610,7 +610,7 @@ function _buildReviewModal() {
     .mg-review-cancel:hover { background:#f5f5f5; }
     .mg-review-submit {
       flex:2; padding:12px;
-      background:linear-gradient(135deg,#8b6f47,#4b2e1e);
+      background:linear-gradient(135deg,#6b3f2a,#4b2e1e);
       color:#fff; border:none; border-radius:9px;
       font-weight:600; cursor:pointer; font-size:0.9rem;
       transition:opacity 0.2s;
