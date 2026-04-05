@@ -224,7 +224,7 @@ h1, h2, h3 {
   font-weight: 300;
   margin-bottom: 15px;
   font-family: Georgia, 'Times New Roman', serif;
-  color: #fff;
+  color: #ffffff;
   opacity: 0.95;
   font-style: italic;
 }
@@ -233,7 +233,7 @@ h1, h2, h3 {
   font-size: 6rem;
   font-family: 'Edwardian Script ITC', 'Brush Script MT', 'Lucida Handwriting', 'Freestyle Script', cursive;
   font-weight: 400;
-  color: #fff;
+  color: #ffffff;
   margin: 0 auto 30px auto;
   font-style: italic;
   text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.6);
