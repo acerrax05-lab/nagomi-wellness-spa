@@ -902,7 +902,7 @@
   top: 10%;
   right: 5%;
   font-size: 8rem;
-  opacity: 0.05;
+  opacity: 1;
   pointer-events: none;
 }
 
