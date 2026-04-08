@@ -10,164 +10,176 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-  <!-- Top Navbar -->
-  <header class="t-navbar">
-    <div class="t-navbar-left">
-      <button class="t-hamburger" id="tHamburger" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-      <span class="t-logo">🌸 Nagomi | Therapist</span>
+  <!-- Mobile Navbar (hidden on desktop, visible on mobile) -->
+  <nav class="therapist-navbar" id="therapistNavbar">
+    <span class="logo">zentraX | Nagomi Wellness Spa - Therapist</span>
+    <div class="hamburger" id="therapistHamburger">
+      <span></span><span></span><span></span>
     </div>
-    <div class="t-navbar-right">
-      <span id="navWelcome"></span>
-    </div>
-  </header>
-
-  <!-- Sidebar overlay -->
-  <div class="t-sidebar-overlay" id="tSidebarOverlay"></div>
-
-  <!-- Sidebar -->
-  <aside class="t-sidebar" id="tSidebar">
-    <div class="t-sidebar-logo">
-      <span>🌸</span>
-      <span>Nagomi Spa</span>
-    </div>
-
-    <div class="t-sidebar-welcome">
-      <div class="t-sidebar-avatar">👤</div>
-      <div>
-        <div class="t-sidebar-name" id="sidebarTherapistName">Therapist</div>
-        <div class="t-sidebar-role">Therapist Dashboard</div>
+    <div class="therapist-mobile-menu" id="therapistMobileMenu">
+      <div class="mobile-menu-header">
+        <span id="mobileWelcome">Welcome!</span>
       </div>
-    </div>
-
-    <div class="t-sidebar-divider"></div>
-
-    <!-- Stats -->
-    <div class="t-sidebar-stats">
-      <div class="t-stat-item">
-        <div class="t-stat-value" id="todayAppointments">0</div>
-        <div class="t-stat-label">Today's Appointments</div>
-      </div>
-      <div class="t-stat-item">
-        <div class="t-stat-value" id="upcomingCount">0</div>
-        <div class="t-stat-label">Upcoming</div>
-      </div>
-      <div class="t-stat-item">
-        <div class="t-stat-value" id="completedCount">0</div>
-        <div class="t-stat-label">Completed</div>
-      </div>
-      <div class="t-stat-item t-stat-commission" id="commissionCard" onclick="showPayrollPanel()" title="Click to view payroll history">
-        <div class="t-stat-value" id="todayRevenue">₱0</div>
-        <div class="t-stat-label">Commission Earned 💰</div>
-        <div class="t-stat-sub" id="commissionPeriodLabel"></div>
-      </div>
-    </div>
-
-    <div class="t-sidebar-divider"></div>
-
-    <!-- Actions -->
-    <div class="t-sidebar-actions">
-      <button class="t-leave-btn" onclick="openLeaveModal()">
-        🌴 Request Leave / Vacation
+      <button onclick="document.getElementById('logoutBtn').click()" class="mobile-logout-btn">
+        🚪 Logout
       </button>
     </div>
+  </nav>
 
-    <div style="flex:1;"></div>
-
-    <!-- Footer / Logout -->
-    <div class="t-sidebar-footer">
-      <button id="logoutBtn" class="t-logout-btn">🚪 Logout</button>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 id="welcomeMessage">Welcome back, Sarah!</h1>
+      <p id="dashboardSubtitle">Here's your dashboard overview, Sarah</p>
     </div>
-  </aside>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </section>
+
+  <!-- Stats Cards -->
+  <section class="stats-section">
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="todayAppointments">0</div>
+        <div class="stat-label">Today's Appointments</div>
+      </div>
+      <div class="stat-icon" style="background: #c8e6c9;">✅</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="upcomingCount">0</div>
+        <div class="stat-label">Upcoming</div>
+      </div>
+      <div class="stat-icon" style="background: #bbdefb;">⏰</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-number" id="completedCount">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-icon" style="background: #c8e6c9;">✓</div>
+    </div>
+
+    <!-- ✅ CHANGED: "Today's Revenue" → "Commission Earned" -->
+    <div class="stat-card" id="commissionCard" onclick="showPayrollPanel()" style="cursor:pointer;border:2px solid #b8933a;position:relative;"
+      title="Click to view commission & payroll history">
+      <div style="position:absolute;top:8px;right:10px;font-size:0.65rem;color:#b8933a;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Click to view →</div>
+      <div class="stat-content">
+        <div class="stat-number" id="todayRevenue">₱0</div>
+        <div class="stat-label">Commission Earned</div>
+        <div id="commissionPeriodLabel" style="
+          font-size: 0.72rem;
+          color: #888;
+          margin-top: 4px;
+          font-weight: 400;
+          line-height: 1.3;
+        "></div>
+      </div>
+      <div class="stat-icon" style="background: #e1bee7;">💰</div>
+    </div>
+  </section>
+
+  <!-- ✅ NEW: Payroll Panel (hidden by default, shown when stat card is clicked) -->
+  <!-- payrollPanel moved to modal -->
+
+  <!-- ✅ NEW: Commission button (visible below stats) -->
+  <!-- Payroll history accessible via commission card above -->
 
   <!-- Main Content -->
-  <main class="t-main">
-
-    <div class="t-page-header">
-      <h1 id="welcomeMessage" class="t-page-title">Welcome back!</h1>
-      <p id="dashboardSubtitle" class="t-page-sub">Here's your schedule overview</p>
-    </div>
-
-    <div class="t-content-grid">
-
-      <!-- Calendar -->
-      <div class="t-card t-calendar-card">
-        <h2 class="section-title">Today's Schedule</h2>
-
-        <div class="legend">
-          <div class="legend-item">
-            <span class="legend-dot booked"></span>
-            <span>booked client/s</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot day-off"></span>
-            <span>day off</span>
-          </div>
+  <section class="main-content">
+    <!-- Calendar Section -->
+    <div class="calendar-section">
+      <h2 class="section-title">Today's Schedule</h2>
+      
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-dot booked"></span>
+          <span>booked client/s</span>
         </div>
-
-        <div class="calendar-container">
-          <div class="calendar-header">
-            <button id="prevMonth" class="nav-btn">&#9650;</button>
-            <h3 id="currentMonth">April 2026</h3>
-            <button id="nextMonth" class="nav-btn">&#9660;</button>
-          </div>
-          <div class="calendar-wrapper">
-            <div class="calendar-days-header">
-              <div class="day-label">Sun</div>
-              <div class="day-label">Mon</div>
-              <div class="day-label">Tue</div>
-              <div class="day-label">Wed</div>
-              <div class="day-label">Thur</div>
-              <div class="day-label">Fri</div>
-              <div class="day-label">Sat</div>
-            </div>
-            <div class="calendar-grid" id="calendarDays"></div>
-          </div>
+        <div class="legend-item">
+          <span class="legend-dot day-off"></span>
+          <span>day off</span>
         </div>
       </div>
 
-      <!-- Appointments -->
-      <div class="t-card t-appointments-card">
-        <div class="appointments-section" id="appointmentsList"></div>
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button id="prevMonth" class="nav-btn">▲</button>
+          <h3 id="currentMonth">October 2025</h3>
+          <button id="nextMonth" class="nav-btn">▼</button>
+        </div>
+
+        <div class="calendar-wrapper">
+          <div class="calendar-days-header">
+            <div class="day-label">Sun</div>
+            <div class="day-label">Mon</div>
+            <div class="day-label">Tue</div>
+            <div class="day-label">Wed</div>
+            <div class="day-label">Thur</div>
+            <div class="day-label">Fri</div>
+            <div class="day-label">Sat</div>
+          </div>
+          <div class="calendar-grid" id="calendarDays"></div>
+        </div>
       </div>
-
     </div>
-  </main>
 
-  <!-- Loader -->
+    <!-- Appointments List -->
+    <div class="appointments-section">
+      <div id="appointmentsList"></div>
+    </div>
+  </section>
+
+  <!-- Loading Screen -->
   <div id="loader">
     <div class="spinner"></div>
     <p>Loading your schedule...</p>
   </div>
 
+  <!-- Leave / Overtime Request Button -->
+  <div style="text-align:center;padding:12px 20px 0;">
+    <button onclick="openLeaveModal()"
+      style="background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);
+        color:#fff;padding:10px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;
+        cursor:pointer;transition:0.2s;font-family:'Poppins',sans-serif;"
+      onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+      🌴 Request Leave / Vacation
+    </button>
+  </div>
+
   <!-- Leave Request Modal -->
   <div id="leaveRequestModal" class="modal">
     <div class="modal-content" style="max-width:500px;text-align:left;">
-      <h3 style="color:#4b2e1e;margin-bottom:6px;">🌴 Leave / Vacation Request</h3>
+      <h3 style="color:#4b2e1e;margin-bottom:6px;">🌴 Leave / Overtime Request</h3>
       <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">Your request will be sent to the admin for approval.</p>
 
       <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Request Type</label>
-      <select id="leaveType" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95rem;margin-bottom:14px;font-family:'Poppins',sans-serif;">
+      <select id="leaveType" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;
+        font-size:0.95rem;margin-bottom:14px;font-family:'Poppins',sans-serif;">
         <option value="leave">🌴 Leave (sick/personal)</option>
         <option value="vacation">✈️ Vacation</option>
+        <!-- Overtime removed - admin handles overtime -->
       </select>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
         <div>
           <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Start Date</label>
-          <input type="date" id="leaveStartDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
+          <input type="date" id="leaveStartDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;
+            border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
         </div>
         <div>
           <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">End Date</label>
-          <input type="date" id="leaveEndDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
+          <input type="date" id="leaveEndDate" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;
+            border-radius:8px;font-size:0.9rem;font-family:'Poppins',sans-serif;">
         </div>
       </div>
 
-      <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Reason <span style="color:#dc3545;">*</span></label>
+      <!-- overtime hours row removed --><label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Reason <span style="color:#dc3545;">*</span></label>
       <textarea id="leaveReason" rows="3" placeholder="Brief reason for your request..."
-        style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;resize:vertical;font-family:'Poppins',sans-serif;margin-bottom:20px;"></textarea>
+        style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;
+          font-size:0.9rem;resize:vertical;font-family:'Poppins',sans-serif;margin-bottom:20px;"></textarea>
 
       <div class="modal-actions">
         <button onclick="submitLeaveRequest()" class="btn-success">📤 Submit Request</button>
@@ -175,8 +187,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Complete Modal -->
   <div id="completeModal" class="modal">
     <div class="modal-content">
       <h3>Complete Appointment</h3>
@@ -189,38 +199,21 @@
   </div>
 
   <script>
-    const tHamburger      = document.getElementById('tHamburger');
-    const tSidebar        = document.getElementById('tSidebar');
-    const tSidebarOverlay = document.getElementById('tSidebarOverlay');
-
-    function openSidebar() {
-      tSidebar?.classList.add('mobile-open');
-      tSidebarOverlay?.classList.add('active');
-      tHamburger?.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeSidebar() {
-      tSidebar?.classList.remove('mobile-open');
-      tSidebarOverlay?.classList.remove('active');
-      tHamburger?.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-    tHamburger?.addEventListener('click', () =>
-      tSidebar?.classList.contains('mobile-open') ? closeSidebar() : openSidebar()
-    );
-    tSidebarOverlay?.addEventListener('click', closeSidebar);
-
-    // Sync name to sidebar/navbar
-    const _wm = document.getElementById('welcomeMessage');
-    const _obs = new MutationObserver(() => {
-      const raw  = _wm?.textContent || '';
-      const name = raw.replace('Welcome back, ', '').replace('!', '').trim();
-      const sn   = document.getElementById('sidebarTherapistName');
-      const nw   = document.getElementById('navWelcome');
-      if (sn && name) sn.textContent = name;
-      if (nw && name) nw.textContent = `Welcome, ${name}`;
+    // ── Therapist Mobile Navbar Hamburger ─────────────────────────────────────
+    const therapistHamburger  = document.getElementById('therapistHamburger');
+    const therapistMobileMenu = document.getElementById('therapistMobileMenu');
+    therapistHamburger?.addEventListener('click', () => {
+      therapistHamburger.classList.toggle('active');
+      therapistMobileMenu.classList.toggle('open');
     });
-    if (_wm) _obs.observe(_wm, { childList: true, subtree: true, characterData: true });
+    // Sync welcome name to mobile menu
+    const observer = new MutationObserver(() => {
+      const name = document.getElementById('welcomeMessage')?.textContent?.replace('Welcome back, ', '').replace('!','') || '';
+      const mw = document.getElementById('mobileWelcome');
+      if (mw && name) mw.textContent = `Welcome, ${name}!`;
+    });
+    const wm = document.getElementById('welcomeMessage');
+    if (wm) observer.observe(wm, { childList: true, subtree: true, characterData: true });
   </script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="js/therapist.js"></script>
