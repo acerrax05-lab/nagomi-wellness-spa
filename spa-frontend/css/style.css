@@ -1575,10 +1575,6 @@ footer {
 
 /* ── Body & base ── */
 body { background: var(--nw-cream) !important; color: var(--nw-ink) !important; }
-h1, h2, h3, h4 {
-  font-family: 'Playfair Display', 'Noto Serif JP', Georgia, serif !important;
-  color: white !important;
-}
 
 /* ── Hero: ensure text is always white & visible over dark video ── */
 .hero::before {
