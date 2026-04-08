@@ -169,17 +169,20 @@ async function loadCommissionSummary() {
 
 // ── Payroll history panel ──────────────────────────────────────────────────
 async function showPayrollPanel() {
-  const panel = document.getElementById('payrollPanel');
-  if (!panel) return;
-
-  if (panel.style.display === 'block') {
-    panel.style.display = 'none';
-    return;
+  // Show as modal overlay instead of inline panel
+  let modal = document.getElementById('payrollModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'payrollModal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:10200;background:rgba(20,10,4,0.72);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    modal.innerHTML = '<div id="payrollModalInner" style="background:#fdfaf5;border-radius:16px;width:100%;max-width:700px;max-height:88vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.35);margin:auto;border-top:3px solid #b8933a;"></div>';
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+    document.body.appendChild(modal);
   }
-
-  panel.style.display = 'block';
-  panel.innerHTML = `<div style="text-align:center;padding:30px;color:#fff;opacity:0.7;">Loading payroll history...</div>`;
-  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  modal.style.display = 'flex';
+  const panel = document.getElementById('payrollModalInner');
+  if (!panel) return;
+  panel.innerHTML = '<div style="text-align:center;padding:30px;color:#6b3f2a;">Loading payroll history...</div>';
 
   try {
     const [summaryRes, historyRes] = await Promise.all([
@@ -226,7 +229,7 @@ async function showPayrollPanel() {
       ">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
           <h2 style="color:#4b2e1e;margin:0;font-size:1.35rem;">💰 Commission & Payroll</h2>
-          <button onclick="document.getElementById('payrollPanel').style.display='none'"
+          <button onclick="document.getElementById('payrollModal').style.display='none'"
             style="background:#f5f1eb;color:#4b2e1e;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">
             ✕ Close
           </button>
@@ -282,7 +285,7 @@ async function showPayrollPanel() {
     panel.innerHTML = `
       <div style="background:white;border-radius:12px;padding:24px;text-align:center;color:#c62828;margin:12px 0;">
         ⚠️ Could not load payroll data. Please try again later.
-        <br><button onclick="document.getElementById('payrollPanel').style.display='none'"
+        <br><button onclick="document.getElementById('payrollModal').style.display='none'"
           style="margin-top:12px;background:#eee;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">
           Close
         </button>
@@ -567,7 +570,7 @@ document.getElementById("confirmComplete").addEventListener("click", async () =>
 
     await loadTherapistData();
 
-    if (document.getElementById('payrollPanel').style.display === 'block') {
+    if (document.getElementById('payrollModal')?.style.display === 'flex') {
       showPayrollPanel();
     }
 
@@ -709,7 +712,7 @@ async function submitLeaveRequest() {
         btn.textContent = '✅ Request submitted!';
         btn.style.background = 'rgba(40,167,69,0.3)';
         setTimeout(() => {
-          btn.textContent = '🌴 Request Leave / Overtime';
+          btn.textContent = '🌴 Request Leave / Vacation';
           btn.style.background = 'rgba(255,255,255,0.15)';
         }, 3000);
       }

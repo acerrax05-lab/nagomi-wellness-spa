@@ -251,7 +251,7 @@ function renderBookingCard(booking, canModify) {
         <div style="margin-top:10px;">
           <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}')"
             style="display:block;width:100%;text-align:center;padding:12px;
-              background:linear-gradient(135deg,#6b3f2a,#4b2e1e);
+              background:linear-gradient(135deg,#8b6f47,#4b2e1e);
               color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
               cursor:pointer;transition:opacity 0.2s;"
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
@@ -494,7 +494,7 @@ function _setReviewRating(rating) {
   const stars = document.querySelectorAll('#mgStarRow i');
   stars.forEach((s, i) => {
     s.className = i < rating ? 'fas fa-star' : 'far fa-star';
-    s.style.color = i < rating ? '#b8933a' : '#ccc';
+    s.style.color = i < rating ? '#f4a435' : '#ccc';
   });
   const hidden = document.getElementById('mgRatingValue');
   if (hidden) hidden.value = rating || '';
@@ -531,18 +531,30 @@ async function submitManageReview(e) {
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
 
   try {
+    const email = document.getElementById('mgReviewerEmail')?.value.trim() || '';
     const res = await fetch(`${REVIEW_API}/reviews/public`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guestName: name, service, rating, comment: text })
+      body: JSON.stringify({ guestName: name, guestEmail: email, service, rating, comment: text, reviewText: text })
     });
-    if (!res.ok) throw new Error('Failed');
+    if (!res.ok) {
+      let errMsg = 'Failed to submit review.';
+      try { const errData = await res.json(); errMsg = errData.message || errMsg; } catch(e2) {}
+      throw new Error(errMsg);
+    }
     closeManageReviewModal();
-    // Show success toast
     showNotification('🌸 Thank you! Your review has been submitted.', 'success');
   } catch(e) {
     if (btn) { btn.disabled = false; btn.textContent = '📤 Submit Review'; }
-    alert('Failed to submit review. Please try again.');
+    // Use a styled inline error instead of alert
+    const errDiv = document.getElementById('mgReviewError');
+    if (errDiv) {
+      errDiv.textContent = e.message || 'Failed to submit. Please try again.';
+      errDiv.style.display = 'block';
+      setTimeout(() => { if (errDiv) errDiv.style.display = 'none'; }, 5000);
+    } else {
+      showNotification('❌ ' + (e.message || 'Failed to submit review. Please try again.'), 'error');
+    }
   }
 }
 
@@ -597,7 +609,7 @@ function _buildReviewModal() {
     .mg-star-row { display:flex; gap:8px; font-size:1.6rem; cursor:pointer; }
     .mg-star-row i { color:#ccc; transition:color 0.15s; }
     .mg-star-row i:hover,
-    .mg-star-row i.fas { color:#b8933a; }
+    .mg-star-row i.fas { color:#f4a435; }
     .mg-review-actions {
       display:flex; gap:10px; margin-top:20px;
     }
@@ -610,7 +622,7 @@ function _buildReviewModal() {
     .mg-review-cancel:hover { background:#f5f5f5; }
     .mg-review-submit {
       flex:2; padding:12px;
-      background:linear-gradient(135deg,#6b3f2a,#4b2e1e);
+      background:linear-gradient(135deg,#8b6f47,#4b2e1e);
       color:#fff; border:none; border-radius:9px;
       font-weight:600; cursor:pointer; font-size:0.9rem;
       transition:opacity 0.2s;
@@ -662,6 +674,7 @@ function _buildReviewModal() {
           <textarea id="mgReviewText" rows="4" minlength="20" maxlength="500"
             placeholder="Tell us about your experience… (minimum 20 characters)" required></textarea>
         </div>
+        <div id="mgReviewError" style="display:none;color:#8b1a1a;background:#fdecea;border:1px solid #f5a5a5;border-radius:8px;padding:10px 14px;font-size:0.85rem;margin-bottom:10px;">Error submitting review.</div>
         <div class="mg-review-actions">
           <button type="button" class="mg-review-cancel" onclick="closeManageReviewModal()">Cancel</button>
           <button type="submit" class="mg-review-submit">📤 Submit Review</button>

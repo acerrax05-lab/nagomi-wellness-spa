@@ -1,191 +1,230 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   NAGOMI WELLNESS SPA — login.css
+   Consistent with admin, booking & therapist palette
+   ═══════════════════════════════════════════════════════════════════════ */
+
 /* === RESET === */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* === GLOBAL === */
-body {
-  font-family: 'Poppins', sans-serif;
-  background: #f5f1eb;
-  color: #333;
-  scroll-behavior: smooth;
-}
+/* === FONTS === */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
-h1, h2, h3 {
-  font-family: 'Playfair Display', serif;
-  color: #4b2e1e;
-}
-
-/* === NAVBAR === */
-.navbar {
-  background: #f5f1eb;
-  color: #4b2e1e;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 80px;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-.logo {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #4b2e1e;
-}
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #4b2e1e;
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-.nav-links a:hover,
-.nav-links .active {
-  color: #8b4513;
-}
-
-.login-btn {
-  background: #8b4513;
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
-  text-decoration: none;
-}
-
-
-/* === LOGIN PAGE === */
-.login-page {
-  background: url('../images/spa-bg.jpg') center/cover no-repeat, #4b2e1e;
+/* === BODY — full-page background matching homepage dark section === */
+body.login-page {
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  padding: 20px;
+  /* Layered background: warm brown gradient */
+  background: linear-gradient(160deg, #2d1a0e 0%, #4b2e1e 45%, #6b3f2a 100%);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Subtle texture overlay */
+body.login-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(184,147,58,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,111,71,0.12) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative gold line top */
+body.login-page::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #b8933a, #d4aa55, #b8933a, transparent);
+  z-index: 10;
+}
+
+/* === LOGIN CONTAINER === */
 .login-container {
-  background: rgba(75, 46, 30, 0.8);
-  padding: 60px 80px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* === LOGIN BOX — washi paper card === */
+.login-box {
+  background: #fdfaf5;
+  border-radius: 16px;
+  padding: 44px 40px 36px;
+  box-shadow:
+    0 20px 60px rgba(20,10,4,0.45),
+    0 0 0 1px rgba(184,147,58,0.2);
   text-align: center;
-  width: 400px;
+  border-top: 3px solid #b8933a;
 }
 
-.login-box h2 {
+/* === BRAND MARK === */
+.login-brand {
   font-family: 'Playfair Display', serif;
-  color: #fff;
-  margin-top: 10px;
-  font-size: 1.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b8933a;
+  margin-bottom: 20px;
+  display: block;
 }
 
-.login-subtitle {
-  color: #f3d6b3;
-  margin-bottom: 40px;
-  font-size: 0.95rem;
-}
-
+/* === ICON === */
 .login-icon {
-  font-size: 60px;
-  background: #a8c58f;
-  color: #4b2e1e;
-  width: 90px;
-  height: 90px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #e8d9c4, #d4c0a0);
+  border: 2px solid rgba(184,147,58,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  font-size: 2rem;
+  margin: 0 auto 18px;
+  box-shadow: 0 4px 14px rgba(45,26,14,0.15);
 }
 
+/* === HEADING === */
+.login-box h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  color: #2d1a0e;
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.login-subtitle {
+  color: rgba(45,26,14,0.52);
+  font-size: 0.85rem;
+  margin-bottom: 30px;
+  font-weight: 400;
+}
+
+/* === FORM GROUPS === */
 .input-group {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .input-group label {
-  color: #f3d6b3;
-  font-weight: 500;
   display: block;
-  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(45,26,14,0.65);
+  margin-bottom: 7px;
 }
 
 .input-group input {
   width: 100%;
   padding: 12px 16px;
-  border-radius: 25px;
-  border: none;
-  font-size: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(45,26,14,0.18);
+  background: #fff;
+  color: #2d1a0e;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
 }
+.input-group input::placeholder { color: rgba(45,26,14,0.3); }
+.input-group input:focus {
+  border-color: #b8933a;
+  box-shadow: 0 0 0 3px rgba(184,147,58,0.15);
+  background: #fffdf9;
+}
 
+/* === LOGIN MESSAGE (error/success) === */
+.login-message {
+  font-size: 0.85rem;
+  min-height: 20px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #8b1a1a;
+  text-align: left;
+  padding: 0 2px;
+}
+.login-message.success { color: #1a5a1a; }
+
+/* === SIGN IN BUTTON === */
 .login-btn {
-  background: #a8c58f;
+  width: 100%;
+  padding: 13px 24px;
+  background: linear-gradient(135deg, #6b3f2a, #4b2e1e);
+  color: #f5e6cc;
   border: none;
-  color: #4b2e1e;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 12px 30px;
-  border-radius: 30px;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
   font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(45,26,14,0.3);
+  margin-top: 6px;
 }
-
 .login-btn:hover {
-  background: #b9d9a5;
-  transform: scale(1.03);
+  background: linear-gradient(135deg, #4b2e1e, #2d1a0e);
+  box-shadow: 0 6px 20px rgba(45,26,14,0.4);
+  transform: translateY(-1px);
 }
+.login-btn:active { transform: translateY(0); }
 
 .arrow {
-  font-size: 1.2rem;
-  margin-left: 5px;
+  font-size: 1.1rem;
+  transition: transform 0.2s;
 }
+.login-btn:hover .arrow { transform: translateX(3px); }
 
+/* === FOOTER === */
 .login-footer {
-  margin-top: 20px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(45,26,14,0.1);
   text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
 }
-
 .login-footer p {
-  color: #666;
-  font-size: 0.9rem;
+  color: rgba(45,26,14,0.45);
+  font-size: 0.8rem;
 }
-
 .login-footer a {
-  color: #8b4513;
+  color: #b8933a;
   text-decoration: none;
   font-weight: 600;
 }
+.login-footer a:hover { text-decoration: underline; }
 
-.login-footer a:hover {
-  text-decoration: underline;
+/* === SPA NAME WATERMARK AT BOTTOM === */
+.login-watermark {
+  text-align: center;
+  margin-top: 20px;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.78rem;
+  color: rgba(245,230,204,0.35);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
+/* === RESPONSIVE === */
 @media (max-width: 480px) {
-  .login-container {
-    width: 95%;
-    padding: 30px 24px;
+  .login-box {
+    padding: 32px 24px 28px;
     border-radius: 12px;
   }
-  .navbar { padding: 15px 20px; }
-  .nav-links { display: none; } /* no nav needed on login page */
+  .login-box h2 { font-size: 1.45rem; }
+  .login-icon { width: 60px; height: 60px; font-size: 1.6rem; }
 }

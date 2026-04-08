@@ -1005,3 +1005,114 @@ div[style*="text-align:center"] button[onclick*="openLeaveModal"]:hover {
 
 /* Payroll panel */
 #payrollPanel { color: var(--nw-ink) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THERAPIST — Visibility & consistency fixes
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Commission card gold border highlight */
+#commissionCard {
+  border: 2px solid #b8933a !important;
+  position: relative;
+}
+#commissionCard::after {
+  content: 'Tap to view →';
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b8933a;
+}
+
+/* Payroll modal inner styles */
+#payrollModalInner h2 { color: #4b2e1e !important; font-family: 'Playfair Display', serif !important; }
+#payrollModalInner table th { background: #f5f0e8 !important; color: #4b2e1e !important; }
+#payrollModalInner td { color: #333 !important; }
+
+/* Leave modal improvements */
+#leaveRequestModal .modal-content {
+  background: #fdfaf5 !important;
+  border-top: 3px solid #b8933a !important;
+  border-radius: 14px !important;
+}
+#leaveRequestModal h3 { color: #4b2e1e !important; font-family: 'Playfair Display', serif !important; }
+#leaveRequestModal label { color: #4b2e1e !important; font-weight: 600 !important; }
+#leaveRequestModal select,
+#leaveRequestModal input,
+#leaveRequestModal textarea {
+  border: 1.5px solid rgba(75,46,30,0.2) !important;
+  border-radius: 8px !important;
+  color: #2d1a0e !important;
+  background: #fff !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+#leaveRequestModal select:focus,
+#leaveRequestModal input:focus,
+#leaveRequestModal textarea:focus {
+  border-color: #b8933a !important;
+  box-shadow: 0 0 0 3px rgba(184,147,58,0.12) !important;
+  outline: none !important;
+}
+
+/* Request Leave button — styled to match theme */
+button[onclick="openLeaveModal()"] {
+  background: rgba(184,147,58,0.15) !important;
+  border: 1.5px solid rgba(184,147,58,0.5) !important;
+  color: #d4aa55 !important;
+  border-radius: 8px !important;
+  font-family: 'Poppins', sans-serif !important;
+  transition: all 0.22s !important;
+}
+button[onclick="openLeaveModal()"]:hover {
+  background: rgba(184,147,58,0.28) !important;
+  color: #f5e6cc !important;
+}
+
+/* Appointment cards — ensure text visibility */
+.appointment-card { background: #fdfaf5 !important; }
+.appointment-time { color: #4b2e1e !important; }
+.client-name  { color: #2d1a0e !important; }
+.service-name { color: rgba(45,26,14,0.6) !important; }
+.detail-label { color: rgba(45,26,14,0.5) !important; }
+.appointment-details { color: rgba(45,26,14,0.6) !important; }
+.note-section { background: rgba(184,147,58,0.07) !important; border-left-color: #b8933a !important; }
+.note-label   { color: #4b2e1e !important; }
+
+/* Stat card text visibility */
+.stat-number { color: #4b2e1e !important; font-weight: 800 !important; }
+.stat-label  { color: rgba(45,26,14,0.6) !important; }
+
+/* Section title gold underline */
+.section-title {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
+  margin-bottom: 18px;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 36px; height: 2px;
+  background: #b8933a;
+}
+
+/* Legend text */
+.legend-item { color: rgba(245,230,204,0.9) !important; }
+
+/* Calendar month heading */
+.calendar-header h3 { color: #d4aa55 !important; }
+
+/* Loader */
+#loader p { color: rgba(245,230,204,0.9) !important; }
+
+/* "No appointments" text */
+.appointments-section p,
+.no-appointments { color: rgba(245,230,204,0.7) !important; }
+
+/* Complete modal */
+#completeModal .modal-content { background: #fdfaf5 !important; border-top: 3px solid #b8933a !important; }
+#completeModal h3 { color: #4b2e1e !important; }
+#completeModal p  { color: rgba(45,26,14,0.65) !important; }

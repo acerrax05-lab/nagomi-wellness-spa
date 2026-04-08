@@ -6,7 +6,6 @@
   <title>Admin Dashboard | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Navbar -->
@@ -16,15 +15,16 @@
         <button class="hamburger" id="adminMenuBtn" aria-label="Toggle menu">
           <span></span><span></span><span></span>
         </button>
-        <h1 class="logo">Nagomi Wellness Spa - Admin</h1>
+        <h1 class="logo" style="font-size:1rem;letter-spacing:0.5px;">🌸 Nagomi Admin</h1>
       </div>
       <div class="user-info">
         <a href="walkin.html" target="_blank"
-          style="background:linear-gradient(135deg,#8b6f47,#4b2e1e);color:#fff;
-            padding:8px 16px;border-radius:8px;font-size:0.85rem;font-weight:600;
-            text-decoration:none;white-space:nowrap;transition:opacity 0.2s;"
-          onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-          🚶 New Walk-in
+          style="background:#fff;color:#4b2e1e;
+            padding:8px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;
+            text-decoration:none;white-space:nowrap;transition:all 0.2s;
+            border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 2px 8px rgba(0,0,0,0.12);"
+          onmouseover="this.style.background='#f5e6cc'" onmouseout="this.style.background='#fff'">
+          🚶 Walk-in
         </a>
         <span id="adminName">Admin</span>
         <!-- Notification Bell -->
@@ -120,9 +120,7 @@
 </div>
     
     <!-- Insights Button -->
-    <button class="btn-insights" onclick="showComprehensiveInsights()">
-      📊 Forecast & Prescription Insights
-    </button>
+    <!-- Forecast & Prescription Insights removed -->
   </div>
 </div>
 
@@ -133,44 +131,9 @@
   <span id="dateRangeSub" style="color:#8b6045; font-size:0.82rem; opacity:0.85;"></span>
 </div>
 
-      <!-- Booking Status Summary Cards -->
-      <div id="bookingStatusCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
-        <div class="bsc-card bsc-pending" onclick="switchTab('bookings')">
-          <div class="bsc-icon">⏳</div>
-          <div class="bsc-body">
-            <div class="bsc-label">Pending</div>
-            <div class="bsc-count" id="bscPending">—</div>
-            <div class="bsc-sub" id="bscPendingSub"></div>
-          </div>
-        </div>
-        <div class="bsc-card bsc-confirmed" onclick="switchTab('bookings')">
-          <div class="bsc-icon">📋</div>
-          <div class="bsc-body">
-            <div class="bsc-label">Confirmed</div>
-            <div class="bsc-count" id="bscConfirmed">—</div>
-            <div class="bsc-sub" id="bscConfirmedSub"></div>
-          </div>
-        </div>
-        <div class="bsc-card bsc-completed" onclick="switchTab('bookings')">
-          <div class="bsc-icon">🎉</div>
-          <div class="bsc-body">
-            <div class="bsc-label">Completed</div>
-            <div class="bsc-count" id="bscCompleted">—</div>
-            <div class="bsc-sub" id="bscCompletedSub"></div>
-          </div>
-        </div>
-        <div class="bsc-card bsc-cancelled" onclick="switchTab('bookings')">
-          <div class="bsc-icon">❌</div>
-          <div class="bsc-body">
-            <div class="bsc-label">Cancelled</div>
-            <div class="bsc-count" id="bscCancelled">—</div>
-            <div class="bsc-sub" id="bscCancelledSub"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Grid -->
-      <div class="charts-container">
+      <!-- 7 Stat Cards -->
+            <!-- Charts Grid -->
+      <div class="charts-container" id="chartsContainer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
         <div class="data-timestamp" style="grid-column: 1 / -1; margin-bottom: 0;">
           <span style="color: #28a745;">●</span> Loading data...
         </div>
@@ -238,18 +201,6 @@
           <button id="nextMonth">▶</button>
         </div>
         <div id="calendar" class="calendar-grid"></div>
-      </div>
-
-      <!-- Booking Status Filter -->
-      <div id="bookingStatusFilter" style="display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0 0;padding:14px 16px;background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(75,46,30,0.08);">
-        <span style="font-size:0.8rem;font-weight:700;color:#8b6045;text-transform:uppercase;letter-spacing:0.05em;align-self:center;margin-right:4px;">Filter:</span>
-        <button class="bsf-btn active" data-status="all" onclick="setBookingFilter('all')">All</button>
-        <button class="bsf-btn" data-status="pending" onclick="setBookingFilter('pending')">⏳ Pending</button>
-        <button class="bsf-btn" data-status="confirmed" onclick="setBookingFilter('confirmed')">📋 Confirmed</button>
-        <button class="bsf-btn" data-status="completed" onclick="setBookingFilter('completed')">🎉 Completed</button>
-        <button class="bsf-btn" data-status="cancelled" onclick="setBookingFilter('cancelled')">❌ Cancelled</button>
-        <button class="bsf-btn" data-status="pending_reschedule" onclick="setBookingFilter('pending_reschedule')">🔄 Reschedule Req.</button>
-        <button class="bsf-btn" data-status="pending_cancellation" onclick="setBookingFilter('pending_cancellation')">🚫 Cancel Req.</button>
       </div>
 
       <div class="bookings-table-section">
@@ -621,7 +572,7 @@
         <div class="schedule-tabs">
           <button class="schedule-tab active" data-tab="weekly">Weekly Schedule</button>
           <button class="schedule-tab" data-tab="expertise">Expertise</button>
-          <button class="schedule-tab" data-tab="overrides">Leave/Vacation</button>
+          <!-- Leave/Vacation tab removed - therapists request via their dashboard -->
         </div>
 
         <div id="weekly-tab" class="schedule-tab-content active">

@@ -2129,7 +2129,7 @@ body {
 }
 
 .review-rating-display {
-  color: #b8933a;
+  color: #ffc107;
   font-size: 1.3rem;
   margin-bottom: 10px;
 }
@@ -4111,296 +4111,132 @@ input:checked + .toggle-slider:before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   NAGOMI WA-THEME — Admin Dashboard (admin.css)
-   Unified brown palette — consistent with homepage & booking
+   ADMIN — Final visibility, chart color, & consistency fixes
    ═══════════════════════════════════════════════════════════════════════ */
 
-:root {
-  --nw-ink:       #2d1a0e;
-  --nw-brown:     #4b2e1e;
-  --nw-brown-md:  #6b3f2a;
-  --nw-brown-lt:  #8b6f47;
-  --nw-gold:      #b8933a;
-  --nw-gold-lt:   #d4aa55;
-  --nw-cream:     #f5f0e8;
-  --nw-parchment: #fdfaf5;
-  --nw-border:    rgba(45,26,14,0.13);
-  --nw-muted:     rgba(45,26,14,0.52);
-  --nw-beige:     #e8d9c4;
-  --nw-beige-dk:  #d4c0a0;
+/* Charts 3-top + 2-bottom layout */
+#chartsContainer,
+.charts-container {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 20px !important;
+}
+/* 4th and 5th chart box span for 2-column bottom row */
+.charts-container .chart-box:nth-child(4),
+.charts-container .chart-box:nth-child(5) {
+  /* Will naturally flow into next row of 3-col grid.
+     To force exactly 2 wide on bottom, we use a sub-wrapper via JS.
+     For CSS-only: just let them flow — they'll be 2 on the last row. */
+}
+@media (max-width: 1100px) {
+  #chartsContainer, .charts-container { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 700px) {
+  #chartsContainer, .charts-container { grid-template-columns: 1fr !important; }
 }
 
-/* ── Body ── */
-body { background: var(--nw-cream) !important; }
-.admin-content { background: var(--nw-cream) !important; }
-
-/* ── Navbar: warm ink-brown gradient matching homepage dark navbar ── */
-.navbar {
-  background: linear-gradient(135deg, var(--nw-ink) 0%, var(--nw-brown) 100%) !important;
-  border-bottom: 2px solid var(--nw-gold) !important;
-  box-shadow: 0 2px 16px rgba(45,26,14,0.25) !important;
+/* Chart boxes */
+.chart-box {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(45,26,14,0.1) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  box-shadow: 0 2px 10px rgba(45,26,14,0.07) !important;
 }
-.logo { color: #f5e6cc !important; font-family: 'Playfair Display', serif !important; }
-.user-info, .user-info span { color: rgba(245,230,204,0.85) !important; }
-.logout-btn, .btn-walkin {
-  background: rgba(184,147,58,0.18) !important;
-  color: var(--nw-gold-lt) !important;
-  border-color: rgba(184,147,58,0.4) !important;
-  border-radius: 5px !important;
-  transition: all 0.22s !important;
-}
-.logout-btn:hover, .btn-walkin:hover {
-  background: rgba(184,147,58,0.32) !important;
-  color: #fff !important;
-}
-
-/* ── Sidebar: parchment background, brown active ── */
-.sidebar {
-  background: var(--nw-parchment) !important;
-  border-right: 2px solid var(--nw-beige) !important;
-}
-/* Sidebar logo / user area */
-.sidebar-header, .sidebar-brand, .sidebar-logo-area {
-  background: linear-gradient(135deg, var(--nw-ink), var(--nw-brown)) !important;
-  padding: 16px !important;
-}
-.sidebar .tab-btn {
-  color: var(--nw-muted) !important;
-  border-left-color: transparent !important;
-  font-family: 'Poppins', sans-serif !important;
-}
-.sidebar .tab-btn:hover {
-  background: var(--nw-beige) !important;
-  color: var(--nw-brown) !important;
-}
-.sidebar .tab-btn.active {
-  background: linear-gradient(90deg, var(--nw-beige-dk), var(--nw-beige)) !important;
-  color: var(--nw-brown) !important;
-  border-left-color: var(--nw-brown) !important;
-  font-weight: 700 !important;
-}
-/* Logout in sidebar */
-.btn-logout, .sidebar-footer .btn-logout, .sidebar .logout-btn {
-  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 6px !important;
-}
-.btn-logout:hover { background: var(--nw-ink) !important; }
-/* Admin avatar in sidebar */
-.sidebar-user-name { color: var(--nw-muted) !important; }
-
-/* ── Page section headings ── */
-.tab-content h2, .section-header h2 {
+.chart-box h3 {
+  color: #2d1a0e !important;
   font-family: 'Playfair Display', serif !important;
-  color: var(--nw-ink) !important;
-  border-bottom: 2px solid var(--nw-gold) !important;
+  font-size: 1rem !important;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid rgba(184,147,58,0.2) !important;
   padding-bottom: 8px !important;
 }
 
-/* ── Period filter buttons: brown active ── */
-.filter-btn {
-  background: var(--nw-parchment) !important;
-  border: 1.5px solid var(--nw-border) !important;
-  color: var(--nw-muted) !important;
-  border-radius: 5px !important;
-  transition: all 0.2s !important;
-}
-.filter-btn:hover { border-color: var(--nw-brown) !important; color: var(--nw-brown) !important; }
-.filter-btn.active {
-  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
-  border-color: var(--nw-brown) !important;
-  color: #fff !important;
-  box-shadow: 0 2px 8px rgba(75,46,30,0.28) !important;
-}
+/* Notification panel text visibility */
+.notif-item-msg { color: #2d1a0e !important; font-size: 0.85rem !important; line-height: 1.45 !important; }
+.notif-item-msg strong { color: #4b2e1e !important; }
+.notif-item-msg em { color: #6b3f2a !important; font-style: normal !important; }
+.notif-item-time { color: rgba(45,26,14,0.48) !important; font-size: 0.73rem !important; }
+.notif-item { border-bottom: 1px solid rgba(45,26,14,0.07) !important; }
+.notif-item:last-child { border-bottom: none !important; }
 
-/* ── Primary action buttons: brown ── */
-.btn-primary, #addServiceBtn, #addTherapistBtn, .btn-add {
-  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 5px !important;
-  box-shadow: 0 3px 10px rgba(75,46,30,0.28) !important;
-  transition: all 0.22s !important;
-}
-.btn-primary:hover, #addServiceBtn:hover, #addTherapistBtn:hover {
-  background: linear-gradient(135deg, var(--nw-brown), var(--nw-ink)) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* ── White cards → parchment ── */
-.chart-box, .bookings-table-section,
-.grace-period-card, .income-section,
-.services-list .service-item,
-.tab-content > .overview-card,
-.date-range-display {
-  background: var(--nw-parchment) !important;
-  border: 1px solid var(--nw-border) !important;
-}
-
-/* ── Table header → ink with gold text ── */
-.bookings-table th {
-  background: linear-gradient(135deg, var(--nw-ink), var(--nw-brown)) !important;
-  color: var(--nw-gold-lt) !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.03em !important;
-  padding: 12px 10px !important;
-}
-.bookings-table td { border-bottom: 1px solid var(--nw-beige) !important; }
-.bookings-table tbody tr:hover { background: rgba(184,147,58,0.05) !important; }
-
-/* ── Calendar ── */
-.calendar-day {
-  background: var(--nw-beige) !important;
-  color: var(--nw-ink) !important;
-  border-radius: 6px !important;
-  transition: all 0.2s !important;
-  border: 1px solid transparent !important;
-}
-.calendar-day:hover {
-  background: var(--nw-beige-dk) !important;
-  border-color: var(--nw-brown-lt) !important;
-}
-/* Has bookings → soft green */
-.calendar-day.has-bookings {
-  background: #c8ebc8 !important;
-  color: #1a4a1a !important;
-  font-weight: 700 !important;
-  border: 1.5px solid #88c888 !important;
-}
-.calendar-day.has-bookings:hover {
-  background: #a8d8a8 !important;
-  border-color: #5a9e5a !important;
-}
-/* Selected → rich green */
-.calendar-day.selected {
-  background: linear-gradient(135deg, #3a7a3a, #2d5f2d) !important;
-  color: #fff !important;
-  font-weight: 700 !important;
-  border-color: #2d5f2d !important;
-  box-shadow: 0 3px 10px rgba(45,95,45,0.35) !important;
-}
-
-/* ── Booking status filter pills ── */
-.bsf-btn {
-  padding: 7px 16px;
-  border-radius: 20px;
-  border: 1.5px solid var(--nw-beige-dk);
-  background: var(--nw-parchment);
-  color: var(--nw-brown);
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-.bsf-btn:hover { border-color: var(--nw-brown); color: var(--nw-ink); background: var(--nw-beige); }
-.bsf-btn.active {
-  background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown));
-  border-color: var(--nw-brown);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(75,46,30,0.25);
-}
-
-/* ── Booking Status Summary Cards (Overview) ── */
-.bsc-card {
-  background: var(--nw-parchment);
-  border-radius: 10px;
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  transition: all 0.22s ease;
-  border: 1.5px solid var(--nw-beige);
-  box-shadow: 0 2px 8px rgba(45,26,14,0.07);
-  position: relative;
-  overflow: hidden;
-}
-.bsc-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 4px;
-  border-radius: 4px 0 0 4px;
-}
-.bsc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(45,26,14,0.12); }
-.bsc-pending::before    { background: var(--nw-gold); }
-.bsc-confirmed::before  { background: var(--nw-brown-lt); }
-.bsc-completed::before  { background: #3a7a3a; }
-.bsc-cancelled::before  { background: #8b1a1a; }
-.bsc-icon  { font-size: 1.6rem; flex-shrink: 0; }
-.bsc-body  { flex: 1; min-width: 0; }
-.bsc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--nw-muted); margin-bottom: 3px; }
-.bsc-count { font-size: 2rem; font-weight: 800; color: var(--nw-ink); line-height: 1; }
-.bsc-sub   { font-size: 0.73rem; color: var(--nw-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-@media (max-width: 900px)  { #bookingStatusCards { grid-template-columns: repeat(2,1fr) !important; } }
-@media (max-width: 500px)  { #bookingStatusCards { grid-template-columns: 1fr !important; } }
-
-/* ── Status badges ── */
-.status-pending             { background: #fff8e6 !important; color: #7a5800 !important; border: 1px solid #e5c87a !important; }
-.status-confirmed           { background: #e6f0ff !important; color: #1a3d7a !important; border: 1px solid #7aaae5 !important; }
-.status-completed           { background: #e6f5e6 !important; color: #1a5a1a !important; border: 1px solid #7ac87a !important; }
-.status-cancelled           { background: #fdecea !important; color: #7a1a1a !important; border: 1px solid #e57a7a !important; }
-.status-pending_reschedule  { background: #f5e6ff !important; color: #4a1a7a !important; border: 1px solid #b87ae5 !important; }
-.status-pending_cancellation{ background: #fff0e6 !important; color: #7a3a1a !important; border: 1px solid #e5a07a !important; }
-
-/* ── Confirm / Complete / Cancel action buttons ── */
-.btn-confirm, .btn-approve   { background: #3a7a3a !important; color: #fff !important; border: none !important; border-radius: 5px !important; }
-.btn-complete                { background: var(--nw-brown-lt) !important; color: #fff !important; border: none !important; border-radius: 5px !important; }
-.btn-cancel-booking          { background: #fff !important; color: #7a1a1a !important; border: 1px solid #c87a7a !important; border-radius: 5px !important; }
-.btn-cancel-booking:hover    { background: #fdecea !important; }
-
-/* ── Notification bell ── */
-.notif-panel, #notifPanel {
-  background: var(--nw-parchment) !important;
-  border: 1px solid var(--nw-border) !important;
-  border-top: 3px solid var(--nw-gold) !important;
-  border-radius: 0 0 10px 10px !important;
-  box-shadow: 0 8px 24px rgba(45,26,14,0.15) !important;
-}
-.notif-item:hover { background: var(--nw-beige) !important; }
-.notif-item-msg   { color: var(--nw-ink) !important; font-size: 0.87rem !important; }
-.notif-item-time  { color: var(--nw-muted) !important; font-size: 0.75rem !important; }
-
+/* Bell pulse animation */
 @keyframes bellPulse {
-  0%   { transform: scale(1); }
-  25%  { transform: scale(1.2) rotate(-10deg); }
-  50%  { transform: scale(1.2) rotate(10deg); }
-  75%  { transform: scale(1.05) rotate(-4deg); }
-  100% { transform: scale(1); }
-}
-.notif-bell-pulse { animation: bellPulse 0.6s ease; }
-
-/* ── Forecast / Insights button ── */
-.btn-insights {
-  background: linear-gradient(135deg, var(--nw-brown-lt), var(--nw-brown-md)) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 5px !important;
-  box-shadow: 0 3px 10px rgba(75,46,30,0.25) !important;
-}
-.btn-insights:hover { background: linear-gradient(135deg, var(--nw-brown-md), var(--nw-brown)) !important; }
-
-/* ── Form inputs ── */
-input[type="text"]:focus, input[type="number"]:focus,
-input[type="date"]:focus, input[type="time"]:focus,
-select:focus, textarea:focus {
-  border-color: var(--nw-brown) !important;
-  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
-  outline: none !important;
+  0%   { transform: scale(1) rotate(0deg); }
+  20%  { transform: scale(1.15) rotate(-12deg); }
+  40%  { transform: scale(1.15) rotate(12deg); }
+  60%  { transform: scale(1.08) rotate(-6deg); }
+  80%  { transform: scale(1.04) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 
-/* ── Star ratings (review section) ── */
-.review-rating, .star-rating, [class*="rating"] .stars {
-  color: var(--nw-gold) !important;
-  font-size: 1rem !important;
-}
-.filter-btn[onclick*="filterReviews"] { min-width: 60px; }
+/* Sidebar text visibility */
+.sidebar .tab-btn { color: rgba(45,26,14,0.6) !important; font-size: 0.9rem !important; }
+.sidebar .tab-btn:hover { color: #4b2e1e !important; }
+.sidebar .tab-btn.active { color: #4b2e1e !important; font-weight: 700 !important; }
 
-/* ── Mobile responsive sidebar ── */
-@media (max-width: 768px) {
-  .sidebar { background: var(--nw-parchment) !important; }
+/* Section headings */
+.tab-content h2 {
+  color: #2d1a0e !important;
+  font-size: 1.45rem !important;
+  border-bottom: 2px solid #b8933a !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 20px !important;
 }
+
+/* Table text */
+.bookings-table td { color: #333 !important; }
+.bookings-table .client-name-cell { color: #2d1a0e !important; font-weight: 600 !important; }
+
+/* BSC card counts */
+.bsc-count { color: #2d1a0e !important; font-weight: 800 !important; }
+.bsc-label { color: rgba(45,26,14,0.55) !important; }
+.bsc-sub   { color: rgba(45,26,14,0.45) !important; }
+
+/* Status filter pills */
+.bsf-btn { font-family: 'Poppins', sans-serif !important; }
+
+/* Booking status icons — make text dark not white */
+.bsc-card .bsc-icon { line-height: 1; }
+
+/* Walkin button white */
+.navbar a[href*="walkin"] {
+  background: #fff !important;
+  color: #4b2e1e !important;
+  border: 1.5px solid rgba(255,255,255,0.5) !important;
+  font-weight: 700 !important;
+}
+.navbar a[href*="walkin"]:hover {
+  background: #f5e6cc !important;
+  color: #2d1a0e !important;
+}
+
+/* Date range display */
+.date-range-display { background: rgba(184,147,58,0.08) !important; border-left-color: #b8933a !important; }
+#dateRangeValue { color: #2d1a0e !important; }
+#dateRangeSub   { color: rgba(45,26,14,0.6) !important; }
+
+/* Data timestamp */
+.data-timestamp { color: #2e7d32 !important; font-size: 0.85rem !important; }
+
+/* Chart notification boxes */
+.chart-notification { background: rgba(184,147,58,0.07) !important; border-left-color: #b8933a !important; }
+.chart-notification strong { color: #4b2e1e !important; }
+
+/* Overview section bg */
+#overview-tab { color: #2d1a0e !important; }
+
+/* General input visibility */
+input, select, textarea {
+  color: #2d1a0e !important;
+}
+input::placeholder, textarea::placeholder { color: rgba(45,26,14,0.35) !important; }
+label { color: rgba(45,26,14,0.72) !important; }
+
+/* Modal text */
+.modal-content h2, .modal-content h3 {
+  color: #2d1a0e !important;
+  font-family: 'Playfair Display', serif !important;
+}
+.modal-content p { color: rgba(45,26,14,0.65) !important; }
+.modal-content label { color: #4b2e1e !important; font-weight: 600 !important; }

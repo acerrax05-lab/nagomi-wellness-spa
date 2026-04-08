@@ -6,8 +6,8 @@
   <title>Therapist Dashboard | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/therapist.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <!-- Mobile Navbar (hidden on desktop, visible on mobile) -->
@@ -62,8 +62,9 @@
     </div>
 
     <!-- ✅ CHANGED: "Today's Revenue" → "Commission Earned" -->
-    <div class="stat-card" id="commissionCard" onclick="showPayrollPanel()" style="cursor:pointer;"
+    <div class="stat-card" id="commissionCard" onclick="showPayrollPanel()" style="cursor:pointer;border:2px solid #b8933a;position:relative;"
       title="Click to view commission & payroll history">
+      <div style="position:absolute;top:8px;right:10px;font-size:0.65rem;color:#b8933a;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Click to view →</div>
       <div class="stat-content">
         <div class="stat-number" id="todayRevenue">₱0</div>
         <div class="stat-label">Commission Earned</div>
@@ -80,20 +81,10 @@
   </section>
 
   <!-- ✅ NEW: Payroll Panel (hidden by default, shown when stat card is clicked) -->
-  <div id="payrollPanel" style="display:none; padding: 0 20px; max-width: 900px; margin: 0 auto;"></div>
+  <!-- payrollPanel moved to modal -->
 
   <!-- ✅ NEW: Commission button (visible below stats) -->
-  <div style="text-align:center; margin: 8px 0 0 0;">
-    <button onclick="showPayrollPanel()" style="
-      background: transparent;
-      border: none;
-      color: rgba(255,255,255,0.7);
-      font-size: 0.82rem;
-      cursor: pointer;
-      text-decoration: underline;
-      padding: 4px 8px;
-    ">💰 View full commission & payroll history</button>
-  </div>
+  <!-- Payroll history accessible via commission card above -->
 
   <!-- Main Content -->
   <section class="main-content">
@@ -154,7 +145,7 @@
         cursor:pointer;transition:0.2s;font-family:'Poppins',sans-serif;"
       onmouseover="this.style.background='rgba(255,255,255,0.25)'"
       onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-      🌴 Request Leave / Overtime
+      🌴 Request Leave / Vacation
     </button>
   </div>
 
@@ -169,7 +160,7 @@
         font-size:0.95rem;margin-bottom:14px;font-family:'Poppins',sans-serif;">
         <option value="leave">🌴 Leave (sick/personal)</option>
         <option value="vacation">✈️ Vacation</option>
-        <option value="overtime">⏰ Overtime</option>
+        <!-- Overtime removed - admin handles overtime -->
       </select>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
@@ -185,14 +176,7 @@
         </div>
       </div>
 
-      <div id="overtimeHoursRow" style="display:none;margin-bottom:14px;">
-        <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Overtime Hours</label>
-        <input type="number" id="overtimeHours" min="1" max="12" placeholder="e.g. 2"
-          style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;
-            font-size:0.9rem;font-family:'Poppins',sans-serif;">
-      </div>
-
-      <label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Reason <span style="color:#dc3545;">*</span></label>
+      <!-- overtime hours row removed --><label style="display:block;font-weight:600;color:#4b2e1e;margin-bottom:6px;">Reason <span style="color:#dc3545;">*</span></label>
       <textarea id="leaveReason" rows="3" placeholder="Brief reason for your request..."
         style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;
           font-size:0.9rem;resize:vertical;font-family:'Poppins',sans-serif;margin-bottom:20px;"></textarea>
