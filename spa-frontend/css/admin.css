@@ -694,6 +694,10 @@ body {
   gap: 1rem;
 }
 
+.section-header h2 {
+  color: #000000;
+}
+
 /* Grace Periods */
 .grace-section {
   background: white;
