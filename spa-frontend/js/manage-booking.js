@@ -532,7 +532,7 @@ async function submitManageReview(e) {
 
   try {
     const email = document.getElementById('mgReviewerEmail')?.value.trim() || '';
-    const res = await fetch(`${REVIEW_API}/reviews/public`, {
+    const res = await fetch(`${REVIEW_API}/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guestName: name, guestEmail: email, service, rating, comment: text, reviewText: text })

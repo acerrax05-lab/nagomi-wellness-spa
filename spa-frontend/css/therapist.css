@@ -878,241 +878,413 @@ body {
 }
 .calendar-header h3 { color: var(--nw-gold-lt) !important; font-family: 'Playfair Display', serif !important; }
 .nav-btn {
-  background: rgba(184,147,58,0.15) !important;
-  border-color: rgba(184,147,58,0.35) !important;
-  color: var(--nw-gold-lt) !important;
-}
-.nav-btn:hover {
-  background: rgba(184,147,58,0.28) !important;
-  border-color: var(--nw-gold) !important;
-}
-.day-label { color: rgba(245,230,204,0.88) !important; background: rgba(184,147,58,0.1) !important; }
 
-/* ── Calendar days ── */
-.calendar-day {
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(245,230,204,0.45) !important;
-  border-color: transparent !important;
-}
-.calendar-day.current-month { color: rgba(245,230,204,0.9) !important; }
-.calendar-day:hover:not(.other-month):not(.day-off) {
-  background: rgba(184,147,58,0.18) !important;
-  border-color: rgba(184,147,58,0.4) !important;
-}
-.calendar-day.today {
-  background: var(--nw-parchment) !important;
-  color: var(--nw-brown) !important;
-  border-color: var(--nw-gold) !important;
-  box-shadow: 0 4px 14px rgba(184,147,58,0.3) !important;
-}
-.calendar-day.has-appointments {
-  background: #4a8a4a !important;
-  color: #fff !important;
-  border-color: #6aaa6a !important;
-}
-.calendar-day.has-appointments:hover { background: #3a7a3a !important; }
-.calendar-day.day-off {
-  background: rgba(120,50,50,0.5) !important;
-  color: rgba(245,200,200,0.85) !important;
-}
-.calendar-day.day-off:hover { background: rgba(120,50,50,0.65) !important; }
-.calendar-day.selected {
-  box-shadow: 0 0 0 3px var(--nw-gold), 0 4px 14px rgba(184,147,58,0.3) !important;
-}
-
-/* ── Appointment cards ── */
-.appointment-card {
-  background: var(--nw-parchment) !important;
-  border: 1px solid var(--nw-beige) !important;
-  box-shadow: 0 4px 14px rgba(45,26,14,0.12) !important;
-}
-.appointment-time { color: var(--nw-brown) !important; font-family: 'Playfair Display', serif !important; }
-.client-name  { color: var(--nw-ink) !important; }
-.service-name { color: var(--nw-muted) !important; }
-.appointment-details { color: var(--nw-muted) !important; }
-
-/* Status badges */
-.status-badge  { border-radius: 6px !important; }
-.status-upcoming  { background: var(--nw-beige) !important; color: var(--nw-brown) !important; }
-.status-completed { background: #d4e8d4 !important; color: #1a4a1a !important; }
-.status-pending   { background: #f0e8c8 !important; color: #6a4a00 !important; }
-
-/* Note section */
-.note-section { background: rgba(184,147,58,0.08) !important; border-left-color: var(--nw-gold) !important; }
-.note-label { color: var(--nw-brown) !important; }
-
-/* Complete button */
-.btn-complete {
-  background: linear-gradient(135deg, var(--nw-beige), var(--nw-beige-dk)) !important;
-  color: var(--nw-brown) !important;
-  border-radius: 6px !important;
-}
-.btn-complete:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--nw-beige-dk), #c4a880) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* ── Modals ── */
-.modal-content {
-  background: var(--nw-parchment) !important;
-  border-top: 3px solid var(--nw-gold) !important;
-}
-.modal-content h3 { color: var(--nw-brown) !important; font-family: 'Playfair Display', serif !important; }
-.modal-content p  { color: var(--nw-muted) !important; }
-
-/* Leave modal labels */
-.modal-content label  { color: var(--nw-brown) !important; }
-.modal-content select,
-.modal-content input,
-.modal-content textarea {
-  border-color: var(--nw-beige-dk) !important;
-  color: var(--nw-ink) !important;
-  background: #fff !important;
-  border-radius: 7px !important;
-}
-.modal-content select:focus,
-.modal-content input:focus,
-.modal-content textarea:focus {
-  border-color: var(--nw-brown) !important;
-  box-shadow: 0 0 0 3px rgba(75,46,30,0.1) !important;
-  outline: none !important;
-}
-
-/* Modal action buttons */
-.btn-success {
-  background: linear-gradient(135deg, #4a7a4a, #2d5f2d) !important;
-  color: #fff !important;
-  border-radius: 6px !important;
-}
-.btn-success:hover { background: linear-gradient(135deg, #3a6a3a, #1e4a1e) !important; }
-.btn-secondary {
-  background: var(--nw-beige) !important;
-  color: var(--nw-brown) !important;
-  border-radius: 6px !important;
-}
-.btn-secondary:hover { background: var(--nw-beige-dk) !important; }
-
-/* Leave/overtime request button */
-div[style*="text-align:center"] button[onclick*="openLeaveModal"] {
-  background: rgba(184,147,58,0.18) !important;
-  border-color: rgba(184,147,58,0.5) !important;
-  color: var(--nw-gold-lt) !important;
-  border-radius: 6px !important;
-}
-div[style*="text-align:center"] button[onclick*="openLeaveModal"]:hover {
-  background: rgba(184,147,58,0.3) !important;
-}
-
-/* Payroll panel */
-#payrollPanel { color: var(--nw-ink) !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   THERAPIST — Visibility & consistency fixes
+   THERAPIST SIDEBAR LAYOUT — matches admin.css design language
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* Commission card gold border highlight */
-#commissionCard {
-  border: 2px solid #b8933a !important;
-  position: relative;
+/* Variables (mirrors admin palette) */
+:root {
+  --t-brown:     #4b2e1e;
+  --t-brown-lt:  #8b6f47;
+  --t-gold:      #b8933a;
+  --t-gold-lt:   #d4aa55;
+  --t-cream:     #f5f1eb;
+  --t-sidebar-w: 260px;
+  --t-nav-h:     64px;
 }
-#commissionCard::after {
-  content: 'Tap to view →';
-  position: absolute;
-  top: 8px; right: 10px;
-  font-size: 0.62rem;
+
+body {
+  background: var(--t-cream) !important;
+  color: #333;
+}
+
+/* ── Navbar ── */
+.t-navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--t-nav-h);
+  background: linear-gradient(135deg, #3b1f10 0%, #4b2e1e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 1100;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+.t-navbar-left  { display: flex; align-items: center; gap: 12px; }
+.t-navbar-right { color: rgba(255,255,255,0.75); font-size: 0.85rem; }
+.t-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f7c6a5;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+/* Hamburger */
+.t-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.t-hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 2px;
+  transition: all 0.25s;
+}
+.t-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.t-hamburger.active span:nth-child(2) { opacity: 0; }
+.t-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* ── Sidebar overlay (mobile) ── */
+.t-sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1050;
+}
+.t-sidebar-overlay.active { display: block; }
+
+/* ── Sidebar ── */
+.t-sidebar {
+  position: fixed;
+  top: var(--t-nav-h);
+  left: 0;
+  width: var(--t-sidebar-w);
+  height: calc(100vh - var(--t-nav-h));
+  background: linear-gradient(180deg, #3b1f10 0%, #4b2e1e 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  z-index: 1060;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.18);
+}
+
+.t-sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 20px 18px 16px;
+  color: #f7c6a5;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  letter-spacing: 0.5px;
+}
+
+.t-sidebar-welcome {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px;
+}
+.t-sidebar-avatar {
+  width: 38px; height: 38px;
+  background: rgba(247,198,165,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(247,198,165,0.35);
+}
+.t-sidebar-name {
   font-weight: 700;
+  font-size: 0.95rem;
+  color: #f7c6a5;
+  line-height: 1.3;
+}
+.t-sidebar-role {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
+.t-sidebar-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 4px 0;
+}
+
+/* Stats inside sidebar */
+.t-sidebar-stats {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.t-stat-item {
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 3px solid rgba(247,198,165,0.3);
+  cursor: default;
+  transition: background 0.2s;
+}
+.t-stat-item:hover { background: rgba(255,255,255,0.12); }
+.t-stat-commission {
+  border-left-color: var(--t-gold) !important;
+  cursor: pointer !important;
+  background: rgba(184,147,58,0.12) !important;
+}
+.t-stat-commission:hover { background: rgba(184,147,58,0.22) !important; }
+.t-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f7c6a5;
+  line-height: 1.1;
+}
+.t-stat-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 3px;
+  font-weight: 500;
+}
+.t-stat-sub {
+  font-size: 0.68rem;
+  color: rgba(184,147,58,0.8);
+  margin-top: 2px;
+}
+
+/* Actions (leave button) */
+.t-sidebar-actions {
+  padding: 12px 14px;
+}
+.t-leave-btn {
+  width: 100%;
+  background: rgba(184,147,58,0.15);
+  border: 1.5px solid rgba(184,147,58,0.45);
+  color: #d4aa55;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
+  text-align: left;
+}
+.t-leave-btn:hover {
+  background: rgba(184,147,58,0.28);
+  color: #f5e6cc;
+}
+
+/* Sidebar footer */
+.t-sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 14px 14px 18px;
+}
+.t-logout-btn {
+  width: 100%;
+  background: rgba(220,53,69,0.15);
+  border: 1.5px solid rgba(220,53,69,0.35);
+  color: #ff9999;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
+  text-align: left;
+}
+.t-logout-btn:hover {
+  background: rgba(220,53,69,0.28);
+  color: #ffcccc;
+}
+
+/* ── Main content area ── */
+.t-main {
+  margin-left: var(--t-sidebar-w);
+  margin-top: var(--t-nav-h);
+  padding: 28px 28px 40px;
+  min-height: calc(100vh - var(--t-nav-h));
+}
+
+.t-page-header {
+  margin-bottom: 24px;
+}
+.t-page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--t-brown);
+  margin-bottom: 4px;
+}
+.t-page-sub {
+  color: var(--t-brown-lt);
+  font-size: 0.9rem;
+}
+
+/* Content grid: calendar left, appointments right */
+.t-content-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.t-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(75,46,30,0.08);
+  border: 1px solid rgba(200,180,160,0.2);
+}
+
+.t-calendar-card { /* left column */ }
+.t-appointments-card { /* right column */ }
+
+/* Override old hero/stats section — hide them (replaced by sidebar) */
+.hero-section,
+.stats-section,
+.main-content > .calendar-section,
+.main-content > .appointments-section {
+  display: none !important;
+}
+
+/* Calendar inside card */
+.calendar-container {
+  margin-top: 16px;
+}
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.calendar-header h3 {
+  font-family: 'Playfair Display', serif;
+  color: var(--t-brown) !important;
+  font-size: 1rem;
+}
+.nav-btn {
+  background: var(--t-cream);
+  border: 1px solid rgba(75,46,30,0.15);
+  color: var(--t-brown);
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.nav-btn:hover { background: var(--t-brown); color: white; }
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.day-label {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--t-brown-lt);
+  padding: 4px 0;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #b8933a;
 }
-
-/* Payroll modal inner styles */
-#payrollModalInner h2 { color: #4b2e1e !important; font-family: 'Playfair Display', serif !important; }
-#payrollModalInner table th { background: #f5f0e8 !important; color: #4b2e1e !important; }
-#payrollModalInner td { color: #333 !important; }
-
-/* Leave modal improvements */
-#leaveRequestModal .modal-content {
-  background: #fdfaf5 !important;
-  border-top: 3px solid #b8933a !important;
-  border-radius: 14px !important;
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
-#leaveRequestModal h3 { color: #4b2e1e !important; font-family: 'Playfair Display', serif !important; }
-#leaveRequestModal label { color: #4b2e1e !important; font-weight: 600 !important; }
-#leaveRequestModal select,
-#leaveRequestModal input,
-#leaveRequestModal textarea {
-  border: 1.5px solid rgba(75,46,30,0.2) !important;
-  border-radius: 8px !important;
-  color: #2d1a0e !important;
-  background: #fff !important;
-  font-family: 'Poppins', sans-serif !important;
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--t-cream);
+  color: var(--t-brown);
+  border: 1.5px solid transparent;
+  padding: 2px;
 }
-#leaveRequestModal select:focus,
-#leaveRequestModal input:focus,
-#leaveRequestModal textarea:focus {
-  border-color: #b8933a !important;
-  box-shadow: 0 0 0 3px rgba(184,147,58,0.12) !important;
-  outline: none !important;
+.calendar-day:hover { background: rgba(75,46,30,0.08); }
+.calendar-day.today { background: rgba(184,147,58,0.12); border-color: var(--t-gold); }
+.calendar-day.selected { box-shadow: 0 0 0 2px var(--t-gold); background: rgba(184,147,58,0.18); }
+.calendar-day.has-appointments { background: #4a8a4a; color: #fff; }
+.calendar-day.day-off { background: rgba(120,50,50,0.15); color: rgba(120,50,50,0.7); }
+.calendar-day.other-month { opacity: 0.35; }
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
 }
-
-/* Request Leave button — styled to match theme */
-button[onclick="openLeaveModal()"] {
-  background: rgba(184,147,58,0.15) !important;
-  border: 1.5px solid rgba(184,147,58,0.5) !important;
-  color: #d4aa55 !important;
-  border-radius: 8px !important;
-  font-family: 'Poppins', sans-serif !important;
-  transition: all 0.22s !important;
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem;
+  color: var(--t-brown-lt);
 }
-button[onclick="openLeaveModal()"]:hover {
-  background: rgba(184,147,58,0.28) !important;
-  color: #f5e6cc !important;
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
 }
+.legend-dot.booked   { background: #4a8a4a; }
+.legend-dot.day-off  { background: rgba(120,50,50,0.5); }
 
-/* Appointment cards — ensure text visibility */
-.appointment-card { background: #fdfaf5 !important; }
-.appointment-time { color: #4b2e1e !important; }
-.client-name  { color: #2d1a0e !important; }
-.service-name { color: rgba(45,26,14,0.6) !important; }
-.detail-label { color: rgba(45,26,14,0.5) !important; }
-.appointment-details { color: rgba(45,26,14,0.6) !important; }
-.note-section { background: rgba(184,147,58,0.07) !important; border-left-color: #b8933a !important; }
-.note-label   { color: #4b2e1e !important; }
-
-/* Stat card text visibility */
-.stat-number { color: #4b2e1e !important; font-weight: 800 !important; }
-.stat-label  { color: rgba(45,26,14,0.6) !important; }
-
-/* Section title gold underline */
+/* Section title in card */
+.t-section-title,
 .section-title {
-  position: relative;
-  display: inline-block;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--t-brown);
+  margin-bottom: 14px;
   padding-bottom: 8px;
-  margin-bottom: 18px;
-}
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 36px; height: 2px;
-  background: #b8933a;
+  border-bottom: 2px solid rgba(184,147,58,0.25);
 }
 
-/* Legend text */
-.legend-item { color: rgba(245,230,204,0.9) !important; }
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .t-content-grid {
+    grid-template-columns: 360px 1fr;
+  }
+}
 
-/* Calendar month heading */
-.calendar-header h3 { color: #d4aa55 !important; }
+@media (max-width: 900px) {
+  .t-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-/* Loader */
-#loader p { color: rgba(245,230,204,0.9) !important; }
+@media (max-width: 768px) {
+  :root { --t-sidebar-w: 280px; }
 
-/* "No appointments" text */
-.appointments-section p,
-.no-appointments { color: rgba(245,230,204,0.7) !important; }
+  .t-hamburger { display: flex; }
 
-/* Complete modal */
-#completeModal .modal-content { background: #fdfaf5 !important; border-top: 3px solid #b8933a !important; }
-#completeModal h3 { color: #4b2e1e !important; }
-#completeModal p  { color: rgba(45,26,14,0.65) !important; }
+  .t-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .t-sidebar.mobile-open { transform: translateX(0); }
+
+  .t-main {
+    margin-left: 0;
+    padding: 16px 14px 32px;
+  }
+
+  .t-page-title { font-size: 1.4rem; }
+
+  .t-card { padding: 16px; }
+
+  /* Stack calendar on mobile */
+  .t-content-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (max-width: 420px) {
+  .calendar-day { font-size: 0.72rem; }
+}
+}

@@ -64,6 +64,18 @@ const apiBase = 'https://nagomi-backend.onrender.com/api';
   const loader = document.getElementById("loader");
   let currentPeriod = 'today';
   let selectedDate = null;
+  let activeBookingStatusFilter = 'all'; // 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'pending_reschedule' | 'pending_cancellation'
+
+  // ── Booking status filter (called from HTML buttons) ──────────────────────
+  window.setBookingFilter = function(status) {
+    activeBookingStatusFilter = status;
+    // Update button styles
+    document.querySelectorAll('.bsf-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.status === status);
+    });
+    // Re-render current date with new filter
+    if (selectedDate) loadBookingsForDate(selectedDate);
+  };
   let allBookings = [];
   let currentChart = {};
   let filteredBookingsData = []; // Store filtered data for detail views
@@ -103,23 +115,40 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   });
 
   socket.on('newBooking', (data) => {
-  showNotification('New booking received!', 'success');
-  const _bName = data?.guestName || 'A client';
-  const _bSvc  = data?.service?.name || '';
-  const _bDateRaw = data?.date ? new Date(data.date).toLocaleDateString('en-PH',{month:'short',day:'numeric'}) : '';
-  const _bTime = data?.time || '';
-  const _msg = `📅 <strong>${_bName}</strong>${_bSvc ? ' — ' + _bSvc : ''}${_bDateRaw ? ' · ' + _bDateRaw : ''}${_bTime ? ' at ' + _bTime : ''}`;
-  addNotif(_msg, 'booking', 'bookings');
-  const activeTab = document.querySelector('.tab-content.active')?.id;
-  if (activeTab === 'overview-tab') loadOverviewData();
-  else if (activeTab === 'bookings-tab') loadBookingsCalendar();
-});
+    showNotification('New booking received!', 'success');
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
 
-socket.on('bookingStatusUpdated', () => {
-  const activeTab = document.querySelector('.tab-content.active')?.id;
-  if (activeTab === 'overview-tab') loadOverviewData();
-  else if (activeTab === 'bookings-tab') loadBookingsCalendar();
-});
+  socket.on('new-booking', (data) => {
+    showNotification('New booking received!', 'success');
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
+
+  socket.on('bookingStatusUpdated', () => {
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
+
+  socket.on('booking-cancelled', (data) => {
+    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
+  });
+
+  socket.on('reschedule-request', (data) => {
+    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
+  });
+
+  socket.on('leave-request', (data) => {
+    addNotif(`🌴 Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
+    const badge = document.getElementById('leaveSidebarBadge');
+    if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
+  });
 
   // Debounce helper — prevents search firing on every single keystroke
   let searchDebounceTimer = null;
@@ -1907,8 +1936,8 @@ function buildServicesChartForecast(labels, serviceCounts) {
       {
         label: `Predicted Bookings (${forecastHorizon})`,
         data: allData,
-        borderColor: '#8b6f47',
-        backgroundColor: 'rgba(139,111,71,0.1)',
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
         borderWidth: 3,
         borderDash: [10, 5],
         fill: false,
@@ -1926,8 +1955,8 @@ function buildServicesChartForecast(labels, serviceCounts) {
       datasets.push({
         label: 'Upper Confidence',
         data: upperBounds,
-        borderColor: 'rgba(139,111,71,0.3)',
-        backgroundColor: 'rgba(139,111,71,0.05)',
+        borderColor: 'rgba(102, 126, 234, 0.3)',
+        backgroundColor: 'rgba(102, 126, 234, 0.05)',
         borderWidth: 1,
         borderDash: [5, 5],
         fill: '+1',
@@ -1938,8 +1967,8 @@ function buildServicesChartForecast(labels, serviceCounts) {
       datasets.push({
         label: 'Lower Confidence',
         data: lowerBounds,
-        borderColor: 'rgba(139,111,71,0.3)',
-        backgroundColor: 'rgba(139,111,71,0.05)',
+        borderColor: 'rgba(102, 126, 234, 0.3)',
+        backgroundColor: 'rgba(102, 126, 234, 0.05)',
         borderWidth: 1,
         borderDash: [5, 5],
         fill: false,
@@ -2466,10 +2495,14 @@ function buildServicesChartForecast(labels, serviceCounts) {
       .filter(b => b.status === 'completed')
       .reduce((sum, b) => sum + (b.price || 0), 0);
     
-    const bookingCount = bookings.length;
-    const completedCount = bookings.filter(b => b.status === 'completed').length;
-    const cancelledCount = bookings.filter(b => b.status === 'cancelled').length;
-    
+    const bookingCount    = bookings.length;
+    const pendingCount    = bookings.filter(b => b.status === 'pending').length;
+    const confirmedCount  = bookings.filter(b => b.status === 'confirmed').length;
+    const completedCount  = bookings.filter(b => b.status === 'completed').length;
+    const cancelledCount  = bookings.filter(b => b.status === 'cancelled').length;
+    const rescheduleCount = bookings.filter(b => b.status === 'pending_reschedule').length;
+    const cancelReqCount  = bookings.filter(b => b.status === 'pending_cancellation').length;
+
     // Update main numbers (elements may not exist if summary bar was removed)
     const elRevenue   = document.getElementById('periodRevenue');
     const elBookings  = document.getElementById('periodBookings');
@@ -2479,6 +2512,19 @@ function buildServicesChartForecast(labels, serviceCounts) {
     if (elBookings)  elBookings.textContent  = bookingCount;
     if (elCompleted) elCompleted.textContent = completedCount;
     if (elCancelled) elCancelled.textContent = cancelledCount;
+
+    // ── Booking Status Summary Cards ──────────────────────────────────────────
+    const setCard = (id, subId, count, subText) => {
+      const el = document.getElementById(id);
+      const sub = document.getElementById(subId);
+      if (el) el.textContent = count;
+      if (sub) sub.textContent = subText;
+    };
+    const pct = (n) => bookingCount > 0 ? `${((n/bookingCount)*100).toFixed(0)}% of total` : '';
+    setCard('bscPending',   'bscPendingSub',   pendingCount,   rescheduleCount > 0 ? `+ ${rescheduleCount} reschedule req.` : pct(pendingCount));
+    setCard('bscConfirmed', 'bscConfirmedSub', confirmedCount, cancelReqCount > 0  ? `+ ${cancelReqCount} cancel req.`     : pct(confirmedCount));
+    setCard('bscCompleted', 'bscCompletedSub', completedCount, `₱${revenue.toLocaleString()} revenue`);
+    setCard('bscCancelled', 'bscCancelledSub', cancelledCount, pct(cancelledCount));
     
     // ✅ ADD INLINE INSIGHTS
     const avgRevenue = bookingCount > 0 ? Math.round(revenue / bookingCount) : 0;
@@ -3017,13 +3063,13 @@ const indexAxis = 'x';   // always vertical bars for today, line for others
   const datasets = [{
     label: 'Actual Bookings',
     data: hourCounts,
-    backgroundColor: currentPeriod === 'today' ? '#8b6f47' : 'rgba(139,111,71,0.2)',
-    borderColor: '#8b6f47',
+    backgroundColor: currentPeriod === 'today' ? '#9b59b6' : 'rgba(155, 89, 182, 0.2)',
+    borderColor: '#9b59b6',
     borderWidth: 3,
     fill: chartType === 'line',
     tension: 0.4,
     pointRadius: 5,
-    pointBackgroundColor: '#8b6f47',
+    pointBackgroundColor: '#9b59b6',
     pointBorderColor: '#fff',
     pointBorderWidth: 2,
     pointHoverRadius: 7,
@@ -3035,14 +3081,14 @@ const indexAxis = 'x';   // always vertical bars for today, line for others
     datasets.push({
       label: 'Predicted Bookings',
       data: predictedData,
-      backgroundColor: currentPeriod === 'today' ? '#c8a882' : 'rgba(200,168,130,0.2)',
-      borderColor: '#c8a882',
+      backgroundColor: currentPeriod === 'today' ? '#f39c12' : 'rgba(243, 156, 18, 0.2)',
+      borderColor: '#f39c12',
       borderWidth: 3,
       borderDash: [10, 5],
       fill: chartType === 'line',
       tension: 0.4,
       pointRadius: 5,
-      pointBackgroundColor: '#c8a882',
+      pointBackgroundColor: '#f39c12',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointHoverRadius: 7,
@@ -3303,8 +3349,8 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     {
       label: 'Actual Revenue',
       data: historicalData,
-      borderColor: '#6b9e6b',
-      backgroundColor: 'rgba(107,158,107,0.2)',
+      borderColor: '#28a745',
+      backgroundColor: 'rgba(40, 167, 69, 0.2)',
       borderWidth: 3,
       fill: true,
       tension: 0.4,
@@ -3359,14 +3405,14 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     datasets.push({
       label: 'Predicted Revenue',
       data: forecastRevenue,
-      borderColor: '#8b6f47',
-      backgroundColor: 'rgba(139,111,71,0.2)',
+      borderColor: '#9b59b6',
+      backgroundColor: 'rgba(155, 89, 182, 0.2)',
       borderWidth: 3,
       borderDash: [10, 5],
       fill: true,
       tension: 0.4,
       pointRadius: 5,
-      pointBackgroundColor: '#8b6f47',
+      pointBackgroundColor: '#9b59b6',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointHoverRadius: 8
@@ -3525,7 +3571,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
         labels: ['Earned Revenue', 'Revenue Loss'],
         datasets: [{
           data: [earnedRevenue, revenueLoss],
-          backgroundColor: ['#6b9e6b', '#c87a4a']
+          backgroundColor: ['#28a745', '#dc3545']
         }]
       },
       options: {
@@ -3602,7 +3648,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
         labels: ['Completed', 'Cancelled'],
         datasets: [{
           data: [completed, cancelled],
-          backgroundColor: ['#6b9e6b', '#c87a4a']
+          backgroundColor: ['#28a745', '#dc3545']
         }]
       },
       options: {
@@ -4086,10 +4132,15 @@ window.getBookingRowActions = getBookingRowActions;
   }
 
   function loadBookingsForDate(dateStr) {
-    const dayBookings = allBookings.filter(b => {
+    const allDayBookings = allBookings.filter(b => {
       const bookingDate = new Date(b.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
       return bookingDate === dateStr;
     });
+
+    // Apply active status filter
+    const dayBookings = activeBookingStatusFilter === 'all'
+      ? allDayBookings
+      : allDayBookings.filter(b => b.status === activeBookingStatusFilter);
 
     const sortedBookings = sortBookingsByStatusAndTime(dayBookings);
     
@@ -4099,19 +4150,25 @@ window.getBookingRowActions = getBookingRowActions;
       month: 'long',
       day: 'numeric'
     });
-    
-    document.getElementById('selectedDateTitle').textContent = `Bookings for ${formattedDate}`;
+
+    const filterLabel = activeBookingStatusFilter === 'all' ? '' : ` · ${activeBookingStatusFilter.replace('_',' ')} only`;
+    document.getElementById('selectedDateTitle').textContent = `Bookings for ${formattedDate}${filterLabel} (${dayBookings.length} of ${allDayBookings.length})`;
     
     const tbody = document.querySelector('#bookingsTable tbody');
     
     if (dayBookings.length === 0) {
+      const emptyMsg = activeBookingStatusFilter === 'all'
+        ? 'No bookings for this date'
+        : `No <strong>${activeBookingStatusFilter.replace('_',' ')}</strong> bookings for this date`;
       tbody.innerHTML = `
         <tr>
           <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
-            No bookings for this date
+            ${emptyMsg}
           </td>
         </tr>
       `;
+      const mobileList = document.getElementById('mobileBookingList');
+      if (mobileList) mobileList.innerHTML = `<p style="text-align:center;padding:30px;color:#999;">${emptyMsg}</p>`;
       return;
     }
     
@@ -4120,7 +4177,9 @@ window.getBookingRowActions = getBookingRowActions;
     const onlineBookings = dayBookings.filter(b => b.bookingType === 'online' || !b.bookingType);
     
     console.log(`📊 ${formattedDate}:`, {
-      total: dayBookings.length,
+      total: allDayBookings.length,
+      filtered: dayBookings.length,
+      filter: activeBookingStatusFilter,
       walkIn: walkInBookings.length,
       online: onlineBookings.length
     });
@@ -7866,46 +7925,47 @@ window.closeHolidayModal    = closeHolidayModal;
 window.confirmHolidayToggle = confirmHolidayToggle;
 window.syncClosureEndMin    = syncClosureEndMin;
 // ═══════════════════════════════════════════════════════════════════════
-// NOTIFICATION SYSTEM — persistent across refresh, Facebook-style
+// NOTIFICATION SYSTEM
 // ═══════════════════════════════════════════════════════════════════════
 
-// ── Persistence helpers ──────────────────────────────────────────────
-const NOTIF_KEY = 'nagomi_admin_notifs_v2';
 const notifStore = [];
 
-function _saveNotifs() {
-  try { localStorage.setItem(NOTIF_KEY, JSON.stringify(notifStore.slice(0, 50))); } catch(e) {}
+// ── Notification persistence helpers ─────────────────────────────────────────
+function saveNotifStore() {
+  try { localStorage.setItem('nagomi_notifs', JSON.stringify(notifStore.slice(0,30))); } catch(e) {}
 }
-function _loadNotifs() {
+function loadNotifStore() {
   try {
-    const saved = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
-    saved.forEach(n => notifStore.push(n));
+    const saved = localStorage.getItem('nagomi_notifs');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      parsed.forEach(n => notifStore.push(n));
+    }
   } catch(e) {}
 }
-_loadNotifs(); // restore immediately on load
+loadNotifStore(); // Restore on page load
 
-// ── Add a notification ───────────────────────────────────────────────
-function addNotif(message, type = 'booking', targetTab = null, targetDate = null) {
-  notifStore.unshift({ message, type, time: new Date().toISOString(), read: false, targetTab, targetDate });
-  if (notifStore.length > 50) notifStore.pop();
-  _saveNotifs();
+function addNotif(message, type = 'booking', targetTab = null) {
+  const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
+  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab });
+  if (notifStore.length > 30) notifStore.pop();
+  saveNotifStore();
   renderNotifPanel();
+  // Flash badge
   const badge = document.getElementById('notifBadge');
   const unread = notifStore.filter(n => !n.read).length;
   if (badge) {
     badge.textContent = unread > 9 ? '9+' : unread;
     badge.style.display = unread > 0 ? 'flex' : 'none';
   }
-  // Bell pulse animation
-  const bellBtn = document.getElementById('notifBellBtn');
+  // Pulse animation on bell
+  const bellBtn = document.querySelector('#notifBellWrap button');
   if (bellBtn) {
-    bellBtn.style.animation = 'none';
-    requestAnimationFrame(() => { bellBtn.style.animation = 'bellPulse 0.6s ease'; });
-    setTimeout(() => { if (bellBtn) bellBtn.style.animation = ''; }, 700);
+    bellBtn.classList.add('notif-bell-pulse');
+    setTimeout(() => bellBtn.classList.remove('notif-bell-pulse'), 1000);
   }
 }
 
-// ── Render the dropdown panel ────────────────────────────────────────
 function renderNotifPanel() {
   const list = document.getElementById('notifList');
   if (!list) return;
@@ -7914,54 +7974,33 @@ function renderNotifPanel() {
     return;
   }
   list.innerHTML = notifStore.map((n, i) => {
-    const t = new Date(n.time);
-    const mins = Math.floor((Date.now() - t.getTime()) / 60000);
-    const ago = mins < 1 ? 'just now'
-      : mins < 60 ? `${mins}m ago`
-      : mins < 1440 ? `${Math.floor(mins/60)}h ago`
-      : `${Math.floor(mins/1440)}d ago`;
-    const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
-    const icon = icons[n.type] || '🔔';
+    const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
+    const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins/60)}h ago` : `${Math.floor(mins/1440)}d ago`;
     const clickable = n.targetTab ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
-    const arrow = n.targetTab ? '<span style="color:#b8933a;font-size:0.75rem;margin-left:auto;padding-left:6px;">→</span>' : '';
-    return `<div class="notif-item${n.read ? ' notif-read' : ''}" ${clickable}>
-      <span class="notif-item-icon">${icon}</span>
+    const arrow = n.targetTab ? `<span style="color:#c9a882;font-size:0.8rem;margin-left:auto;padding-left:8px;">→</span>` : '';
+    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickable}>
+      <span class="notif-item-icon">${n.icon}</span>
       <div class="notif-item-body" style="flex:1;min-width:0;">
         <div class="notif-item-msg">${n.message}</div>
         <div class="notif-item-time">${ago}</div>
-      </div>${arrow}
+      </div>
+      ${arrow}
     </div>`;
   }).join('');
 }
 
-// ── Click handler — navigate to tab and optionally to a date ─────────
 function handleNotifClick(index) {
   const n = notifStore[index];
   if (!n) return;
   n.read = true;
-  _saveNotifs();
+  saveNotifStore();
   renderNotifPanel();
+  // Close panel
   const panel = document.getElementById('notifPanel');
   if (panel) panel.style.display = 'none';
-  if (n.targetTab) {
-    switchTab(n.targetTab);
-    // If there's a target date, select it in the calendar after a short delay
-    if (n.targetDate && n.targetTab === 'bookings') {
-      setTimeout(() => {
-        const dateStr = n.targetDate;
-        selectedDate = dateStr;
-        loadBookingsForDate(dateStr);
-        // Highlight calendar cell
-        document.querySelectorAll('.calendar-day').forEach(cell => {
-          if (cell.dataset.date === dateStr) {
-            cell.click();
-          }
-        });
-      }, 400);
-    }
-  }
+  // Navigate to target tab
+  if (n.targetTab) switchTab(n.targetTab);
 }
-window.handleNotifClick = handleNotifClick;
 
 function toggleNotifPanel() {
   const panel = document.getElementById('notifPanel');
@@ -7969,8 +8008,8 @@ function toggleNotifPanel() {
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
   if (!isOpen) {
+    // Mark all read
     notifStore.forEach(n => n.read = true);
-    _saveNotifs();
     const badge = document.getElementById('notifBadge');
     if (badge) badge.style.display = 'none';
     renderNotifPanel();
@@ -7979,13 +8018,12 @@ function toggleNotifPanel() {
 
 function clearNotifs() {
   notifStore.length = 0;
-  _saveNotifs();
   renderNotifPanel();
   const badge = document.getElementById('notifBadge');
   if (badge) badge.style.display = 'none';
 }
 
-// Close on outside click
+// Close panel when clicking outside
 document.addEventListener('click', (e) => {
   const wrap = document.getElementById('notifBellWrap');
   if (wrap && !wrap.contains(e.target)) {
@@ -7994,68 +8032,27 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Restore badge on page load
-(function restoreBadge() {
-  const unread = notifStore.filter(n => !n.read).length;
-  if (unread > 0) {
-    const badge = document.getElementById('notifBadge');
-    if (badge) { badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'flex'; }
-  }
-  renderNotifPanel();
-})();
-
-// ── Wire Socket.IO to notifications ─────────────────────────────────
+// Wire Socket.IO to notifications
 (function wireNotifSocket() {
   const BACKEND = 'https://nagomi-backend.onrender.com';
   let sock = null;
   let attempts = 0;
   const MAX_ATTEMPTS = 10;
 
-  function _fmtDate(d) {
-    if (!d) return '';
-    try { return new Date(d).toLocaleDateString('en-PH', {month:'short', day:'numeric', year:'numeric'}); } catch(e) { return ''; }
-  }
-
   function attachEvents(socket) {
-    socket.on('connect', () => { console.log('✅ notif-socket connected'); attempts = 0; });
-
-    socket.on('new-booking', (data) => {
-      const name = data?.guestName || 'A client';
-      const svc  = data?.service?.name || '';
-      const date = _fmtDate(data?.date);
-      const time = data?.time || '';
-      const msg  = `📅 <strong>${name}</strong> booked ${svc ? '<em>' + svc + '</em>' : 'a service'}${date ? ' · ' + date : ''}${time ? ' at ' + time : ''}`;
-      addNotif(msg, 'booking', 'bookings', data?.date ? new Date(data.date).toLocaleDateString('en-CA', {timeZone:'Asia/Manila'}) : null);
-      showNotification(`📅 New booking from ${name}!`, 'info');
+    socket.on('connect', () => {
+      console.log('✅ Connected to server');
+      attempts = 0;
     });
-
-    socket.on('booking-cancelled', (data) => {
-      const name = data?.guestName || 'A client';
-      const svc  = data?.service?.name || '';
-      const date = _fmtDate(data?.date);
-      const msg  = `❌ <strong>${name}</strong> requested cancellation${svc ? ' — ' + svc : ''}${date ? ' · ' + date : ''}`;
-      addNotif(msg, 'cancel', 'bookings', data?.date ? new Date(data.date).toLocaleDateString('en-CA', {timeZone:'Asia/Manila'}) : null);
+    // Note: new-booking, booking-cancelled, reschedule-request, leave-request
+    // are now handled by the primary socket at the top of the file.
+    // wireNotifSocket only handles connect/error for the secondary health-check socket.
+    socket.on('connect', () => {
+      console.log('[notif-socket] connected');
     });
-
-    socket.on('reschedule-request', (data) => {
-      const name = data?.guestName || 'A client';
-      const svc  = data?.service?.name || '';
-      const date = _fmtDate(data?.date);
-      const msg  = `🔄 <strong>${name}</strong> requested reschedule${svc ? ' — ' + svc : ''}${date ? ' · ' + date : ''}`;
-      addNotif(msg, 'reschedule', 'bookings', data?.date ? new Date(data.date).toLocaleDateString('en-CA', {timeZone:'Asia/Manila'}) : null);
+    socket.on('connect_error', () => {
+      // Silently suppress — server may still be waking up
     });
-
-    socket.on('leave-request', (data) => {
-      const therapist = data?.therapistName || 'A therapist';
-      const reqType   = data?.type || 'leave';
-      const startDate = _fmtDate(data?.startDate);
-      const msg = `🌴 <strong>${therapist}</strong> submitted a ${reqType} request${startDate ? ' starting ' + startDate : ''}`;
-      addNotif(msg, 'leave', 'leave-requests');
-      const badge = document.getElementById('leaveSidebarBadge');
-      if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent) || 0) + 1; }
-    });
-
-    socket.on('connect_error', () => { /* suppress */ });
   }
 
   function tryConnect() {

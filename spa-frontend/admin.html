@@ -131,8 +131,58 @@
   <span id="dateRangeSub" style="color:#8b6045; font-size:0.82rem; opacity:0.85;"></span>
 </div>
 
-      <!-- 7 Stat Cards -->
-            <!-- Charts Grid -->
+      <!-- Booking Status Summary Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
+        <!-- Total Bookings -->
+        <div class="chart-box" style="padding:20px;cursor:default;">
+          <div style="font-size:0.8rem;color:#8b6f47;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;" id="periodBookingsLabel">Today's Bookings</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#4b2e1e;" id="periodBookings">—</div>
+          <div style="font-size:0.8rem;color:#999;margin-top:4px;" id="bookingsInsight"></div>
+        </div>
+        <!-- Revenue -->
+        <div class="chart-box" style="padding:20px;cursor:default;">
+          <div style="font-size:0.8rem;color:#8b6f47;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;" id="periodRevenueLabel">Today's Revenue</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#4b2e1e;" id="periodRevenue">—</div>
+          <div style="font-size:0.8rem;color:#999;margin-top:4px;" id="revenueInsight"></div>
+        </div>
+        <!-- Completed -->
+        <div class="chart-box" style="padding:20px;cursor:default;">
+          <div style="font-size:0.8rem;color:#8b6f47;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;" id="periodCompletedLabel">Completed Today</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#28a745;" id="periodCompleted">—</div>
+        </div>
+        <!-- Cancelled -->
+        <div class="chart-box" style="padding:20px;cursor:default;">
+          <div style="font-size:0.8rem;color:#8b6f47;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;" id="periodCancelledLabel">Cancelled Today</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#dc3545;" id="periodCancelled">—</div>
+          <div style="font-size:0.8rem;color:#999;margin-top:4px;" id="cancelledInsight"></div>
+        </div>
+      </div>
+
+      <!-- Booking Status Breakdown (colour-coded mini cards) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px;">
+        <div style="background:#fff8e1;border-radius:12px;padding:16px 18px;border-left:4px solid #ffc107;">
+          <div style="font-size:0.75rem;font-weight:700;color:#b8860b;text-transform:uppercase;letter-spacing:0.05em;">Pending</div>
+          <div style="font-size:1.9rem;font-weight:800;color:#b8860b;margin:4px 0;" id="bscPending">—</div>
+          <div style="font-size:0.75rem;color:#999;" id="bscPendingSub"></div>
+        </div>
+        <div style="background:#e3f2fd;border-radius:12px;padding:16px 18px;border-left:4px solid #2196f3;">
+          <div style="font-size:0.75rem;font-weight:700;color:#1565c0;text-transform:uppercase;letter-spacing:0.05em;">Confirmed</div>
+          <div style="font-size:1.9rem;font-weight:800;color:#1565c0;margin:4px 0;" id="bscConfirmed">—</div>
+          <div style="font-size:0.75rem;color:#999;" id="bscConfirmedSub"></div>
+        </div>
+        <div style="background:#e8f5e9;border-radius:12px;padding:16px 18px;border-left:4px solid #28a745;">
+          <div style="font-size:0.75rem;font-weight:700;color:#1a5c2a;text-transform:uppercase;letter-spacing:0.05em;">Completed</div>
+          <div style="font-size:1.9rem;font-weight:800;color:#1a5c2a;margin:4px 0;" id="bscCompleted">—</div>
+          <div style="font-size:0.75rem;color:#999;" id="bscCompletedSub"></div>
+        </div>
+        <div style="background:#ffebee;border-radius:12px;padding:16px 18px;border-left:4px solid #dc3545;">
+          <div style="font-size:0.75rem;font-weight:700;color:#b71c1c;text-transform:uppercase;letter-spacing:0.05em;">Cancelled</div>
+          <div style="font-size:1.9rem;font-weight:800;color:#b71c1c;margin:4px 0;" id="bscCancelled">—</div>
+          <div style="font-size:0.75rem;color:#999;" id="bscCancelledSub"></div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
       <div class="charts-container" id="chartsContainer" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
         <div class="data-timestamp" style="grid-column: 1 / -1; margin-bottom: 0;">
           <span style="color: #28a745;">●</span> Loading data...
@@ -201,6 +251,18 @@
           <button id="nextMonth">▶</button>
         </div>
         <div id="calendar" class="calendar-grid"></div>
+      </div>
+
+      <!-- Booking Status Filter -->
+      <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:0.85rem;font-weight:600;color:#8b6f47;margin-right:4px;">Filter:</span>
+        <button class="bsf-btn filter-btn active" data-status="all"                  onclick="setBookingFilter('all')">All</button>
+        <button class="bsf-btn filter-btn"        data-status="pending"              onclick="setBookingFilter('pending')">⏳ Pending</button>
+        <button class="bsf-btn filter-btn"        data-status="confirmed"            onclick="setBookingFilter('confirmed')">✅ Confirmed</button>
+        <button class="bsf-btn filter-btn"        data-status="completed"            onclick="setBookingFilter('completed')">✔ Completed</button>
+        <button class="bsf-btn filter-btn"        data-status="cancelled"            onclick="setBookingFilter('cancelled')">❌ Cancelled</button>
+        <button class="bsf-btn filter-btn"        data-status="pending_reschedule"   onclick="setBookingFilter('pending_reschedule')">🔄 Reschedule Req.</button>
+        <button class="bsf-btn filter-btn"        data-status="pending_cancellation" onclick="setBookingFilter('pending_cancellation')">🚫 Cancel Req.</button>
       </div>
 
       <div class="bookings-table-section">

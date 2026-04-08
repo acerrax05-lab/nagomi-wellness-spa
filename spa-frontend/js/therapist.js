@@ -667,7 +667,8 @@ function openLeaveModal() {
   document.getElementById('leaveEndDate').value   = today;
   document.getElementById('leaveReason').value    = '';
   document.getElementById('leaveType').value      = 'leave';
-  document.getElementById('overtimeHoursRow').style.display = 'none';
+  const overtimeRow = document.getElementById('overtimeHoursRow');
+  if (overtimeRow) overtimeRow.style.display = 'none';
   document.getElementById('leaveRequestModal').classList.add('active');
 }
 
