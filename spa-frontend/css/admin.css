@@ -3933,7 +3933,7 @@ input:checked + .toggle-slider:before {
 
 /* ── Redesigned Sidebar ── */
 .sidebar {
-  background: linear-gradient(180deg, #3b1f10 0%, #4b2e1e 60%, #5a3828 100%) !important;
+   background: var(--nw-beige) !important;
   border-right: none !important;
   padding: 0 !important;
   display: flex;
@@ -3949,7 +3949,7 @@ input:checked + .toggle-slider:before {
 .sidebar-logo {
   display: flex; align-items: center; gap: 10px;
   padding: 20px 18px 16px;
-  color: #f7c6a5;
+  color: #000000;
   font-family: 'Playfair Display', serif;
   font-size: 1rem; font-weight: 700;
   border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -3994,7 +3994,7 @@ input:checked + .toggle-slider:before {
 }
 .sidebar-admin-info {
   display: flex; align-items: center; gap: 10px;
-  color: rgba(255,255,255,0.75); font-size: 0.85rem;
+  color: #000000; font-size: 0.85rem;
 }
 .sidebar-avatar {
   width: 32px; height: 32px; border-radius: 50%;
@@ -4171,7 +4171,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Sidebar text visibility */
-.sidebar .tab-btn { color: rgba(45,26,14,0.6) !important; font-size: 0.9rem !important; }
+.sidebar .tab-btn { color: black !important; font-size: 0.9rem !important; }
 .sidebar .tab-btn:hover { color: #4b2e1e !important; }
 .sidebar .tab-btn.active { color: #4b2e1e !important; font-weight: 700 !important; }
 
