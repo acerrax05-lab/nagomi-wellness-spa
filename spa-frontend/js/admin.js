@@ -119,28 +119,38 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     if (!dateStr) return '';
     try {
       return new Date(dateStr).toLocaleDateString('en-PH', {
-        timeZone: 'Asia/Manila', weekday: 'short', month: 'short', day: 'numeric'
+        timeZone: 'Asia/Manila', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
       });
-    } catch(e) { return dateStr; }
+    } catch(e) { return String(dateStr); }
   }
   function _fmtBookingTime(timeStr) {
     if (!timeStr) return '';
-    // timeStr may be "14:00" or "2:00 PM"
     try {
-      const [h, m] = timeStr.split(':');
-      const d = new Date(); d.setHours(+h, +m || 0);
+      const [h, m] = String(timeStr).split(':');
+      const d = new Date(); d.setHours(+h, +(m||0));
       return d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch(e) { return timeStr; }
+    } catch(e) { return String(timeStr); }
+  }
+  // Extract key fields regardless of how the backend sends them
+  function _extractBookingFields(data) {
+    if (!data) return {};
+    const name    = data.guestName   || data.clientName  || data.name       || data.guest?.name  || 'Client';
+    const service = data.service?.name || data.serviceName || data.service  || '';
+    const date    = data.date        || data.bookingDate  || data.appointmentDate || null;
+    const time    = data.time        || data.startTime    || data.appointmentTime || '';
+    return { name, service, date, time };
   }
 
   socket.on('newBooking', (data) => {
     showNotification('New booking received!', 'success');
-    const name    = data?.guestName || 'Client';
-    const service = data?.service?.name || '';
-    const dateStr = _fmtBookingDate(data?.date);
-    const timeStr = _fmtBookingTime(data?.time);
-    const detail  = [dateStr, timeStr].filter(Boolean).join(' · ');
-    addNotif(`New booking: <strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`, 'booking', 'bookings', data?.date);
+    const { name, service, date, time } = _extractBookingFields(data);
+    const dateFmt = _fmtBookingDate(date);
+    const timeFmt = _fmtBookingTime(time);
+    const detail  = [dateFmt, timeFmt].filter(Boolean).join(' · ');
+    addNotif(
+      `New Booking<br><strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`,
+      'booking', 'bookings', date
+    );
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
@@ -148,12 +158,14 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
 
   socket.on('new-booking', (data) => {
     showNotification('New booking received!', 'success');
-    const name    = data?.guestName || 'Client';
-    const service = data?.service?.name || '';
-    const dateStr = _fmtBookingDate(data?.date);
-    const timeStr = _fmtBookingTime(data?.time);
-    const detail  = [dateStr, timeStr].filter(Boolean).join(' · ');
-    addNotif(`New booking: <strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`, 'booking', 'bookings', data?.date);
+    const { name, service, date, time } = _extractBookingFields(data);
+    const dateFmt = _fmtBookingDate(date);
+    const timeFmt = _fmtBookingTime(time);
+    const detail  = [dateFmt, timeFmt].filter(Boolean).join(' · ');
+    addNotif(
+      `New Booking<br><strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`,
+      'booking', 'bookings', date
+    );
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
@@ -166,30 +178,37 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   });
 
   socket.on('booking-cancelled', (data) => {
-    const name    = data?.guestName || 'Client';
-    const service = data?.service?.name || '';
-    const dateStr = _fmtBookingDate(data?.date);
-    const timeStr = _fmtBookingTime(data?.time);
-    const detail  = [dateStr, timeStr].filter(Boolean).join(' · ');
-    addNotif(`Cancellation request: <strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`, 'cancel', 'bookings', data?.date);
+    const { name, service, date, time } = _extractBookingFields(data);
+    const dateFmt = _fmtBookingDate(date);
+    const timeFmt = _fmtBookingTime(time);
+    const detail  = [dateFmt, timeFmt].filter(Boolean).join(' · ');
+    addNotif(
+      `Cancellation Request<br><strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`,
+      'cancel', 'bookings', date
+    );
   });
 
   socket.on('reschedule-request', (data) => {
-    const name    = data?.guestName || 'Client';
-    const service = data?.service?.name || '';
-    const dateStr = _fmtBookingDate(data?.date);
-    const timeStr = _fmtBookingTime(data?.time);
-    const detail  = [dateStr, timeStr].filter(Boolean).join(' · ');
-    addNotif(`Reschedule request: <strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`, 'reschedule', 'bookings', data?.date);
+    const { name, service, date, time } = _extractBookingFields(data);
+    const dateFmt = _fmtBookingDate(date);
+    const timeFmt = _fmtBookingTime(time);
+    const detail  = [dateFmt, timeFmt].filter(Boolean).join(' · ');
+    addNotif(
+      `Reschedule Request<br><strong>${name}</strong>${service ? ' — ' + service : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + detail + '</span>' : ''}`,
+      'reschedule', 'bookings', date
+    );
   });
 
   socket.on('leave-request', (data) => {
-    const therapistName = data?.therapistName || 'A therapist';
+    const therapistName = data?.therapistName || data?.name || 'A therapist';
     const leaveType     = data?.type === 'vacation' ? '✈️ Vacation' : '🌴 Leave';
     const from = data?.startDate ? _fmtBookingDate(data.startDate) : '';
     const to   = data?.endDate   ? _fmtBookingDate(data.endDate)   : '';
     const dateRange = from && to && from !== to ? `${from} → ${to}` : (from || to);
-    addNotif(`${leaveType} request: <strong>${therapistName}</strong>${dateRange ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + dateRange + '</span>' : ''}`, 'leave', 'leave-requests');
+    addNotif(
+      `${leaveType} Request<br><strong>${therapistName}</strong>${dateRange ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ' + dateRange + '</span>' : ''}`,
+      'leave', 'leave-requests'
+    );
     const badge = document.getElementById('leaveSidebarBadge');
     if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
   });
@@ -7880,10 +7899,13 @@ function updateCommissionDisplay(rate) {
     }
   })();
 
-  // Logout
+  // Logout — preserve notifications across sessions (like Facebook)
   document.getElementById("logoutBtn").addEventListener("click", () => {
     socket.disconnect();
+    // Save notifications BEFORE clear so they survive logout
+    const savedNotifs = localStorage.getItem('nagomi_notifs');
     localStorage.clear();
+    if (savedNotifs) localStorage.setItem('nagomi_notifs', savedNotifs);
     window.location.href = "login.html";
   });
 
@@ -7992,7 +8014,7 @@ loadNotifStore(); // Restore on page load
 function addNotif(message, type = 'booking', targetTab = null, bookingDate = null) {
   const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
   notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab, bookingDate });
-  if (notifStore.length > 30) notifStore.pop();
+  if (notifStore.length > 50) notifStore.pop();
   saveNotifStore();
   renderNotifPanel();
   // Flash badge
@@ -8020,13 +8042,14 @@ function renderNotifPanel() {
   list.innerHTML = notifStore.map((n, i) => {
     const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
     const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins/60)}h ago` : `${Math.floor(mins/1440)}d ago`;
-    const clickable = n.targetTab ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
-    const arrow = n.targetTab ? `<span style="color:#c9a882;font-size:0.8rem;margin-left:auto;padding-left:8px;flex-shrink:0;">→</span>` : '';
-    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickable}>
+    const isClickable = !!n.targetTab;
+    const clickAttr   = isClickable ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
+    const arrow       = isClickable ? `<span style="color:#c9a882;font-size:0.85rem;margin-left:auto;padding-left:8px;flex-shrink:0;align-self:center;">→</span>` : '';
+    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickAttr}>
       <span class="notif-item-icon">${n.icon}</span>
       <div class="notif-item-body" style="flex:1;min-width:0;">
-        <div class="notif-item-msg">${n.message}</div>
-        <div class="notif-item-time">${ago}</div>
+        <div class="notif-item-msg" style="line-height:1.45;">${n.message}</div>
+        <div class="notif-item-time">${ago}${isClickable ? ' · <em style="color:#c9a882;">tap to view</em>' : ''}</div>
       </div>
       ${arrow}
     </div>`;
@@ -8039,42 +8062,47 @@ function handleNotifClick(index) {
   n.read = true;
   saveNotifStore();
   renderNotifPanel();
-  // Close panel
+
   const panel = document.getElementById('notifPanel');
   if (panel) panel.style.display = 'none';
-  // Navigate to target tab
-  if (n.targetTab) {
-    // Activate the tab button
-    const tabBtn = document.querySelector(`.sidebar .tab-btn[data-tab="${n.targetTab}"]`);
-    if (tabBtn) tabBtn.click();
-    // If there's a booking date, navigate the calendar to it after tab loads
-    if (n.bookingDate && n.targetTab === 'bookings') {
+
+  if (!n.targetTab) return;
+
+  // Switch to the target sidebar tab
+  const tabBtn = document.querySelector(`.sidebar .tab-btn[data-tab="${n.targetTab}"]`);
+  if (tabBtn) tabBtn.click();
+
+  // If a booking date is stored, navigate the calendar to it
+  if (n.bookingDate && n.targetTab === 'bookings') {
+    const rawDate = new Date(n.bookingDate);
+    if (isNaN(rawDate)) return;
+    const dateStr = rawDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+
+    setTimeout(() => {
+      // Sync calendar to booking's month/year
+      currentMonth = rawDate.getMonth();
+      currentYear  = rawDate.getFullYear();
+      renderCalendar();
+
       setTimeout(() => {
-        const rawDate = new Date(n.bookingDate);
-        const dateStr = rawDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-        // Update calendar month/year to match the booking date
-        currentMonth = rawDate.getMonth();
-        currentYear  = rawDate.getFullYear();
-        renderCalendar();
-        setTimeout(() => {
-          selectedDate = dateStr;
-          // Highlight the calendar cell
-          document.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
-          document.querySelectorAll('.calendar-day').forEach(day => {
-            const cellDay = parseInt(day.textContent.trim());
-            if (!isNaN(cellDay)) {
-              const cellDate = new Date(currentYear, currentMonth, cellDay)
-                .toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-              if (cellDate === dateStr) day.classList.add('selected');
-            }
-          });
-          loadBookingsForDate(dateStr);
-          // Scroll to bookings section
-          const title = document.getElementById('selectedDateTitle');
-          if (title) title.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 350);
-      }, 400);
-    }
+        selectedDate = dateStr;
+        // Highlight cell
+        document.querySelectorAll('.calendar-day').forEach(cell => {
+          cell.classList.remove('selected');
+          const cellDay = parseInt(cell.querySelector('.day-number')?.textContent || cell.textContent.trim());
+          if (!isNaN(cellDay)) {
+            const cellDate = new Date(currentYear, currentMonth, cellDay)
+              .toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+            if (cellDate === dateStr) cell.classList.add('selected');
+          }
+        });
+        // Load bookings for that date
+        loadBookingsForDate(dateStr);
+        // Scroll to bookings list
+        const title = document.getElementById('selectedDateTitle');
+        if (title) title.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    }, 450);
   }
 }
 
@@ -8354,6 +8382,40 @@ async function reviewLeaveRequest(id, decision) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('Failed');
+
+    // If approved, also push dateOverrides to block booking on those dates
+    if (decision === 'approved') {
+      try {
+        const leaveData = await res.clone().json().catch(() => null)
+                       || await fetch(`${apiBase}/therapists/leave-requests/${id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          }).then(r => r.json()).catch(() => null);
+
+        if (leaveData?.startDate && leaveData?.endDate && leaveData?.therapistId) {
+          const start = new Date(leaveData.startDate);
+          const end   = new Date(leaveData.endDate);
+          const overrides = [];
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            overrides.push({
+              date:      d.toISOString().split('T')[0],
+              isWorking: false,
+              reason:    leaveData.type === 'vacation' ? 'Vacation' : 'Leave'
+            });
+          }
+          if (overrides.length > 0) {
+            // Add date overrides to the therapist's schedule
+            await fetch(`${apiBase}/therapists/${leaveData.therapistId}/date-overrides`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ overrides })
+            }).catch(e => console.warn('Could not add date overrides:', e));
+          }
+        }
+      } catch(overrideErr) {
+        console.warn('Date override step skipped:', overrideErr);
+      }
+    }
+
     showNotification(`Request ${decision === 'approved' ? 'approved ✅' : 'rejected ❌'}`, decision === 'approved' ? 'success' : 'error');
     loadLeaveRequests();
   } catch(e) {

@@ -40,6 +40,17 @@ socket.on('appointmentRemoved', () => {
   loadTherapistData();
 });
 
+// ── Re-sync profile + calendar when leave is approved or rejected ─────────
+socket.on('leave-approved', (data) => {
+  if (!data || data.therapistId !== user._id) return;
+  showNotification('🌴 Your leave request was approved!', 'success');
+  loadTherapistData(); // refreshes profile → dateOverrides → calendar
+});
+socket.on('leave-rejected', (data) => {
+  if (!data || data.therapistId !== user._id) return;
+  showNotification('❌ Your leave request was not approved.', 'error');
+});
+
 // Display welcome message
 document.getElementById("welcomeMessage").textContent = `Welcome back, ${user.name}!`;
 document.getElementById("dashboardSubtitle").textContent = `Here's your dashboard overview, ${user.name}`;
@@ -68,7 +79,7 @@ function getWeeklyDayOff() {
 }
 
 // Returns true if the given YYYY-MM-DD date is the therapist's day off.
-// Priority: dateOverride (specific date) > weekly schedule.
+// Priority: dateOverride (specific date) > approved leaves > weekly schedule.
 function isTherapistDayOff(dateStr) {
   if (!therapistProfile) return false;
 
@@ -82,9 +93,23 @@ function isTherapistDayOff(dateStr) {
     if (override) return !override.isWorking;
   }
 
-  // 2. Fall back to weekly schedule
+  // 2. Check approved leave requests (startDate → endDate range)
+  if (therapistProfile.leaveRequests?.length) {
+    const checkDate = new Date(dateStr + 'T12:00:00');
+    const onLeave = therapistProfile.leaveRequests.some(lr => {
+      if (lr.status !== 'approved') return false;
+      const start = new Date(lr.startDate);
+      const end   = new Date(lr.endDate);
+      start.setHours(0,0,0,0);
+      end.setHours(23,59,59,999);
+      return checkDate >= start && checkDate <= end;
+    });
+    if (onLeave) return true;
+  }
+
+  // 3. Fall back to weekly schedule
   const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const dayName  = dayNames[new Date(dateStr + 'T12:00:00').getDay()]; // noon avoids DST edge
+  const dayName  = dayNames[new Date(dateStr + 'T12:00:00').getDay()];
   const schedDay = therapistProfile.weeklySchedule?.find(d => d.dayOfWeek === dayName);
   if (schedDay) return !schedDay.isWorking;
 
@@ -667,8 +692,7 @@ function openLeaveModal() {
   document.getElementById('leaveEndDate').value   = today;
   document.getElementById('leaveReason').value    = '';
   document.getElementById('leaveType').value      = 'leave';
-  const overtimeRow = document.getElementById('overtimeHoursRow');
-  if (overtimeRow) overtimeRow.style.display = 'none';
+  document.getElementById('overtimeHoursRow').style.display = 'none';
   document.getElementById('leaveRequestModal').classList.add('active');
 }
 

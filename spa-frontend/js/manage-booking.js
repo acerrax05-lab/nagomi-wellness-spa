@@ -469,7 +469,8 @@ function openManageReviewModal(serviceName, txn) {
       }
       const target = serviceName.toLowerCase();
       for (const opt of select.options) {
-        if (opt.value.toLowerCase().includes(target) || target.includes(opt.value.toLowerCase())) {
+        const optName = (opt.dataset.name || opt.textContent).toLowerCase();
+        if (optName.includes(target) || target.includes(optName)) {
           select.value = opt.value;
           break;
         }
@@ -508,8 +509,9 @@ async function _loadServicesForMgReview() {
     const list = await res.json();
     list.forEach(s => {
       const opt = document.createElement('option');
-      opt.value = s.name;
+      opt.value       = s._id;        // ← must be ObjectId, not name
       opt.textContent = s.name;
+      opt.dataset.name = s.name.toLowerCase();
       select.appendChild(opt);
     });
   } catch(e) { console.warn('Could not load services for review'); }
@@ -532,10 +534,26 @@ async function submitManageReview(e) {
 
   try {
     const email = document.getElementById('mgReviewerEmail')?.value.trim() || '';
+    // Get the selected option's display name for fallback
+    const serviceEl  = document.getElementById('mgReviewService');
+    const serviceId  = serviceEl?.value || '';
+    const serviceTxt = serviceEl?.options[serviceEl.selectedIndex]?.textContent || '';
     const res = await fetch(`${REVIEW_API}/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guestName: name, guestEmail: email, service, rating, comment: text, reviewText: text })
+      body: JSON.stringify({
+        // cover both field-name conventions the backend may use
+        guestName:   name,
+        user:        { name },
+        guestEmail:  email,
+        email,
+        service:     serviceId,      // ObjectId string
+        serviceName: serviceTxt,     // plain name as fallback
+        rating,
+        comment:     text,
+        reviewText:  text,
+        source:      'manage-booking'
+      })
     });
     if (!res.ok) {
       let errMsg = 'Failed to submit review.';
