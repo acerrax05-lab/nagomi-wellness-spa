@@ -680,9 +680,23 @@ try {
         const io = req.app.get('socketio');
         if (io) {
           io.emit('newBooking', {
-            message: `New ${bookingType} booking created`,
+            message:   `New ${bookingType} booking created`,
             booking,
-            bookingType
+            bookingType,
+            // Flat fields so admin notification panel can read them directly
+            guestName: booking.guestName,
+            date:      booking.date,
+            time:      booking.time,
+            service:   { name: booking.service?.name || '' }
+          });
+          io.emit('new-booking', {
+            message:   `New ${bookingType} booking created`,
+            booking,
+            bookingType,
+            guestName: booking.guestName,
+            date:      booking.date,
+            time:      booking.time,
+            service:   { name: booking.service?.name || '' }
           });
 
           therapistIds.forEach(therapistId => {
@@ -1054,8 +1068,12 @@ booking = updatedBooking;
         const io = req.app.get('socketio');
         if (io) {
           io.emit('cancellationRequested', {
-            message: `Cancellation requested for booking ${booking.transactionNumber}`,
-            booking
+            message:   `Cancellation requested for booking ${booking.transactionNumber}`,
+            booking,
+            guestName: booking.guestName,
+            date:      booking.date,
+            time:      booking.time,
+            service:   { name: booking.service?.name || '' }
           });
         }
 
@@ -1135,8 +1153,12 @@ booking = updatedBooking;
         const io = req.app.get('socketio');
         if (io) {
           io.emit('rescheduleRequested', {
-            message: `Reschedule requested for booking ${booking.transactionNumber}`,
-            booking
+            message:   `Reschedule requested for booking ${booking.transactionNumber}`,
+            booking,
+            guestName: booking.guestName,
+            date:      booking.date,
+            time:      booking.time,
+            service:   { name: booking.service?.name || '' }
           });
         }
 

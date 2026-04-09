@@ -265,12 +265,10 @@ router.put('/:id/pay-settings', auth, roles(['admin']), async (req, res) => {
 });
 
 
-// ── LEAVE / OVERTIME REQUEST ROUTES ─────────────────────────────────────────
+// ── LEAVE / VACATION REQUEST ROUTES ─────────────────────────────────────────
 
-// In-memory store for now (replace with LeaveRequest model for production)
-// Using a simple approach: store requests in an array on the User model would require schema change
-// So we use a module-level array that resets on server restart — production should use a DB model
-
+// In-memory store (persists until server restart).
+// On approval we write date overrides to DB so the effect survives restarts.
 const leaveRequests = [];
 let leaveIdCounter  = 1;
 
@@ -293,9 +291,18 @@ router.post('/leave-requests', auth, roles(['therapist']), async (req, res) => {
       submittedAt:   new Date(),
     };
     leaveRequests.unshift(request);
-    // Emit socket event so admin gets notified in real time
+
+    // Notify admin in real time
     const io = req.app.get('socketio');
-    if (io) io.emit('leave-request', { therapistName: request.therapistName, type });
+    if (io) {
+      io.emit('leave-request', {
+        therapistName: request.therapistName,
+        therapistId:   request.therapistId,
+        type,
+        startDate,
+        endDate
+      });
+    }
     res.status(201).json({ msg: 'Request submitted', request });
   } catch (err) {
     console.error(err);
@@ -314,21 +321,95 @@ router.get('/leave-requests/my', auth, roles(['therapist']), (req, res) => {
   res.json(mine);
 });
 
+// ── Helper: add date overrides for every day in a date range ──────────────
+async function addLeaveOverrides(therapistId, startDate, endDate, reason) {
+  const therapist = await User.findOne({ _id: therapistId, role: 'therapist' });
+  if (!therapist) return;
+
+  const start = new Date(startDate);
+  const end   = new Date(endDate);
+  start.setHours(0,0,0,0);
+  end.setHours(23,59,59,999);
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dayDate   = new Date(d);
+    const existing  = therapist.dateOverrides.findIndex(o =>
+      new Date(o.date).toDateString() === dayDate.toDateString()
+    );
+    const override  = { date: dayDate, isWorking: false, shifts: [], reason: reason || 'Approved leave' };
+    if (existing !== -1) therapist.dateOverrides[existing] = override;
+    else therapist.dateOverrides.push(override);
+  }
+
+  await therapist.save();
+  console.log(`✅ Added leave overrides for ${therapistId} from ${startDate} to ${endDate}`);
+}
+
+// ── Helper: remove leave date overrides (on rejection / rollback) ─────────
+async function removeLeaveOverrides(therapistId, startDate, endDate) {
+  const therapist = await User.findOne({ _id: therapistId, role: 'therapist' });
+  if (!therapist) return;
+
+  const start = new Date(startDate); start.setHours(0,0,0,0);
+  const end   = new Date(endDate);   end.setHours(23,59,59,999);
+
+  therapist.dateOverrides = therapist.dateOverrides.filter(o => {
+    const od = new Date(o.date);
+    return !(od >= start && od <= end);
+  });
+  await therapist.save();
+}
+
 // PATCH /api/therapists/leave-requests/:id/approved — admin approves
-router.patch('/leave-requests/:id/approved', auth, roles(['admin']), (req, res) => {
+router.patch('/leave-requests/:id/approved', auth, roles(['admin']), async (req, res) => {
   const r = leaveRequests.find(r => r._id === req.params.id);
   if (!r) return res.status(404).json({ msg: 'Request not found' });
-  r.status = 'approved';
+
+  r.status     = 'approved';
   r.reviewedAt = new Date();
+
+  try {
+    // ── Write date overrides to DB so availability checker blocks these dates ──
+    await addLeaveOverrides(r.therapistId, r.startDate, r.endDate, r.type === 'vacation' ? 'Vacation' : 'Approved leave');
+
+    // ── Notify therapist in real time so their calendar refreshes ──
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(r.therapistId.toString()).emit('leave-approved', {
+        therapistId: r.therapistId,
+        startDate:   r.startDate,
+        endDate:     r.endDate,
+        type:        r.type
+      });
+    }
+  } catch (err) {
+    console.error('⚠️  Could not write date overrides on approval:', err.message);
+  }
+
   res.json({ msg: 'Request approved', request: r });
 });
 
 // PATCH /api/therapists/leave-requests/:id/rejected — admin rejects
-router.patch('/leave-requests/:id/rejected', auth, roles(['admin']), (req, res) => {
+router.patch('/leave-requests/:id/rejected', auth, roles(['admin']), async (req, res) => {
   const r = leaveRequests.find(r => r._id === req.params.id);
   if (!r) return res.status(404).json({ msg: 'Request not found' });
-  r.status = 'rejected';
+
+  r.status     = 'rejected';
   r.reviewedAt = new Date();
+
+  // If it was previously approved, remove the date overrides
+  if (r.status === 'approved') {
+    try { await removeLeaveOverrides(r.therapistId, r.startDate, r.endDate); } catch(e) {}
+  }
+
+  const io = req.app.get('socketio');
+  if (io) {
+    io.to(r.therapistId.toString()).emit('leave-rejected', {
+      therapistId: r.therapistId,
+      type:        r.type
+    });
+  }
+
   res.json({ msg: 'Request rejected', request: r });
 });
 
