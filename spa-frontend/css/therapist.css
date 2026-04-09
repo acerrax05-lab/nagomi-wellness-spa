@@ -1214,34 +1214,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-.t-sidebar-welcome {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 18px;
-}
-.t-sidebar-avatar {
-  width: 38px; height: 38px;
-  background: rgba(247,198,165,0.2);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; flex-shrink: 0;
-  border: 1.5px solid rgba(247,198,165,0.35);
-}
-.t-sidebar-name {
-  font-weight: 700; font-size: 0.95rem;
-  color: #f7c6a5; line-height: 1.3;
-}
-.t-sidebar-role {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.5);
-  margin-top: 2px;
-}
-
-.t-sidebar-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.1);
-  margin: 4px 0;
-}
-
 /* Stats inside sidebar */
 .t-sidebar-stats {
   padding: 12px 14px;
