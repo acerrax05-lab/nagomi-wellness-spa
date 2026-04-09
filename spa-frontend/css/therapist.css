@@ -1391,7 +1391,7 @@ body {
 /* Legend inside card */
 .t-card .legend-item { color: var(--t-brown-lt) !important; }
 .t-card .legend-dot.booked  { background: #4a8a4a !important; }
-.t-card .legend-dot.day-off { background: rgba(120,50,50,0.5) !important; }
+.t-card .legend-dot.day-off { background: rgba(255, 0, 0, 58%) !important; }
 
 /* Section title inside card */
 .t-card .section-title {
