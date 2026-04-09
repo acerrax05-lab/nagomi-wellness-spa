@@ -356,7 +356,6 @@ function renderCalendar() {
 
     dayCell.innerHTML = `
       <span class="day-number">${day}</span>
-      ${isDayOff ? `<span class="day-off-badge">😴<br>Day Off</span>` : ''}
     `;
 
     if (isDayOff) {

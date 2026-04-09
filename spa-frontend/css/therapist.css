@@ -1386,7 +1386,7 @@ body {
 .t-card .calendar-day.today         { background: rgba(184,147,58,0.12) !important; border-color: var(--t-gold) !important; }
 .t-card .calendar-day.selected      { box-shadow: 0 0 0 2px var(--t-gold) !important; background: rgba(184,147,58,0.18) !important; }
 .t-card .calendar-day.has-appointments { background: #4a8a4a !important; color: #fff !important; }
-.t-card .calendar-day.day-off       { background: rgba(120,50,50,0.12) !important; color: rgba(120,50,50,0.7) !important; }
+.t-card .calendar-day.day-off       { background: rgba(255, 0, 0, 58%) !important; color: rgba(120,50,50,0.7) !important; }
 
 /* Legend inside card */
 .t-card .legend-item { color: var(--t-brown-lt) !important; }
