@@ -3950,15 +3950,6 @@ input:checked + .toggle-slider:before {
   margin-left: 220px !important;
   margin-top: 64px !important;
 }
-.sidebar-logo {
-  display: flex; align-items: center; gap: 10px;
-  padding: 20px 18px 16px;
-  color: #000000;
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem; font-weight: 700;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  letter-spacing: 0.5px;
-}
 .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
 .sidebar .tab-btn {
   width: 100%;
