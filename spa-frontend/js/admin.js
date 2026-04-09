@@ -121,7 +121,15 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   }
   function _fmtTime(t) {
     if (!t) return '';
-    try { const [h,m]=String(t).split(':'); const dt=new Date(); dt.setHours(+h,+(m||0)); return dt.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}); } catch(e) { return String(t); }
+    const s = String(t).trim();
+    // Already formatted as "4:30 PM" or "10:00 AM" — return as-is
+    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(s)) return s;
+    // 24-hour "HH:MM" format — convert
+    try {
+      const [h, m] = s.split(':');
+      const dt = new Date(); dt.setHours(+h, +(m || 0));
+      return dt.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch(e) { return s; }
   }
   // Backend emits: { booking: { guestName, date, time, service: {name} }, guestName, date, time, service }
   function _extract(data) {
