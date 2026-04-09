@@ -3987,10 +3987,6 @@ input:checked + .toggle-slider:before {
   padding: 14px 18px;
   display: flex; flex-direction: column; gap: 10px;
 }
-.sidebar-admin-info {
-  display: flex; align-items: center; gap: 10px;
-  color: #000000; font-size: 0.85rem;
-}
 .sidebar-avatar {
   width: 32px; height: 32px; border-radius: 50%;
   background: rgba(255,255,255,0.15);
