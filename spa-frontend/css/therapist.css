@@ -1116,3 +1116,331 @@ button[onclick="openLeaveModal()"]:hover {
 #completeModal .modal-content { background: #fdfaf5 !important; border-top: 3px solid #b8933a !important; }
 #completeModal h3 { color: #4b2e1e !important; }
 #completeModal p  { color: rgba(45,26,14,0.65) !important; }
+/* ═══════════════════════════════════════════════════════════════════════
+   THERAPIST SIDEBAR LAYOUT — matches admin.css design language
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --t-brown:     #4b2e1e;
+  --t-brown-lt:  #8b6f47;
+  --t-gold:      #b8933a;
+  --t-gold-lt:   #d4aa55;
+  --t-cream:     #f5f1eb;
+  --t-sidebar-w: 260px;
+  --t-nav-h:     64px;
+}
+
+/* Override old dark body — use light cream for sidebar layout */
+body {
+  background: var(--t-cream) !important;
+  color: #333 !important;
+}
+
+/* ── Top Navbar ── */
+.t-navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--t-nav-h);
+  background: linear-gradient(135deg, #3b1f10 0%, #4b2e1e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 1100;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+.t-navbar-left  { display: flex; align-items: center; gap: 12px; }
+.t-navbar-right { color: rgba(255,255,255,0.75); font-size: 0.85rem; }
+.t-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f7c6a5;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+/* Hamburger button */
+.t-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.t-hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 2px;
+  transition: all 0.25s;
+}
+.t-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.t-hamburger.active span:nth-child(2) { opacity: 0; }
+.t-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* ── Sidebar overlay (mobile) ── */
+.t-sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1050;
+}
+.t-sidebar-overlay.active { display: block; }
+
+/* ── Sidebar ── */
+.t-sidebar {
+  position: fixed;
+  top: var(--t-nav-h); left: 0;
+  width: var(--t-sidebar-w);
+  height: calc(100vh - var(--t-nav-h));
+  background: linear-gradient(180deg, #3b1f10 0%, #4b2e1e 100%);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 1060;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.18);
+}
+
+.t-sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 20px 18px 16px;
+  color: #f7c6a5;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  letter-spacing: 0.5px;
+}
+
+.t-sidebar-welcome {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px;
+}
+.t-sidebar-avatar {
+  width: 38px; height: 38px;
+  background: rgba(247,198,165,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+  border: 1.5px solid rgba(247,198,165,0.35);
+}
+.t-sidebar-name {
+  font-weight: 700; font-size: 0.95rem;
+  color: #f7c6a5; line-height: 1.3;
+}
+.t-sidebar-role {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
+.t-sidebar-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 4px 0;
+}
+
+/* Stats inside sidebar */
+.t-sidebar-stats {
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.t-stat-item {
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 3px solid rgba(247,198,165,0.3);
+  cursor: default;
+  transition: background 0.2s;
+}
+.t-stat-item:hover { background: rgba(255,255,255,0.12); }
+.t-stat-commission {
+  border-left-color: var(--t-gold) !important;
+  cursor: pointer !important;
+  background: rgba(184,147,58,0.12) !important;
+}
+.t-stat-commission:hover { background: rgba(184,147,58,0.22) !important; }
+.t-stat-value {
+  font-size: 1.5rem; font-weight: 800;
+  color: #f7c6a5; line-height: 1.1;
+}
+.t-stat-label {
+  font-size: 0.72rem; color: rgba(255,255,255,0.55);
+  margin-top: 3px; font-weight: 500;
+}
+.t-stat-sub {
+  font-size: 0.68rem;
+  color: rgba(184,147,58,0.8);
+  margin-top: 2px;
+}
+
+/* Leave / Vacation button */
+.t-sidebar-actions { padding: 12px 14px; }
+.t-leave-btn {
+  width: 100%;
+  background: rgba(184,147,58,0.15);
+  border: 1.5px solid rgba(184,147,58,0.45);
+  color: #d4aa55;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
+  text-align: left;
+}
+.t-leave-btn:hover { background: rgba(184,147,58,0.28); color: #f5e6cc; }
+
+/* Sidebar footer / logout */
+.t-sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 14px 14px 18px;
+}
+.t-logout-btn {
+  width: 100%;
+  background: rgba(220,53,69,0.15);
+  border: 1.5px solid rgba(220,53,69,0.35);
+  color: #ff9999;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
+  text-align: left;
+}
+.t-logout-btn:hover { background: rgba(220,53,69,0.28); color: #ffcccc; }
+
+/* ── Main content area ── */
+.t-main {
+  margin-left: var(--t-sidebar-w);
+  margin-top: var(--t-nav-h);
+  padding: 28px 28px 40px;
+  min-height: calc(100vh - var(--t-nav-h));
+}
+
+.t-page-header { margin-bottom: 24px; }
+.t-page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 600;
+  color: var(--t-brown); margin-bottom: 4px;
+}
+.t-page-sub { color: var(--t-brown-lt); font-size: 0.9rem; }
+
+/* Content grid */
+.t-content-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.t-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(75,46,30,0.08);
+  border: 1px solid rgba(200,180,160,0.2);
+}
+
+/* Hide old hero / stats that are replaced by sidebar */
+.hero-section,
+.stats-section {
+  display: none !important;
+}
+
+/* Calendar inside t-card — light theme overrides */
+.t-card .calendar-container {
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
+  margin-top: 8px;
+}
+.t-card .calendar-header h3 { color: var(--t-brown) !important; }
+.t-card .nav-btn {
+  background: var(--t-cream) !important;
+  border-color: rgba(75,46,30,0.15) !important;
+  color: var(--t-brown) !important;
+  width: 30px !important; height: 30px !important;
+  font-size: 0.75rem !important;
+}
+.t-card .nav-btn:hover { background: var(--t-brown) !important; color: white !important; }
+.t-card .day-label {
+  color: var(--t-brown-lt) !important;
+  background: rgba(75,46,30,0.05) !important;
+  font-size: 0.7rem !important;
+  padding: 4px 0 !important;
+}
+.t-card .calendar-day {
+  background: var(--t-cream) !important;
+  color: var(--t-brown) !important;
+  border: 1.5px solid transparent !important;
+  font-size: 0.82rem !important;
+}
+.t-card .calendar-day.current-month { color: var(--t-brown) !important; }
+.t-card .calendar-day.other-month   { color: rgba(75,46,30,0.25) !important; background: transparent !important; }
+.t-card .calendar-day:hover:not(.other-month) { background: rgba(75,46,30,0.08) !important; }
+.t-card .calendar-day.today         { background: rgba(184,147,58,0.12) !important; border-color: var(--t-gold) !important; }
+.t-card .calendar-day.selected      { box-shadow: 0 0 0 2px var(--t-gold) !important; background: rgba(184,147,58,0.18) !important; }
+.t-card .calendar-day.has-appointments { background: #4a8a4a !important; color: #fff !important; }
+.t-card .calendar-day.day-off       { background: rgba(120,50,50,0.12) !important; color: rgba(120,50,50,0.7) !important; }
+
+/* Legend inside card */
+.t-card .legend-item { color: var(--t-brown-lt) !important; }
+.t-card .legend-dot.booked  { background: #4a8a4a !important; }
+.t-card .legend-dot.day-off { background: rgba(120,50,50,0.5) !important; }
+
+/* Section title inside card */
+.t-card .section-title {
+  color: var(--t-brown) !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 14px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 2px solid rgba(184,147,58,0.25) !important;
+}
+.t-card .section-title::after { display: none; }
+
+/* Appointment cards inside t-card */
+.t-card .appointment-card {
+  background: #fdfaf5 !important;
+  border: 1px solid rgba(200,180,160,0.25) !important;
+}
+.t-card .appointment-time { color: var(--t-brown) !important; }
+.t-card .client-name  { color: #2d1a0e !important; }
+.t-card .service-name { color: var(--t-brown-lt) !important; }
+
+/* "No appointments" text */
+.t-appointments-card p,
+.t-appointments-card .no-appointments {
+  color: var(--t-brown-lt) !important;
+}
+
+/* Loader */
+#loader { z-index: 9999; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .t-content-grid { grid-template-columns: 360px 1fr; }
+}
+@media (max-width: 900px) {
+  .t-content-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  :root { --t-sidebar-w: 280px; }
+  .t-hamburger { display: flex; }
+  .t-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .t-sidebar.mobile-open { transform: translateX(0); }
+  .t-main { margin-left: 0; padding: 16px 14px 32px; }
+  .t-page-title { font-size: 1.4rem; }
+  .t-card { padding: 16px; }
+  .t-content-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 420px) {
+  .t-card .calendar-day { font-size: 0.7rem !important; }
+}
