@@ -1,0 +1,77 @@
+/* Pink sakura flower shape */
+.sakura-petal {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(0 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(72 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.85' transform='rotate(144 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(216 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.85' transform='rotate(288 30 30)'/%3E%3Ccircle cx='30' cy='30' r='6' fill='%23fff0f4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  animation: sakuraFloat linear infinite;
+  z-index: 0;
+}
+
+@keyframes sakuraFloat {
+  0%   { opacity: 0;   transform: translateY(0px)   rotate(0deg)   scale(1); }
+  8%   { opacity: 0.7; }
+  88%  { opacity: 0.55; }
+  100% { opacity: 0;   transform: translateY(120px) rotate(180deg) scale(0.85); }
+}
+
+/* ── Sakura container — wrap site sections ── */
+.sakura-bg {
+  position: relative;
+  overflow: hidden; /* keep petals inside the section */
+}
+
+/* ─────────────────────────────────────────────────
+   PETAL INSTANCES — 16 petals with varied
+   position, size, timing, and drift
+───────────────────────────────────────────────── */
+
+/* Reviews / "What Our Clients Say" section */
+.sakura-bg .s1  { width:34px; height:34px; left:3%;   top:8%;  animation-duration:7s;  animation-delay:0s; }
+.sakura-bg .s2  { width:22px; height:22px; left:9%;   top:55%; animation-duration:9s;  animation-delay:1.2s; }
+.sakura-bg .s3  { width:28px; height:28px; left:17%;  top:20%; animation-duration:8s;  animation-delay:3s; }
+.sakura-bg .s4  { width:18px; height:18px; left:25%;  top:72%; animation-duration:11s; animation-delay:0.5s; }
+.sakura-bg .s5  { width:30px; height:30px; left:38%;  top:12%; animation-duration:7.5s;animation-delay:2s; }
+.sakura-bg .s6  { width:20px; height:20px; left:50%;  top:80%; animation-duration:10s; animation-delay:4s; }
+.sakura-bg .s7  { width:26px; height:26px; left:61%;  top:30%; animation-duration:8.5s;animation-delay:1.8s; }
+.sakura-bg .s8  { width:16px; height:16px; left:70%;  top:65%; animation-duration:12s; animation-delay:0.8s; }
+.sakura-bg .s9  { width:32px; height:32px; left:80%;  top:18%; animation-duration:7s;  animation-delay:3.5s; }
+.sakura-bg .s10 { width:20px; height:20px; left:88%;  top:50%; animation-duration:9.5s;animation-delay:2.5s; }
+.sakura-bg .s11 { width:24px; height:24px; left:93%;  top:82%; animation-duration:8s;  animation-delay:1s; }
+.sakura-bg .s12 { width:18px; height:18px; left:5%;   top:88%; animation-duration:10s; animation-delay:5s; }
+.sakura-bg .s13 { width:28px; height:28px; left:44%;  top:45%; animation-duration:6.5s;animation-delay:2.8s; }
+.sakura-bg .s14 { width:14px; height:14px; left:55%;  top:90%; animation-duration:11s; animation-delay:0.3s; }
+.sakura-bg .s15 { width:22px; height:22px; left:74%;  top:5%;  animation-duration:9s;  animation-delay:4.2s; }
+.sakura-bg .s16 { width:30px; height:30px; left:33%;  top:60%; animation-duration:7.5s;animation-delay:1.5s; }
+
+/* ── Slight left-right drift on alternate petals ── */
+.sakura-bg .s1,  .sakura-bg .s3,  .sakura-bg .s5,
+.sakura-bg .s7,  .sakura-bg .s9,  .sakura-bg .s11,
+.sakura-bg .s13, .sakura-bg .s15 {
+  animation-name: sakuraFloatRight;
+}
+@keyframes sakuraFloatRight {
+  0%   { opacity: 0;   transform: translateY(0px)   translateX(0px)   rotate(0deg);   }
+  8%   { opacity: 0.7; }
+  88%  { opacity: 0.5; }
+  100% { opacity: 0;   transform: translateY(110px) translateX(18px)  rotate(160deg); }
+}
+.sakura-bg .s2,  .sakura-bg .s4,  .sakura-bg .s6,
+.sakura-bg .s8,  .sakura-bg .s10, .sakura-bg .s12,
+.sakura-bg .s14, .sakura-bg .s16 {
+  animation-name: sakuraFloatLeft;
+}
+@keyframes sakuraFloatLeft {
+  0%   { opacity: 0;   transform: translateY(0px)   translateX(0px)   rotate(0deg);   }
+  8%   { opacity: 0.65; }
+  88%  { opacity: 0.45; }
+  100% { opacity: 0;   transform: translateY(115px) translateX(-14px) rotate(-140deg);}
+}
+
+/* ── Reduce motion for accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  .sakura-petal { animation: none !important; opacity: 0.18 !important; }
+}

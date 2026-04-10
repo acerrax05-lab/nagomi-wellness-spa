@@ -247,17 +247,23 @@ function renderBookingCard(booking, canModify) {
            : ''}
         </div>`}
 
-      ${booking.status === 'completed' ? `
-        <div style="margin-top:10px;">
-          <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}')"
-            style="display:block;width:100%;text-align:center;padding:12px;
-              background:linear-gradient(135deg,#8b6f47,#4b2e1e);
-              color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
-              cursor:pointer;transition:opacity 0.2s;"
-            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-            ✍️ Write a Review
-          </button>
-        </div>` : booking.status !== 'cancelled' ? `
+      ${booking.status === 'completed' ? (() => {
+        const hasReviewed = localStorage.getItem(`reviewed_${booking._id || booking.transactionNumber}`) === '1';
+        return hasReviewed
+          ? `<div style="margin-top:10px;padding:12px;background:#e8f5e9;border-radius:10px;text-align:center;color:#2e7d32;font-size:0.9rem;font-weight:600;">
+               ✅ You've already submitted a review for this booking. Thank you!
+             </div>`
+          : `<div style="margin-top:10px;">
+               <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}','${(booking.guestName || '').replace(/'/g,"\\'")}','${booking._id || ''}')"
+                 style="display:block;width:100%;text-align:center;padding:12px;
+                   background:linear-gradient(135deg,#8b6f47,#4b2e1e);
+                   color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
+                   cursor:pointer;transition:opacity 0.2s;"
+                 onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                 ✍️ Write a Review
+               </button>
+             </div>`;
+      })() : booking.status !== 'cancelled' ? `
         <div style="margin-top:10px;">
           <button disabled style="display:block;width:100%;text-align:center;padding:12px;
             background:#e0e0e0;color:#aaa;border:none;border-radius:10px;
@@ -449,7 +455,7 @@ document.head.appendChild(style);
 const REVIEW_API = 'https://nagomi-backend.onrender.com/api';
 let _reviewSelectedRating = 0;
 
-function openManageReviewModal(serviceName, txn) {
+function openManageReviewModal(serviceName, txn, guestName, bookingId) {
   // Build modal if not yet in DOM
   if (!document.getElementById('manageReviewModal')) {
     _buildReviewModal();
@@ -457,6 +463,19 @@ function openManageReviewModal(serviceName, txn) {
   const modal = document.getElementById('manageReviewModal');
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+
+  // Store bookingId for one-time review enforcement
+  modal.dataset.bookingId = bookingId || txn || '';
+
+  // Autofill + lock the name field from the booking data
+  const nameInput = document.getElementById('mgReviewerName');
+  if (nameInput && guestName) {
+    nameInput.value    = guestName;
+    nameInput.readOnly = true;
+    nameInput.style.background = '#f5f1eb';
+    nameInput.style.cursor     = 'not-allowed';
+    nameInput.title            = 'Name auto-filled from your booking';
+  }
 
   // Pre-fill service if provided
   if (serviceName) {
@@ -487,6 +506,14 @@ function closeManageReviewModal() {
     document.body.style.overflow = '';
     document.getElementById('mgReviewForm')?.reset();
     _setReviewRating(0);
+    // Restore name field to editable state
+    const nameInput = document.getElementById('mgReviewerName');
+    if (nameInput) {
+      nameInput.readOnly = false;
+      nameInput.style.background = '';
+      nameInput.style.cursor     = '';
+    }
+    modal.dataset.bookingId = '';
   }
 }
 
@@ -557,11 +584,18 @@ async function submitManageReview(e) {
     });
     if (!res.ok) {
       let errMsg = 'Failed to submit review.';
-      try { const errData = await res.json(); errMsg = errData.message || errMsg; } catch(e2) {}
+      try { const errData = await res.json(); errMsg = errData.msg || errData.message || errMsg; } catch(e2) {}
       throw new Error(errMsg);
     }
+    // ── Mark this booking as reviewed (one-time only) ───────────────────────
+    const modal = document.getElementById('manageReviewModal');
+    const bookingKey = modal?.dataset?.bookingId;
+    if (bookingKey) localStorage.setItem(`reviewed_${bookingKey}`, '1');
+
     closeManageReviewModal();
     showNotification('🌸 Thank you! Your review has been submitted.', 'success');
+    // Refresh cards so the button changes to "already reviewed"
+    setTimeout(() => refreshCurrentBookings(), 800);
   } catch(e) {
     if (btn) { btn.disabled = false; btn.textContent = '📤 Submit Review'; }
     // Use a styled inline error instead of alert
