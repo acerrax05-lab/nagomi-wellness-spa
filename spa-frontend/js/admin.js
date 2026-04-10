@@ -147,21 +147,28 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     return `${label}<br><strong>${name}</strong>${svc ? ' — '+svc : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 '+detail+'</span>' : ''}`;
   }
 
+  // ── Dedup guard: ignore socket events that arrived within 2s for same guest+date ──
+  const _recentNotifs = new Set();
+  function _isDupe(key) {
+    if (_recentNotifs.has(key)) return true;
+    _recentNotifs.add(key);
+    setTimeout(() => _recentNotifs.delete(key), 2000);
+    return false;
+  }
+
   socket.on('newBooking', (data) => {
     showNotification('New booking received!', 'success');
-    addNotif(_bookingMsg('New Booking', data), 'booking', 'bookings', (data.booking||data).date || data.date);
+    const b = data.booking || data;
+    const key = `booking-${b.guestName || ''}-${b.date || ''}`;
+    if (_isDupe(key)) return;
+    addNotif(_bookingMsg('New Booking', data), 'booking', 'bookings', b.date || data.date);
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
   });
 
-  socket.on('new-booking', (data) => {
-    showNotification('New booking received!', 'success');
-    addNotif(_bookingMsg('New Booking', data), 'booking', 'bookings', (data.booking||data).date || data.date);
-    const activeTab = document.querySelector('.tab-content.active')?.id;
-    if (activeTab === 'overview-tab') loadOverviewData();
-    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
-  });
+  // new-booking is a duplicate event — skip to prevent double notifications
+  // socket.on('new-booking', ...) intentionally removed
 
   socket.on('bookingStatusUpdated', () => {
     const activeTab = document.querySelector('.tab-content.active')?.id;
@@ -169,31 +176,32 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
   });
 
-  socket.on('booking-cancelled', (data) => {
-    addNotif(_bookingMsg('Cancellation Request', data), 'cancel', 'bookings', (data.booking||data).date || data.date);
-  });
-
-  // ← correct backend event name
+  // cancellationRequested is the real backend event name
   socket.on('cancellationRequested', (data) => {
-    addNotif(_bookingMsg('Cancellation Request', data), 'cancel', 'bookings', (data.booking||data).date || data.date);
+    const b = data.booking || data;
+    const key = `cancel-${b.guestName || ''}-${b.date || ''}`;
+    if (_isDupe(key)) return;
+    addNotif(_bookingMsg('Cancellation Request', data), 'cancel', 'bookings', b.date || data.date);
   });
 
-  socket.on('reschedule-request', (data) => {
-    addNotif(_bookingMsg('Reschedule Request', data), 'reschedule', 'bookings', (data.booking||data).date || data.date);
-  });
-
-  // ← correct backend event name
+  // rescheduleRequested is the real backend event name
   socket.on('rescheduleRequested', (data) => {
-    addNotif(_bookingMsg('Reschedule Request', data), 'reschedule', 'bookings', (data.booking||data).date || data.date);
+    const b = data.booking || data;
+    const key = `reschedule-${b.guestName || ''}-${b.date || ''}`;
+    if (_isDupe(key)) return;
+    addNotif(_bookingMsg('Reschedule Request', data), 'reschedule', 'bookings', b.date || data.date);
   });
 
   socket.on('leave-request', (data) => {
     const tName = data?.therapistName || 'A therapist';
-    const lType = data?.type === 'vacation' ? '✈️ Vacation' : '🌴 Leave';
+    const lType = data?.type === 'vacation' ? 'Vacation' : 'Leave';
+    const lIcon = data?.type === 'vacation' ? '✈️' : '🌴';
     const from  = data?.startDate ? _fmtDate(data.startDate) : '';
     const to    = data?.endDate   ? _fmtDate(data.endDate)   : '';
-    const range = from && to && from !== to ? `${from} → ${to}` : (from||to);
-    addNotif(`${lType} Request<br><strong>${tName}</strong>${range ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 '+range+'</span>' : ''}`, 'leave', 'leave-requests');
+    const range = from && to && from !== to ? `${from} → ${to}` : (from || to);
+    const msg = `${lIcon} ${lType} Request<br><strong>${tName}</strong>`
+              + (range ? `<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ${range}</span>` : '');
+    addNotif(msg, 'leave', 'leave-requests');
     const badge = document.getElementById('leaveSidebarBadge');
     if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
   });
@@ -8026,13 +8034,26 @@ function renderNotifPanel() {
   list.innerHTML = notifStore.map((n, i) => {
     const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
     const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins/60)}h ago` : `${Math.floor(mins/1440)}d ago`;
-    const clickable = n.targetTab ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
-    const arrow = n.targetTab ? `<span style="color:#c9a882;font-size:0.85rem;margin-left:auto;padding-left:8px;flex-shrink:0;align-self:center;">→</span>` : '';
-    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickable}>
-      <span class="notif-item-icon">${n.icon}</span>
-      <div class="notif-item-body" style="flex:1;min-width:0;">
-        <div class="notif-item-msg" style="line-height:1.45;">${n.message}</div>
-        <div class="notif-item-time">${ago}${n.targetTab ? ' · <em style="color:#c9a882;">tap to view</em>' : ''}</div>
+    const isClickable = !!n.targetTab;
+    const clickAttr   = isClickable ? `onclick="handleNotifClick(${i})"` : '';
+    const arrow       = isClickable ? `<span style="color:#c9a882;font-size:0.85rem;margin-left:auto;padding-left:8px;flex-shrink:0;align-self:center;">→</span>` : '';
+
+    // Unread = warm brown gold highlight; read = faded
+    const unreadBg  = 'linear-gradient(90deg,rgba(184,147,58,0.14) 0%,rgba(245,241,235,0.5) 100%)';
+    const readBg    = 'transparent';
+    const bgStyle   = `background:${n.read ? readBg : unreadBg};${!n.read ? 'border-left:3px solid #b8933a;' : 'border-left:3px solid transparent;'}`;
+    const textColor = n.read ? '#888' : '#2d1a0e';
+    const fontWeight = n.read ? '400' : '500';
+    const opacityStyle = n.read ? 'opacity:0.65;' : '';
+
+    return `<div style="${bgStyle}${opacityStyle}${isClickable ? 'cursor:pointer;' : ''}padding:12px 16px;display:flex;gap:10px;border-bottom:1px solid #f5f1eb;transition:background 0.2s;"
+      ${clickAttr}
+      onmouseover="this.style.background='rgba(184,147,58,0.22)'"
+      onmouseout="this.style.background='${n.read ? readBg : unreadBg}'">
+      <span style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">${n.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.84rem;color:${textColor};line-height:1.45;font-weight:${fontWeight};">${n.message}</div>
+        <div style="font-size:0.72rem;color:#aaa;margin-top:3px;">${ago}${isClickable ? ' · <em style="color:#c9a882;">tap to view</em>' : ''}</div>
       </div>
       ${arrow}
     </div>`;
@@ -8090,11 +8111,16 @@ function toggleNotifPanel() {
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
   if (!isOpen) {
-    // Mark all read
-    notifStore.forEach(n => n.read = true);
-    const badge = document.getElementById('notifBadge');
-    if (badge) badge.style.display = 'none';
+    // Re-render immediately to show highlights before marking read
     renderNotifPanel();
+    // Mark all read after a short delay so user sees the highlights momentarily
+    setTimeout(() => {
+      notifStore.forEach(n => n.read = true);
+      saveNotifStore();
+      const badge = document.getElementById('notifBadge');
+      if (badge) badge.style.display = 'none';
+      renderNotifPanel();
+    }, 1500);
   }
 }
 
