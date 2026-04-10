@@ -1,31 +1,20 @@
 // js/sakura-petals.js
-// Automatically injects scattered sakura petal <span> elements into every
-// element that has the class "sakura-bg".
-//
-// Usage — just add the class to a section:
-//   <section class="sakura-bg reviews-section">...</section>
-//
-// Then include this script once on the page (before </body>):
-//   <script src="js/sakura-petals.js"></script>
-
+// Creates a fixed full-page layer and injects 20 sakura petals into it.
+// Works on every page automatically — just include the CSS + this script.
 (function () {
-  const PETAL_COUNT = 16;
-
-  function injectPetals(container) {
-    // Don't inject twice
-    if (container.querySelector('.sakura-petal')) return;
-    for (let i = 1; i <= PETAL_COUNT; i++) {
-      const el = document.createElement('span');
-      el.className = `sakura-petal s${i}`;
-      el.setAttribute('aria-hidden', 'true');
-      container.appendChild(el);
-    }
-  }
-
+  const COUNT = 20;
   function init() {
-    document.querySelectorAll('.sakura-bg').forEach(injectPetals);
+    if (document.getElementById('sakura-layer')) return;
+    const layer = document.createElement('div');
+    layer.id = 'sakura-layer';
+    for (let i = 1; i <= COUNT; i++) {
+      const p = document.createElement('span');
+      p.className = `sakura-petal sp${i}`;
+      p.setAttribute('aria-hidden', 'true');
+      layer.appendChild(p);
+    }
+    document.body.appendChild(layer);
   }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

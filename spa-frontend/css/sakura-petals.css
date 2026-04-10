@@ -1,77 +1,61 @@
-/* Pink sakura flower shape */
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAGOMI — Scattered Sakura Petals  (Full-Page Background Version)
+   Petals are fixed to the viewport so they cover the entire page at all times.
+   pointer-events:none  → never blocks clicks
+   z-index:0            → sits above page background but below all content
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#sakura-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
 .sakura-petal {
   position: absolute;
   pointer-events: none;
   user-select: none;
   opacity: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(0 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(72 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.85' transform='rotate(144 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.85' transform='rotate(216 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.85' transform='rotate(288 30 30)'/%3E%3Ccircle cx='30' cy='30' r='6' fill='%23fff0f4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.82' transform='rotate(0 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.82' transform='rotate(72 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.82' transform='rotate(144 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f9d0db' opacity='0.82' transform='rotate(216 30 30)'/%3E%3Cellipse cx='30' cy='14' rx='10' ry='14' fill='%23f4b8c8' opacity='0.82' transform='rotate(288 30 30)'/%3E%3Ccircle cx='30' cy='30' r='6' fill='%23fff0f4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: contain;
-  animation: sakuraFloat linear infinite;
-  z-index: 0;
 }
 
-@keyframes sakuraFloat {
-  0%   { opacity: 0;   transform: translateY(0px)   rotate(0deg)   scale(1); }
-  8%   { opacity: 0.7; }
-  88%  { opacity: 0.55; }
-  100% { opacity: 0;   transform: translateY(120px) rotate(180deg) scale(0.85); }
-}
+.sp1  { width:32px; height:32px; left:2%;   top:5%;  animation: sfR 8s   1s   infinite; }
+.sp2  { width:20px; height:20px; left:8%;   top:40%; animation: sfL 10s  3.5s infinite; }
+.sp3  { width:28px; height:28px; left:14%;  top:15%; animation: sfR 7s   0.5s infinite; }
+.sp4  { width:16px; height:16px; left:21%;  top:68%; animation: sfL 12s  2s   infinite; }
+.sp5  { width:26px; height:26px; left:30%;  top:8%;  animation: sfR 9s   4s   infinite; }
+.sp6  { width:22px; height:22px; left:38%;  top:75%; animation: sfL 8.5s 1s   infinite; }
+.sp7  { width:30px; height:30px; left:45%;  top:25%; animation: sfR 7.5s 2.8s infinite; }
+.sp8  { width:18px; height:18px; left:52%;  top:55%; animation: sfL 11s  0.2s infinite; }
+.sp9  { width:24px; height:24px; left:60%;  top:12%; animation: sfR 8s   3s   infinite; }
+.sp10 { width:20px; height:20px; left:67%;  top:82%; animation: sfL 9.5s 4.5s infinite; }
+.sp11 { width:28px; height:28px; left:74%;  top:35%; animation: sfR 7s   1.5s infinite; }
+.sp12 { width:16px; height:16px; left:81%;  top:60%; animation: sfL 13s  0.8s infinite; }
+.sp13 { width:34px; height:34px; left:87%;  top:10%; animation: sfR 8.5s 5s   infinite; }
+.sp14 { width:18px; height:18px; left:93%;  top:50%; animation: sfL 10s  2.2s infinite; }
+.sp15 { width:22px; height:22px; left:97%;  top:78%; animation: sfR 9s   0s   infinite; }
+.sp16 { width:26px; height:26px; left:25%;  top:50%; animation: sfL 7.5s 3.8s infinite; }
+.sp17 { width:14px; height:14px; left:55%;  top:90%; animation: sfR 11s  1.2s infinite; }
+.sp18 { width:20px; height:20px; left:72%;  top:3%;  animation: sfL 8s   2.5s infinite; }
+.sp19 { width:24px; height:24px; left:41%;  top:42%; animation: sfR 10s  4.8s infinite; }
+.sp20 { width:18px; height:18px; left:10%;  top:85%; animation: sfL 9s   0.6s infinite; }
 
-/* ── Sakura container — wrap site sections ── */
-.sakura-bg {
-  position: relative;
-  overflow: hidden; /* keep petals inside the section */
+@keyframes sfR {
+  0%   { opacity:0;    transform: translateY(-20px) translateX(0px)  rotate(0deg);   }
+  6%   { opacity:0.65; }
+  90%  { opacity:0.45; }
+  100% { opacity:0;    transform: translateY(110vh) translateX(20px)  rotate(200deg); }
 }
-
-/* ─────────────────────────────────────────────────
-   PETAL INSTANCES — 16 petals with varied
-   position, size, timing, and drift
-───────────────────────────────────────────────── */
-
-/* Reviews / "What Our Clients Say" section */
-.sakura-bg .s1  { width:34px; height:34px; left:3%;   top:8%;  animation-duration:7s;  animation-delay:0s; }
-.sakura-bg .s2  { width:22px; height:22px; left:9%;   top:55%; animation-duration:9s;  animation-delay:1.2s; }
-.sakura-bg .s3  { width:28px; height:28px; left:17%;  top:20%; animation-duration:8s;  animation-delay:3s; }
-.sakura-bg .s4  { width:18px; height:18px; left:25%;  top:72%; animation-duration:11s; animation-delay:0.5s; }
-.sakura-bg .s5  { width:30px; height:30px; left:38%;  top:12%; animation-duration:7.5s;animation-delay:2s; }
-.sakura-bg .s6  { width:20px; height:20px; left:50%;  top:80%; animation-duration:10s; animation-delay:4s; }
-.sakura-bg .s7  { width:26px; height:26px; left:61%;  top:30%; animation-duration:8.5s;animation-delay:1.8s; }
-.sakura-bg .s8  { width:16px; height:16px; left:70%;  top:65%; animation-duration:12s; animation-delay:0.8s; }
-.sakura-bg .s9  { width:32px; height:32px; left:80%;  top:18%; animation-duration:7s;  animation-delay:3.5s; }
-.sakura-bg .s10 { width:20px; height:20px; left:88%;  top:50%; animation-duration:9.5s;animation-delay:2.5s; }
-.sakura-bg .s11 { width:24px; height:24px; left:93%;  top:82%; animation-duration:8s;  animation-delay:1s; }
-.sakura-bg .s12 { width:18px; height:18px; left:5%;   top:88%; animation-duration:10s; animation-delay:5s; }
-.sakura-bg .s13 { width:28px; height:28px; left:44%;  top:45%; animation-duration:6.5s;animation-delay:2.8s; }
-.sakura-bg .s14 { width:14px; height:14px; left:55%;  top:90%; animation-duration:11s; animation-delay:0.3s; }
-.sakura-bg .s15 { width:22px; height:22px; left:74%;  top:5%;  animation-duration:9s;  animation-delay:4.2s; }
-.sakura-bg .s16 { width:30px; height:30px; left:33%;  top:60%; animation-duration:7.5s;animation-delay:1.5s; }
-
-/* ── Slight left-right drift on alternate petals ── */
-.sakura-bg .s1,  .sakura-bg .s3,  .sakura-bg .s5,
-.sakura-bg .s7,  .sakura-bg .s9,  .sakura-bg .s11,
-.sakura-bg .s13, .sakura-bg .s15 {
-  animation-name: sakuraFloatRight;
+@keyframes sfL {
+  0%   { opacity:0;    transform: translateY(-20px) translateX(0px)  rotate(0deg);   }
+  6%   { opacity:0.6;  }
+  90%  { opacity:0.4;  }
+  100% { opacity:0;    transform: translateY(110vh) translateX(-16px) rotate(-180deg);}
 }
-@keyframes sakuraFloatRight {
-  0%   { opacity: 0;   transform: translateY(0px)   translateX(0px)   rotate(0deg);   }
-  8%   { opacity: 0.7; }
-  88%  { opacity: 0.5; }
-  100% { opacity: 0;   transform: translateY(110px) translateX(18px)  rotate(160deg); }
-}
-.sakura-bg .s2,  .sakura-bg .s4,  .sakura-bg .s6,
-.sakura-bg .s8,  .sakura-bg .s10, .sakura-bg .s12,
-.sakura-bg .s14, .sakura-bg .s16 {
-  animation-name: sakuraFloatLeft;
-}
-@keyframes sakuraFloatLeft {
-  0%   { opacity: 0;   transform: translateY(0px)   translateX(0px)   rotate(0deg);   }
-  8%   { opacity: 0.65; }
-  88%  { opacity: 0.45; }
-  100% { opacity: 0;   transform: translateY(115px) translateX(-14px) rotate(-140deg);}
-}
-
-/* ── Reduce motion for accessibility ── */
 @media (prefers-reduced-motion: reduce) {
-  .sakura-petal { animation: none !important; opacity: 0.18 !important; }
+  .sakura-petal { animation: none !important; opacity: 0.12 !important; }
 }
