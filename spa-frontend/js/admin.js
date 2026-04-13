@@ -114,61 +114,21 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     socket.emit('join', { userId: user._id, role: user.role });
   });
 
-  // ── Notification helpers ─────────────────────────────────────────────────
-  function _fmtDate(d) {
-    if (!d) return '';
-    try { return new Date(d).toLocaleDateString('en-PH', { timeZone:'Asia/Manila', weekday:'short', month:'short', day:'numeric', year:'numeric' }); } catch(e) { return String(d); }
-  }
-  function _fmtTime(t) {
-    if (!t) return '';
-    const s = String(t).trim();
-    // Already formatted as "4:30 PM" or "10:00 AM" — return as-is
-    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(s)) return s;
-    // 24-hour "HH:MM" format — convert
-    try {
-      const [h, m] = s.split(':');
-      const dt = new Date(); dt.setHours(+h, +(m || 0));
-      return dt.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch(e) { return s; }
-  }
-  // Backend emits: { booking: { guestName, date, time, service: {name} }, guestName, date, time, service }
-  function _extract(data) {
-    if (!data) return {};
-    const b   = data.booking || {};
-    const name    = data.guestName  || b.guestName  || 'Client';
-    const svc     = data.service?.name || b.service?.name || '';
-    const date    = data.date       || b.date       || null;
-    const time    = data.time       || b.time       || '';
-    return { name, svc, date, time };
-  }
-  function _bookingMsg(label, data) {
-    const { name, svc, date, time } = _extract(data);
-    const detail = [_fmtDate(date), _fmtTime(time)].filter(Boolean).join(' · ');
-    return `${label}<br><strong>${name}</strong>${svc ? ' — '+svc : ''}${detail ? '<br><span style="font-size:0.78rem;color:#8b6f47;">📅 '+detail+'</span>' : ''}`;
-  }
-
-  // ── Dedup guard: ignore socket events that arrived within 2s for same guest+date ──
-  const _recentNotifs = new Set();
-  function _isDupe(key) {
-    if (_recentNotifs.has(key)) return true;
-    _recentNotifs.add(key);
-    setTimeout(() => _recentNotifs.delete(key), 2000);
-    return false;
-  }
-
   socket.on('newBooking', (data) => {
     showNotification('New booking received!', 'success');
-    const b = data.booking || data;
-    const key = `booking-${b.guestName || ''}-${b.date || ''}`;
-    if (_isDupe(key)) return;
-    addNotif(_bookingMsg('New Booking', data), 'booking', 'bookings', b.date || data.date);
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
   });
 
-  // new-booking is a duplicate event — skip to prevent double notifications
-  // socket.on('new-booking', ...) intentionally removed
+  socket.on('new-booking', (data) => {
+    showNotification('New booking received!', 'success');
+    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    const activeTab = document.querySelector('.tab-content.active')?.id;
+    if (activeTab === 'overview-tab') loadOverviewData();
+    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+  });
 
   socket.on('bookingStatusUpdated', () => {
     const activeTab = document.querySelector('.tab-content.active')?.id;
@@ -176,32 +136,16 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
   });
 
-  // cancellationRequested is the real backend event name
-  socket.on('cancellationRequested', (data) => {
-    const b = data.booking || data;
-    const key = `cancel-${b.guestName || ''}-${b.date || ''}`;
-    if (_isDupe(key)) return;
-    addNotif(_bookingMsg('Cancellation Request', data), 'cancel', 'bookings', b.date || data.date);
+  socket.on('booking-cancelled', (data) => {
+    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
   });
 
-  // rescheduleRequested is the real backend event name
-  socket.on('rescheduleRequested', (data) => {
-    const b = data.booking || data;
-    const key = `reschedule-${b.guestName || ''}-${b.date || ''}`;
-    if (_isDupe(key)) return;
-    addNotif(_bookingMsg('Reschedule Request', data), 'reschedule', 'bookings', b.date || data.date);
+  socket.on('reschedule-request', (data) => {
+    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
   });
 
   socket.on('leave-request', (data) => {
-    const tName = data?.therapistName || 'A therapist';
-    const lType = data?.type === 'vacation' ? 'Vacation' : 'Leave';
-    const lIcon = data?.type === 'vacation' ? '✈️' : '🌴';
-    const from  = data?.startDate ? _fmtDate(data.startDate) : '';
-    const to    = data?.endDate   ? _fmtDate(data.endDate)   : '';
-    const range = from && to && from !== to ? `${from} → ${to}` : (from || to);
-    const msg = `${lIcon} ${lType} Request<br><strong>${tName}</strong>`
-              + (range ? `<br><span style="font-size:0.78rem;color:#8b6f47;">📅 ${range}</span>` : '');
-    addNotif(msg, 'leave', 'leave-requests');
+    addNotif(`🌴 Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
     const badge = document.getElementById('leaveSidebarBadge');
     if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
   });
@@ -7824,9 +7768,309 @@ function updateCommissionDisplay(rate) {
   }
 
   // Export Income Report (placeholder)
+  // ═══════════════════════════════════════════════════════════════════════
+  // EXCEL / CSV EXPORT UTILITIES
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** Escape a cell value for CSV (handles commas, quotes, newlines) */
+  function _csvCell(val) {
+    const s = (val === null || val === undefined) ? '' : String(val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  /** Convert array-of-arrays to a CSV string */
+  function _toCSV(rows) {
+    return rows.map(row => row.map(_csvCell).join(',')).join('\r\n');
+  }
+
+  /** Trigger a browser download of the CSV as an Excel-compatible .csv */
+  function _downloadCSV(csvStr, filename) {
+    // BOM makes Excel open with correct encoding (UTF-8)
+    const blob = new Blob(['\uFEFF' + csvStr], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+
+  /** Format a date as YYYY-MM-DD */
+  function _dateLabel(d) {
+    try { return new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }); } catch(e) { return ''; }
+  }
+
+  // ── 1. BOOKING EXPORT ────────────────────────────────────────────────────
+
+  /**
+   * Opens the booking-export filter modal.
+   * Called from the Export button in the Bookings tab.
+   */
+  window.openBookingExportModal = function() {
+    if (document.getElementById('bookingExportModal')) {
+      document.getElementById('bookingExportModal').classList.add('active');
+      return;
+    }
+    // Build modal
+    const m = document.createElement('div');
+    m.id        = 'bookingExportModal';
+    m.className = 'modal active';
+    m.innerHTML = `
+      <div class="modal-content" style="max-width:480px;text-align:left;">
+        <h3 style="color:#4b2e1e;margin-bottom:6px;">📊 Export Bookings to Excel</h3>
+        <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">Choose a period to export, then specify the range.</p>
+
+        <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Filter By</label>
+        <select id="bexPeriod" onchange="bookingExportPeriodChanged()" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95rem;margin-bottom:16px;font-family:'Poppins',sans-serif;">
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+          <option value="custom-week">Specific Week</option>
+          <option value="custom-month">Specific Month</option>
+          <option value="custom-year">Specific Year</option>
+        </select>
+
+        <!-- Dynamic sub-filter rendered by JS -->
+        <div id="bexSubFilter"></div>
+
+        <div class="modal-actions" style="margin-top:20px;">
+          <button onclick="runBookingExport()" class="btn-success">⬇️ Download Excel</button>
+          <button onclick="document.getElementById('bookingExportModal').classList.remove('active')" class="btn-secondary">Cancel</button>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+    bookingExportPeriodChanged(); // render initial sub-filter
+  };
+
+  window.bookingExportPeriodChanged = function() {
+    const period = document.getElementById('bexPeriod')?.value;
+    const sub    = document.getElementById('bexSubFilter');
+    if (!sub) return;
+    const now = new Date();
+
+    if (period === 'custom-week') {
+      // Which week of which month?
+      sub.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+          <div>
+            <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Month</label>
+            <select id="bexMonth" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;">
+              ${['January','February','March','April','May','June','July','August','September','October','November','December']
+                .map((mn, i) => `<option value="${i}" ${i===now.getMonth()?'selected':''}>${mn}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Year</label>
+            <select id="bexYear" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;">
+              ${[now.getFullYear()-1, now.getFullYear(), now.getFullYear()+1]
+                .map(y => `<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Week</label>
+        <select id="bexWeek" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;margin-bottom:16px;">
+          <option value="1">Week 1 (1st–7th)</option>
+          <option value="2">Week 2 (8th–14th)</option>
+          <option value="3">Week 3 (15th–21st)</option>
+          <option value="4">Week 4 (22nd–28th)</option>
+          <option value="5">Week 5 (29th–31st)</option>
+        </select>`;
+    } else if (period === 'custom-month') {
+      sub.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+          <div>
+            <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Month</label>
+            <select id="bexMonth" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;">
+              ${['January','February','March','April','May','June','July','August','September','October','November','December']
+                .map((mn, i) => `<option value="${i}" ${i===now.getMonth()?'selected':''}>${mn}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Year</label>
+            <select id="bexYear" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;">
+              ${[now.getFullYear()-1, now.getFullYear(), now.getFullYear()+1]
+                .map(y => `<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+    } else if (period === 'custom-year') {
+      sub.innerHTML = `
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Year</label>
+          <select id="bexYear" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;">
+            ${[now.getFullYear()-2, now.getFullYear()-1, now.getFullYear(), now.getFullYear()+1]
+              .map(y => `<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join('')}
+          </select>
+        </div>`;
+    } else {
+      sub.innerHTML = '';
+    }
+  };
+
+  window.runBookingExport = function() {
+    const period = document.getElementById('bexPeriod')?.value;
+    const now    = new Date();
+    let start, end, label;
+
+    if (period === 'today') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59);
+      label = _dateLabel(start);
+    } else if (period === 'week') {
+      const dow = now.getDay();
+      start = new Date(now); start.setDate(now.getDate() - dow); start.setHours(0,0,0,0);
+      end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59);
+      label = `Week_${_dateLabel(start)}_to_${_dateLabel(end)}`;
+    } else if (period === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end   = new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59);
+      label = `${now.toLocaleString('default',{month:'long'})}_${now.getFullYear()}`;
+    } else if (period === 'year') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end   = new Date(now.getFullYear(), 11, 31, 23,59,59);
+      label = String(now.getFullYear());
+    } else if (period === 'custom-week') {
+      const mo = parseInt(document.getElementById('bexMonth')?.value ?? now.getMonth());
+      const yr = parseInt(document.getElementById('bexYear')?.value  ?? now.getFullYear());
+      const wk = parseInt(document.getElementById('bexWeek')?.value  ?? 1);
+      const weekStarts = [1, 8, 15, 22, 29];
+      const weekEnds   = [7, 14, 21, 28, 31];
+      start = new Date(yr, mo, weekStarts[wk-1]);
+      end   = new Date(yr, mo, Math.min(weekEnds[wk-1], new Date(yr, mo+1, 0).getDate()), 23,59,59);
+      const mName = new Date(yr, mo).toLocaleString('default', { month:'long' });
+      label = `Week${wk}_${mName}_${yr}`;
+    } else if (period === 'custom-month') {
+      const mo = parseInt(document.getElementById('bexMonth')?.value ?? now.getMonth());
+      const yr = parseInt(document.getElementById('bexYear')?.value  ?? now.getFullYear());
+      start = new Date(yr, mo, 1);
+      end   = new Date(yr, mo+1, 0, 23,59,59);
+      label = `${new Date(yr,mo).toLocaleString('default',{month:'long'})}_${yr}`;
+    } else if (period === 'custom-year') {
+      const yr = parseInt(document.getElementById('bexYear')?.value ?? now.getFullYear());
+      start = new Date(yr, 0, 1);
+      end   = new Date(yr, 11, 31, 23,59,59);
+      label = String(yr);
+    }
+
+    // Filter allBookings by date range
+    const filtered = allBookings.filter(b => {
+      const d = new Date(b.date);
+      return d >= start && d <= end;
+    });
+
+    if (filtered.length === 0) {
+      showNotification('No bookings found for that period.', 'error');
+      return;
+    }
+
+    // Build rows
+    const header = ['Date','Start Time','End Time','Service','Client Name','Therapist','Duration (mins)','Price (₱)','Status'];
+    const rows   = filtered.map(b => {
+      const dateStr      = _dateLabel(b.date);
+      const startTime    = b.time || '';
+      const endTime      = b.endTime
+        ? (b.endTime instanceof Date ? b.endTime.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}) : b.endTime)
+        : '';
+      const service      = b.service?.name || b.service || '';
+      const client       = b.guestName || '';
+      const therapists   = b.therapists?.length
+        ? b.therapists.map(t => t.name || t).join(' / ')
+        : (b.therapist?.name || b.therapist || 'Unassigned');
+      const duration     = b.durationMinutes || '';
+      const price        = b.price || 0;
+      const status       = b.status || '';
+      return [dateStr, startTime, endTime, service, client, therapists, duration, price, status];
+    });
+
+    // Sort by date then time
+    rows.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+
+    const csv = _toCSV([header, ...rows]);
+    _downloadCSV(csv, `Nagomi_Bookings_${label}.csv`);
+    showNotification(`✅ Exported ${filtered.length} bookings to Excel!`, 'success');
+    document.getElementById('bookingExportModal')?.classList.remove('active');
+  };
+
+  // ── 2. COMMISSION / INCOME EXPORT ────────────────────────────────────────
+
   function exportIncomeReport() {
-    showNotification('Export feature coming soon!', 'info');
-    // TODO: Implement CSV/PDF export
+    // Gather all data currently displayed in the income table + detail breakdown
+    const periodLabels = { today:'Today', week:'This Week', month:'This Month', year:'This Year' };
+    const periodLabel  = periodLabels[currentIncomePeriod] || currentIncomePeriod;
+
+    // Use the same data as the income table
+    let incomeBookings = allBookings && allBookings.length > 0 ? allBookings : [];
+    const filtered = filterByPeriod(incomeBookings, currentIncomePeriod)
+      .filter(b => b.status === 'completed' && b.therapist);
+
+    if (filtered.length === 0) {
+      showNotification('No completed bookings to export for this period.', 'error');
+      return;
+    }
+
+    const rate = commissionSettings.rate || 60;
+
+    // ── Sheet 1 type: one row per completed booking ──────────────────────
+    const header = [
+      'Date', 'Service', 'Client Name', 'Therapist',
+      'Duration (mins)', 'Service Price (₱)',
+      `Commission (${rate}%) (₱)`, 'Status'
+    ];
+
+    const rows = filtered.map(b => {
+      const date       = _dateLabel(b.date);
+      const service    = b.service?.name || '';
+      const client     = b.guestName || '';
+      const therapist  = b.therapist?.name || b.therapist || '';
+      const duration   = b.durationMinutes || '';
+      const price      = b.price || 0;
+      const commission = Math.round(price * (rate / 100));
+      return [date, service, client, therapist, duration, price, commission, b.status];
+    });
+
+    rows.sort((a, b) => a[0].localeCompare(b[0]));
+
+    // ── Summary rows by therapist (appended at bottom) ───────────────────
+    const byTherapist = {};
+    filtered.forEach(b => {
+      const name = b.therapist?.name || String(b.therapist) || 'Unknown';
+      if (!byTherapist[name]) byTherapist[name] = { services: 0, revenue: 0, commission: 0 };
+      byTherapist[name].services++;
+      byTherapist[name].revenue     += b.price || 0;
+      byTherapist[name].commission  += Math.round((b.price || 0) * (rate / 100));
+    });
+
+    const summaryHeader = ['', 'SUMMARY BY THERAPIST', '', '', '', '', '', ''];
+    const summarySubHdr = ['Therapist', 'Completed Services', 'Total Revenue (₱)', `Total Commission (${rate}%) (₱)`, '', '', '', ''];
+    const summaryRows   = Object.entries(byTherapist)
+      .sort((a, b) => b[1].commission - a[1].commission)
+      .map(([name, d]) => [name, d.services, d.revenue, d.commission, '', '', '', '']);
+
+    const now = new Date();
+    const exportedLine = [`Exported: ${now.toLocaleString('en-PH', { timeZone:'Asia/Manila' })} · Period: ${periodLabel}`, '', '', '', '', '', '', ''];
+
+    const allRows = [
+      exportedLine,
+      [],
+      header,
+      ...rows,
+      [],
+      summaryHeader,
+      summarySubHdr,
+      ...summaryRows
+    ];
+
+    const csv = _toCSV(allRows);
+    const filename = `Nagomi_Commission_${periodLabel.replace(/\s/g,'_')}_${_dateLabel(now)}.csv`;
+    _downloadCSV(csv, filename);
+    showNotification(`✅ Exported ${filtered.length} records to Excel!`, 'success');
   }
 
   // UTILITY FUNCTIONS
@@ -7892,12 +8136,10 @@ function updateCommissionDisplay(rate) {
     }
   })();
 
-  // Logout — preserve notifications across sessions (like Facebook)
+  // Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
     socket.disconnect();
-    const savedNotifs = localStorage.getItem('nagomi_notifs');
     localStorage.clear();
-    if (savedNotifs) localStorage.setItem('nagomi_notifs', savedNotifs);
     window.location.href = "login.html";
   });
 
@@ -8003,10 +8245,10 @@ function loadNotifStore() {
 }
 loadNotifStore(); // Restore on page load
 
-function addNotif(message, type = 'booking', targetTab = null, bookingDate = null) {
+function addNotif(message, type = 'booking', targetTab = null) {
   const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
-  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab, bookingDate });
-  if (notifStore.length > 50) notifStore.pop();
+  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab });
+  if (notifStore.length > 30) notifStore.pop();
   saveNotifStore();
   renderNotifPanel();
   // Flash badge
@@ -8034,26 +8276,13 @@ function renderNotifPanel() {
   list.innerHTML = notifStore.map((n, i) => {
     const mins = Math.floor((new Date() - new Date(n.time)) / 60000);
     const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : mins < 1440 ? `${Math.floor(mins/60)}h ago` : `${Math.floor(mins/1440)}d ago`;
-    const isClickable = !!n.targetTab;
-    const clickAttr   = isClickable ? `onclick="handleNotifClick(${i})"` : '';
-    const arrow       = isClickable ? `<span style="color:#c9a882;font-size:0.85rem;margin-left:auto;padding-left:8px;flex-shrink:0;align-self:center;">→</span>` : '';
-
-    // Unread = warm brown gold highlight; read = faded
-    const unreadBg  = 'linear-gradient(90deg,rgba(184,147,58,0.14) 0%,rgba(245,241,235,0.5) 100%)';
-    const readBg    = 'transparent';
-    const bgStyle   = `background:${n.read ? readBg : unreadBg};${!n.read ? 'border-left:3px solid #b8933a;' : 'border-left:3px solid transparent;'}`;
-    const textColor = n.read ? '#888' : '#2d1a0e';
-    const fontWeight = n.read ? '400' : '500';
-    const opacityStyle = n.read ? 'opacity:0.65;' : '';
-
-    return `<div style="${bgStyle}${opacityStyle}${isClickable ? 'cursor:pointer;' : ''}padding:12px 16px;display:flex;gap:10px;border-bottom:1px solid #f5f1eb;transition:background 0.2s;"
-      ${clickAttr}
-      onmouseover="this.style.background='rgba(184,147,58,0.22)'"
-      onmouseout="this.style.background='${n.read ? readBg : unreadBg}'">
-      <span style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">${n.icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:0.84rem;color:${textColor};line-height:1.45;font-weight:${fontWeight};">${n.message}</div>
-        <div style="font-size:0.72rem;color:#aaa;margin-top:3px;">${ago}${isClickable ? ' · <em style="color:#c9a882;">tap to view</em>' : ''}</div>
+    const clickable = n.targetTab ? `onclick="handleNotifClick(${i})" style="cursor:pointer;"` : '';
+    const arrow = n.targetTab ? `<span style="color:#c9a882;font-size:0.8rem;margin-left:auto;padding-left:8px;">→</span>` : '';
+    return `<div class="notif-item ${n.read ? 'notif-read' : ''}" ${clickable}>
+      <span class="notif-item-icon">${n.icon}</span>
+      <div class="notif-item-body" style="flex:1;min-width:0;">
+        <div class="notif-item-msg">${n.message}</div>
+        <div class="notif-item-time">${ago}</div>
       </div>
       ${arrow}
     </div>`;
@@ -8066,43 +8295,11 @@ function handleNotifClick(index) {
   n.read = true;
   saveNotifStore();
   renderNotifPanel();
-
+  // Close panel
   const panel = document.getElementById('notifPanel');
   if (panel) panel.style.display = 'none';
-
-  if (!n.targetTab) return;
-
-  // Switch to the target sidebar tab
-  const tabBtn = document.querySelector(`.sidebar .tab-btn[data-tab="${n.targetTab}"]`);
-  if (tabBtn) tabBtn.click();
-
-  // If a booking date is stored, navigate calendar to that exact date
-  if (n.bookingDate && n.targetTab === 'bookings') {
-    const rawDate = new Date(n.bookingDate);
-    if (isNaN(rawDate)) return;
-    const dateStr = rawDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-
-    setTimeout(() => {
-      currentMonth = rawDate.getMonth();
-      currentYear  = rawDate.getFullYear();
-      renderCalendar();
-      setTimeout(() => {
-        selectedDate = dateStr;
-        document.querySelectorAll('.calendar-day').forEach(cell => {
-          cell.classList.remove('selected');
-          const cellDay = parseInt(cell.textContent.trim());
-          if (!isNaN(cellDay)) {
-            const cellDate = new Date(currentYear, currentMonth, cellDay)
-              .toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-            if (cellDate === dateStr) cell.classList.add('selected');
-          }
-        });
-        loadBookingsForDate(dateStr);
-        const title = document.getElementById('selectedDateTitle');
-        if (title) title.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 350);
-    }, 450);
-  }
+  // Navigate to target tab
+  if (n.targetTab) switchTab(n.targetTab);
 }
 
 function toggleNotifPanel() {
@@ -8111,16 +8308,11 @@ function toggleNotifPanel() {
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
   if (!isOpen) {
-    // Re-render immediately to show highlights before marking read
+    // Mark all read
+    notifStore.forEach(n => n.read = true);
+    const badge = document.getElementById('notifBadge');
+    if (badge) badge.style.display = 'none';
     renderNotifPanel();
-    // Mark all read after a short delay so user sees the highlights momentarily
-    setTimeout(() => {
-      notifStore.forEach(n => n.read = true);
-      saveNotifStore();
-      const badge = document.getElementById('notifBadge');
-      if (badge) badge.style.display = 'none';
-      renderNotifPanel();
-    }, 1500);
   }
 }
 

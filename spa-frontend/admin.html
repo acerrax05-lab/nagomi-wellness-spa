@@ -87,7 +87,7 @@
   <main class="admin-content">
     
     <!-- OVERVIEW TAB -->
-    <section id="overview-tab" class="tab-content active">
+    <section id="overview-tab" class="tab-content active sakura-bg">
       <h2>Business Overview</h2>
       
       <!-- Time Filter -->
@@ -200,7 +200,17 @@
 
     <!-- BOOKINGS TAB -->
     <section id="bookings-tab" class="tab-content">
-      <h2>Booking Calendar</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+        <h2 style="margin:0;">Booking Calendar</h2>
+        <button onclick="openBookingExportModal()"
+          style="background:linear-gradient(135deg,#28a745,#1e7e34);color:#fff;border:none;
+            padding:10px 20px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;
+            font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;
+            box-shadow:0 2px 8px rgba(40,167,69,0.35);transition:opacity 0.2s;"
+          onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+          📥 Export to Excel
+        </button>
+      </div>
 
       <div class="booking-search-container" style="margin-bottom: 25px;">
         <div style="position: relative;">
@@ -358,6 +368,14 @@
             Track therapist earnings based on completed services
           </p>
         </div>
+        <button onclick="exportIncomeReport()"
+          style="background:linear-gradient(135deg,#28a745,#1e7e34);color:#fff;border:none;
+            padding:10px 20px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;
+            font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;
+            box-shadow:0 2px 8px rgba(40,167,69,0.35);transition:opacity 0.2s;"
+          onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+          📥 Export Commission to Excel
+        </button>
       </div>
 
       <div class="commission-settings-box">
