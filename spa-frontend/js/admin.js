@@ -7540,79 +7540,129 @@ function updateCommissionDisplay(rate) {
     }).join('');
   }
 
-  // Show Income Detail Modal
+  // Stores the therapist currently open in the detail modal — used by exportIncomeReport
+  let _detailTherapistId   = null;
+  let _detailTherapistName = null;
+  let _detailBookings      = [];   // ALL completed bookings for this therapist (full year)
+
   async function showIncomeDetail(therapistId, therapistName) {
     try {
       const now  = new Date();
-      const from = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+      const from = new Date(now.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
       const to   = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
       const res  = await fetch(`${apiBase}/bookings?from=${from}&to=${to}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      const allBookings = await res.json();
-      const filteredBookings = filterByPeriod(allBookings, currentIncomePeriod);
-      
-      // Get this therapist's bookings
-      const therapistBookings = filteredBookings.filter(b => {
+
+      const fetchedBookings = await res.json();
+
+      // Store ALL completed bookings for this therapist (full range) so export can filter by any period
+      _detailTherapistId   = therapistId;
+      _detailTherapistName = therapistName;
+      _detailBookings      = fetchedBookings.filter(b => {
         const tId = b.therapist?._id || b.therapist;
-        return tId === therapistId && b.status === 'completed';
+        return String(tId) === String(therapistId) && b.status === 'completed';
       });
-      
-      const modal = document.getElementById('incomeDetailModal');
-      const title = document.getElementById('incomeDetailTitle');
-      const content = document.getElementById('incomeDetailContent');
-      
-      title.textContent = `${therapistName} - Income Details`;
-      
-      const totalCommission = therapistBookings.reduce((sum, b) => {
-        return sum + Math.round((b.price || 0) * (commissionSettings.rate / 100));
-      }, 0);
-      
-      content.innerHTML = `
-        <div style="padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-            <div style="font-size: 0.95rem; opacity: 0.9;">Total Earnings</div>
-            <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">₱${totalCommission.toLocaleString()}</div>
-            <div style="font-size: 0.9rem; opacity: 0.8;">From ${therapistBookings.length} completed services</div>
-          </div>
-          
-          <h4 style="margin-bottom: 15px;">Service Breakdown:</h4>
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="background: #f5f5f5;">
-                <th style="padding: 12px; text-align: left;">Date</th>
-                <th style="padding: 12px; text-align: left;">Service</th>
-                <th style="padding: 12px; text-align: right;">Price</th>
-                <th style="padding: 12px; text-align: right;">Commission</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${therapistBookings.map(booking => {
-                const commission = Math.round((booking.price || 0) * (commissionSettings.rate / 100));
-                const date = new Date(booking.date).toLocaleDateString();
-                
-                return `
-                  <tr style="border-bottom: 1px solid #e0e0e0;">
-                    <td style="padding: 12px;">${date}</td>
-                    <td style="padding: 12px;">${booking.service?.name || 'Unknown'}</td>
-                    <td style="padding: 12px; text-align: right;">₱${(booking.price || 0).toLocaleString()}</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 700; color: #28a745;">₱${commission.toLocaleString()}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-      
-      modal.classList.add('active');
-      
+
+      // Display using the currently selected income period
+      _renderIncomeDetailContent(currentIncomePeriod);
+
+      document.getElementById('incomeDetailModal').classList.add('active');
+
     } catch (err) {
       console.error('Error loading income detail:', err);
       showNotification('Failed to load details', 'error');
     }
   }
+
+  /** (Re-)renders the detail modal table for a given period — called on open and on export */
+  function _renderIncomeDetailContent(period) {
+    const modal   = document.getElementById('incomeDetailModal');
+    const title   = document.getElementById('incomeDetailTitle');
+    const content = document.getElementById('incomeDetailContent');
+    if (!modal || !title || !content) return;
+
+    const periodLabels = { today:'Today', week:'This Week', month:'This Month', year:'This Year' };
+    const periodLabel  = periodLabels[period] || period;
+
+    const filteredBookings = filterByPeriod(_detailBookings, period);
+
+    title.textContent = `${_detailTherapistName} — Income Details (${periodLabel})`;
+
+    const rate            = commissionSettings.rate || 60;
+    const totalCommission = filteredBookings.reduce((sum, b) =>
+      sum + Math.round((b.price || 0) * (rate / 100)), 0);
+    const totalRevenue    = filteredBookings.reduce((sum, b) => sum + (b.price || 0), 0);
+
+    content.innerHTML = `
+      <div style="padding:20px;">
+        <!-- Summary banner -->
+        <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:25px;border-radius:12px;color:white;margin-bottom:20px;">
+          <div style="font-size:0.9rem;opacity:0.9;">Total Commission — ${periodLabel}</div>
+          <div style="font-size:2.5rem;font-weight:700;margin:8px 0;">₱${totalCommission.toLocaleString()}</div>
+          <div style="font-size:0.85rem;opacity:0.8;">
+            ${filteredBookings.length} completed services · Revenue: ₱${totalRevenue.toLocaleString()} · Rate: ${rate}%
+          </div>
+        </div>
+
+        <!-- Period quick-filter inside modal -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          ${['today','week','month','year'].map(p => `
+            <button onclick="_changeDetailPeriod('${p}')"
+              style="padding:7px 16px;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;
+                border:1.5px solid ${p===period?'#4b2e1e':'#ddd'};
+                background:${p===period?'#4b2e1e':'#fff'};
+                color:${p===period?'#fff':'#555'};
+                font-family:'Poppins',sans-serif;">
+              ${periodLabels[p]}
+            </button>`).join('')}
+        </div>
+
+        <!-- Breakdown table -->
+        <h4 style="margin-bottom:12px;">Service Breakdown:</h4>
+        ${filteredBookings.length === 0 ? `
+          <p style="color:#999;text-align:center;padding:30px;">No completed services for this period.</p>
+        ` : `
+          <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+            <thead>
+              <tr style="background:#f5f1eb;">
+                <th style="padding:10px 12px;text-align:left;color:#4b2e1e;">Date</th>
+                <th style="padding:10px 12px;text-align:left;color:#4b2e1e;">Service</th>
+                <th style="padding:10px 12px;text-align:left;color:#4b2e1e;">Client</th>
+                <th style="padding:10px 12px;text-align:right;color:#4b2e1e;">Price</th>
+                <th style="padding:10px 12px;text-align:right;color:#4b2e1e;">Commission (${rate}%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredBookings
+                .slice().sort((a,b) => new Date(b.date) - new Date(a.date))
+                .map(b => {
+                  const commission = Math.round((b.price||0) * (rate/100));
+                  const date = new Date(b.date).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+                  return `
+                    <tr style="border-bottom:1px solid #f0ece6;">
+                      <td style="padding:10px 12px;">${date}</td>
+                      <td style="padding:10px 12px;">${b.service?.name||'Unknown'}</td>
+                      <td style="padding:10px 12px;color:#666;">${b.guestName||'—'}</td>
+                      <td style="padding:10px 12px;text-align:right;">₱${(b.price||0).toLocaleString()}</td>
+                      <td style="padding:10px 12px;text-align:right;font-weight:700;color:#28a745;">₱${commission.toLocaleString()}</td>
+                    </tr>`;
+                }).join('')}
+              <!-- Totals row -->
+              <tr style="background:#f5f1eb;font-weight:700;">
+                <td colspan="3" style="padding:10px 12px;">TOTAL</td>
+                <td style="padding:10px 12px;text-align:right;">₱${totalRevenue.toLocaleString()}</td>
+                <td style="padding:10px 12px;text-align:right;color:#28a745;">₱${totalCommission.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>`}
+      </div>`;
+  }
+
+  /** Called by period buttons inside the detail modal */
+  window._changeDetailPeriod = function(period) {
+    _renderIncomeDetailContent(period);
+  };
 
   async function loadReviewsManagement() {
     try {
@@ -8001,13 +8051,60 @@ function updateCommissionDisplay(rate) {
   // ── 2. COMMISSION / INCOME EXPORT ────────────────────────────────────────
 
   function exportIncomeReport() {
-    // Gather all data currently displayed in the income table + detail breakdown
+    const rate = commissionSettings.rate || 60;
+    const now  = new Date();
+
+    // ── If called from the detail modal: export THIS therapist, current modal period ──
+    const isModalOpen = document.getElementById('incomeDetailModal')?.classList.contains('active');
+    if (isModalOpen && _detailTherapistId && _detailBookings) {
+      // Detect which period is shown inside the modal (period buttons re-render title)
+      const titleText = document.getElementById('incomeDetailTitle')?.textContent || '';
+      let period = currentIncomePeriod;
+      if      (titleText.includes('Today'))      period = 'today';
+      else if (titleText.includes('This Week'))  period = 'week';
+      else if (titleText.includes('This Month')) period = 'month';
+      else if (titleText.includes('This Year'))  period = 'year';
+
+      const periodLabel = { today:'Today', week:'This_Week', month:'This_Month', year:'This_Year' }[period] || period;
+      const filtered    = filterByPeriod(_detailBookings, period);
+
+      if (filtered.length === 0) {
+        showNotification('No completed bookings for this period.', 'error');
+        return;
+      }
+
+      const header = [
+        `Commission Report — ${_detailTherapistName} — ${periodLabel.replace(/_/g,' ')}`,
+        '', '', '', ''
+      ];
+      const colHdr = ['Date', 'Service', 'Client', 'Duration (mins)', `Service Price (₱)`, `Commission (${rate}%) (₱)`];
+      const rows   = filtered
+        .slice().sort((a,b) => new Date(a.date) - new Date(b.date))
+        .map(b => [
+          _dateLabel(b.date),
+          b.service?.name || '',
+          b.guestName || '',
+          b.durationMinutes || '',
+          b.price || 0,
+          Math.round((b.price||0) * (rate/100))
+        ]);
+
+      const totalRevenue    = filtered.reduce((s,b) => s+(b.price||0), 0);
+      const totalCommission = filtered.reduce((s,b) => s+Math.round((b.price||0)*(rate/100)), 0);
+      const totalsRow       = ['TOTAL', '', '', '', totalRevenue, totalCommission];
+      const exportedLine    = [`Exported: ${now.toLocaleString('en-PH',{timeZone:'Asia/Manila'})}`, '', '', '', '', ''];
+
+      const csv      = _toCSV([exportedLine, [], colHdr, ...rows, [], totalsRow]);
+      const safeName = _detailTherapistName.replace(/[^a-z0-9]/gi, '_');
+      _downloadCSV(csv, `Nagomi_Commission_${safeName}_${periodLabel}.csv`);
+      showNotification(`✅ Exported ${filtered.length} records for ${_detailTherapistName}!`, 'success');
+      return;
+    }
+
+    // ── Fallback: export ALL therapists summary from Income tab ──────────────
     const periodLabels = { today:'Today', week:'This Week', month:'This Month', year:'This Year' };
     const periodLabel  = periodLabels[currentIncomePeriod] || currentIncomePeriod;
-
-    // Use the same data as the income table
-    let incomeBookings = allBookings && allBookings.length > 0 ? allBookings : [];
-    const filtered = filterByPeriod(incomeBookings, currentIncomePeriod)
+    const filtered     = filterByPeriod(allBookings || [], currentIncomePeriod)
       .filter(b => b.status === 'completed' && b.therapist);
 
     if (filtered.length === 0) {
@@ -8015,61 +8112,38 @@ function updateCommissionDisplay(rate) {
       return;
     }
 
-    const rate = commissionSettings.rate || 60;
+    const header = ['Date','Service','Client Name','Therapist','Duration (mins)',`Service Price (₱)`,`Commission (${rate}%) (₱)`,'Status'];
+    const rows   = filtered
+      .slice().sort((a,b) => new Date(a.date)-new Date(b.date))
+      .map(b => [
+        _dateLabel(b.date),
+        b.service?.name || '',
+        b.guestName || '',
+        b.therapist?.name || b.therapist || '',
+        b.durationMinutes || '',
+        b.price || 0,
+        Math.round((b.price||0)*(rate/100)),
+        b.status
+      ]);
 
-    // ── Sheet 1 type: one row per completed booking ──────────────────────
-    const header = [
-      'Date', 'Service', 'Client Name', 'Therapist',
-      'Duration (mins)', 'Service Price (₱)',
-      `Commission (${rate}%) (₱)`, 'Status'
-    ];
-
-    const rows = filtered.map(b => {
-      const date       = _dateLabel(b.date);
-      const service    = b.service?.name || '';
-      const client     = b.guestName || '';
-      const therapist  = b.therapist?.name || b.therapist || '';
-      const duration   = b.durationMinutes || '';
-      const price      = b.price || 0;
-      const commission = Math.round(price * (rate / 100));
-      return [date, service, client, therapist, duration, price, commission, b.status];
-    });
-
-    rows.sort((a, b) => a[0].localeCompare(b[0]));
-
-    // ── Summary rows by therapist (appended at bottom) ───────────────────
     const byTherapist = {};
     filtered.forEach(b => {
       const name = b.therapist?.name || String(b.therapist) || 'Unknown';
-      if (!byTherapist[name]) byTherapist[name] = { services: 0, revenue: 0, commission: 0 };
+      if (!byTherapist[name]) byTherapist[name] = { services:0, revenue:0, commission:0 };
       byTherapist[name].services++;
-      byTherapist[name].revenue     += b.price || 0;
-      byTherapist[name].commission  += Math.round((b.price || 0) * (rate / 100));
+      byTherapist[name].revenue    += b.price || 0;
+      byTherapist[name].commission += Math.round((b.price||0)*(rate/100));
     });
 
-    const summaryHeader = ['', 'SUMMARY BY THERAPIST', '', '', '', '', '', ''];
-    const summarySubHdr = ['Therapist', 'Completed Services', 'Total Revenue (₱)', `Total Commission (${rate}%) (₱)`, '', '', '', ''];
+    const summaryHdr    = ['', 'SUMMARY BY THERAPIST', '','','','','',''];
+    const summaryColHdr = ['Therapist','Completed Services',`Total Revenue (₱)`,`Total Commission (${rate}%) (₱)`,'','','',''];
     const summaryRows   = Object.entries(byTherapist)
-      .sort((a, b) => b[1].commission - a[1].commission)
-      .map(([name, d]) => [name, d.services, d.revenue, d.commission, '', '', '', '']);
+      .sort((a,b)=>b[1].commission-a[1].commission)
+      .map(([n,d])=>[n,d.services,d.revenue,d.commission,'','','','']);
 
-    const now = new Date();
-    const exportedLine = [`Exported: ${now.toLocaleString('en-PH', { timeZone:'Asia/Manila' })} · Period: ${periodLabel}`, '', '', '', '', '', '', ''];
-
-    const allRows = [
-      exportedLine,
-      [],
-      header,
-      ...rows,
-      [],
-      summaryHeader,
-      summarySubHdr,
-      ...summaryRows
-    ];
-
-    const csv = _toCSV(allRows);
-    const filename = `Nagomi_Commission_${periodLabel.replace(/\s/g,'_')}_${_dateLabel(now)}.csv`;
-    _downloadCSV(csv, filename);
+    const exportedLine = [`Exported: ${now.toLocaleString('en-PH',{timeZone:'Asia/Manila'})} · Period: ${periodLabel}`, '','','','','','',''];
+    const csv      = _toCSV([exportedLine, [], header, ...rows, [], summaryHdr, summaryColHdr, ...summaryRows]);
+    _downloadCSV(csv, `Nagomi_Commission_All_${periodLabel.replace(/\s/g,'_')}_${_dateLabel(now)}.csv`);
     showNotification(`✅ Exported ${filtered.length} records to Excel!`, 'success');
   }
 
