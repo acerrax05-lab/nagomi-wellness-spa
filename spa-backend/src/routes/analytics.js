@@ -74,6 +74,7 @@
     }[period] || 'Next 7 Days';
   }
 
+  //Start the day
   function getPeriodStartDate(period) {
     const now = new Date();
     switch (period) {

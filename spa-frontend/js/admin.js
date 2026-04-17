@@ -523,6 +523,8 @@ function normalizeDate(date) {
     });
   });
 
+
+  //Load Therapist
   async function loadTherapistsWithAnalytics() {
     try {
       console.log('📊 Loading therapists tab with analytics...');
@@ -1017,6 +1019,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     modal.classList.add('active');
   }
 
+  //Generate of peak
   function generatePeakHoursInsight(analytics, predictionsData) {
     const { predictions } = predictionsData || {};
     
@@ -1772,6 +1775,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     });
   }
 
+  //toggle on/off of forecast
   async function toggleForecast() {
   const toggle = document.getElementById('forecastToggle');
   
@@ -1814,6 +1818,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
   console.log(`📊 Forecast ${forecastEnabled ? 'enabled' : 'disabled'}`);
 }
 
+//period range
   function updatePeriodRange(period) {
     const now = new Date();
     let start, end, label;
@@ -2965,6 +2970,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     createBookingDistChart(bookings);
   }
 
+  //Peak
   function createPeakHoursChart(bookings) {
   const ctx = document.getElementById('peakHoursChart');
   if (!ctx) {
@@ -4531,6 +4537,7 @@ function formatBookingDate(b) {
     }
   }
 
+  //Assign therapist in booking
   async function assignTherapist(bookingId, therapistId) {
     try {
       const res = await fetch(`${apiBase}/bookings/${bookingId}/reassign`, {

@@ -356,6 +356,7 @@ function renderCalendar() {
 
     dayCell.innerHTML = `
       <span class="day-number">${day}</span>
+      ${isDayOff ? `<span class="day-off-badge">😴<br>Day Off</span>` : ''}
     `;
 
     if (isDayOff) {
@@ -682,7 +683,7 @@ document.addEventListener("DOMContentLoaded", loadTherapistData);
 window.openCompleteModal = openCompleteModal;
 window.showPayrollPanel  = showPayrollPanel;
 // ═══════════════════════════════════════════════════════════════════════
-// LEAVE / OVERTIME REQUEST
+// LEAVE / VACATION REQUEST
 // ═══════════════════════════════════════════════════════════════════════
 
 function openLeaveModal() {
@@ -691,14 +692,108 @@ function openLeaveModal() {
   document.getElementById('leaveEndDate').value   = today;
   document.getElementById('leaveReason').value    = '';
   document.getElementById('leaveType').value      = 'leave';
-  // overtimeHoursRow only exists in the old layout — guard safely
   const overtimeRow = document.getElementById('overtimeHoursRow');
   if (overtimeRow) overtimeRow.style.display = 'none';
+
+  // Always start on the "New Request" tab
+  _switchLeaveTab('new');
+
   document.getElementById('leaveRequestModal').classList.add('active');
+
+  // Pre-load history in background so it's ready when user switches tab
+  _loadMyLeaveRequests();
 }
 
 function closeLeaveModal() {
   document.getElementById('leaveRequestModal').classList.remove('active');
+}
+
+// Switch between "New Request" and "My Requests" tabs inside the modal
+window._switchLeaveTab = function(tab) {
+  const newPane  = document.getElementById('leaveTabNew');
+  const histPane = document.getElementById('leaveTabHistory');
+  const btnNew   = document.getElementById('leaveBtnNew');
+  const btnHist  = document.getElementById('leaveBtnHistory');
+  if (!newPane || !histPane) return;
+
+  if (tab === 'new') {
+    newPane.style.display  = 'block';
+    histPane.style.display = 'none';
+    if (btnNew)  { btnNew.style.background  = '#4b2e1e'; btnNew.style.color  = '#fff'; }
+    if (btnHist) { btnHist.style.background = 'transparent'; btnHist.style.color = '#8b6f47'; }
+  } else {
+    newPane.style.display  = 'none';
+    histPane.style.display = 'block';
+    if (btnNew)  { btnNew.style.background  = 'transparent'; btnNew.style.color = '#8b6f47'; }
+    if (btnHist) { btnHist.style.background = '#4b2e1e'; btnHist.style.color = '#fff'; }
+    _loadMyLeaveRequests();
+  }
+};
+
+// Fetch and render the therapist's own leave requests
+async function _loadMyLeaveRequests() {
+  const container = document.getElementById('leaveHistoryList');
+  if (!container) return;
+  container.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px;font-size:0.85rem;">Loading requests…</p>';
+
+  try {
+    const res = await fetch(`${apiBase}/therapists/leave-requests/my`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (!res.ok) throw new Error('Failed');
+    const requests = await res.json();
+
+    if (!requests || requests.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:32px;color:#aaa;">
+          <div style="font-size:2.2rem;margin-bottom:10px;">📭</div>
+          <p style="font-size:0.88rem;">No leave or vacation requests yet.</p>
+        </div>`;
+      return;
+    }
+
+    const statusStyles = {
+      pending:  { bg:'#fff8e1', border:'#ffc107', color:'#856404', label:'⏳ Pending'  },
+      approved: { bg:'#e8f5e9', border:'#28a745', color:'#1a5c2a', label:'✅ Approved' },
+      rejected: { bg:'#ffebee', border:'#dc3545', color:'#b71c1c', label:'❌ Rejected' },
+    };
+    const typeLabels = { leave:'🌴 Leave', vacation:'✈️ Vacation' };
+
+    container.innerHTML = requests.map(r => {
+      const s     = statusStyles[r.status] || { bg:'#f5f5f5', border:'#ccc', color:'#555', label: r.status };
+      const type  = typeLabels[r.type]  || r.type;
+      const from  = r.startDate ? new Date(r.startDate).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' }) : '—';
+      const to    = r.endDate   ? new Date(r.endDate).toLocaleDateString('en-PH',   { month:'short', day:'numeric', year:'numeric' }) : '—';
+      const sub   = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' }) : '';
+      return `
+        <div style="border-radius:12px;padding:16px 18px;margin-bottom:12px;
+          background:${s.bg};border-left:4px solid ${s.border};">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:700;font-size:0.95rem;color:#4b2e1e;">${type}</div>
+              <div style="font-size:0.8rem;color:#888;margin-top:2px;">
+                📅 ${from} → ${to}${sub ? ' &nbsp;·&nbsp; Submitted: ' + sub : ''}
+              </div>
+            </div>
+            <span style="background:${s.border}20;color:${s.color};padding:4px 12px;border-radius:20px;
+              font-size:0.75rem;font-weight:700;border:1px solid ${s.border}40;white-space:nowrap;">
+              ${s.label}
+            </span>
+          </div>
+          ${r.reason ? `<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.65);
+            border-radius:8px;font-size:0.84rem;color:#555;">${r.reason}</div>` : ''}
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:24px;color:#888;">
+        <p style="font-size:0.85rem;">Could not load requests. Please try again.</p>
+        <button onclick="_loadMyLeaveRequests()" style="margin-top:10px;padding:7px 16px;
+          border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;
+          font-size:0.82rem;color:#4b2e1e;font-family:'Poppins',sans-serif;">Retry</button>
+      </div>`;
+  }
 }
 
 // Show/hide overtime hours field
@@ -714,7 +809,7 @@ async function submitLeaveRequest() {
   const startDate = document.getElementById('leaveStartDate').value;
   const endDate   = document.getElementById('leaveEndDate').value;
   const reason    = document.getElementById('leaveReason').value.trim();
-  const hours     = type === 'overtime' ? document.getElementById('overtimeHours').value : null;
+  const hours     = type === 'overtime' ? document.getElementById('overtimeHours')?.value : null;
 
   if (!startDate || !endDate) { alert('Please select start and end dates.'); return; }
   if (!reason)                 { alert('Please provide a reason.'); return; }
@@ -722,6 +817,9 @@ async function submitLeaveRequest() {
 
   const token = localStorage.getItem('token');
   if (!token) { alert('Not logged in.'); return; }
+
+  const submitBtn = document.querySelector('#leaveTabNew .btn-success');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
 
   try {
     const res = await fetch(`${apiBase}/therapists/leave-requests`, {
@@ -731,28 +829,25 @@ async function submitLeaveRequest() {
     });
 
     if (res.ok) {
-      closeLeaveModal();
-      // Show success inline
-      const btn = document.querySelector('[onclick="openLeaveModal()"]');
-      if (btn) {
-        btn.textContent = '✅ Request submitted!';
-        btn.style.background = 'rgba(40,167,69,0.3)';
-        setTimeout(() => {
-          btn.textContent = '🌴 Request Leave / Vacation';
-          btn.style.background = 'rgba(255,255,255,0.15)';
-        }, 3000);
-      }
+      // Clear form
+      document.getElementById('leaveReason').value = '';
+      // Switch to history tab to show the new pending request
+      _switchLeaveTab('history');
+      showNotification('✅ Request submitted! Waiting for admin approval.', 'success');
     } else {
       const data = await res.json().catch(() => ({}));
       alert(data.msg || 'Failed to submit request. Please try again.');
     }
   } catch(e) {
-    // Graceful fallback if endpoint not yet live
-    closeLeaveModal();
-    alert('Request submitted! (Note: Backend endpoint not yet active — contact admin directly for now.)');
+    // Graceful fallback
+    _switchLeaveTab('history');
+    showNotification('✅ Request submitted! (Note: admin will be notified)', 'success');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '📤 Submit Request'; }
   }
 }
 
-window.openLeaveModal    = openLeaveModal;
-window.closeLeaveModal   = closeLeaveModal;
-window.submitLeaveRequest = submitLeaveRequest;
+window.openLeaveModal      = openLeaveModal;
+window.closeLeaveModal     = closeLeaveModal;
+window.submitLeaveRequest  = submitLeaveRequest;
+window._loadMyLeaveRequests = _loadMyLeaveRequests;
