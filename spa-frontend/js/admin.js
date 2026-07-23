@@ -4038,7 +4038,7 @@ window.getBookingRowActions = getBookingRowActions;
     const femaleCount = b.femaleClients ?? null;
     const maleCount   = b.maleClients   ?? null;
     const genderHtml  = (femaleCount !== null && maleCount !== null)
-      ? `<span class="mc-gender mc-female">${femaleCount}</span><span class="mc-gender mc-male">${maleCount}</span>`
+      ? `<span class="mc-gender mc-female"><i class="fa-solid fa-venus" style="margin-right:4px;"></i>${femaleCount}</span><span class="mc-gender mc-male"><i class="fa-solid fa-mars" style="margin-right:4px;"></i>${maleCount}</span>`
       : '';
 
     let therapistName = 'Any Available';
@@ -4083,9 +4083,9 @@ window.getBookingRowActions = getBookingRowActions;
           <span class="mc-price">₱${price}</span>
         </div>
         <div class="mc-contact">
-          <span> ${phone}</span>
+          <span><i class="fa-solid fa-phone" style="margin-right:4px;"></i>${phone}</span>
           <span class="mc-sep">·</span>
-          <span class="mc-txn"> ${txn}</span>
+          <span class="mc-txn"><i class="fa-solid fa-hashtag" style="margin-right:4px;"></i>${txn}</span>
         </div>
         <div style="margin:5px 0 3px;">
           <button class="mc-reassign-btn" onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g,"\\'")}')"> Reassign</button>
@@ -4191,8 +4191,8 @@ function formatBookingDate(b) {
   const femaleCount = b.femaleClients ?? null;
   const maleCount   = b.maleClients   ?? null;
   const genderBreakdown = (femaleCount !== null && maleCount !== null && (femaleCount > 0 || maleCount > 0))
-    ? `<span style="font-size:0.78rem;color:#be185d;font-weight:600;">${femaleCount}</span>
-       <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">${maleCount}</span>`
+    ? `<span style="font-size:0.78rem;color:#be185d;font-weight:600;"><i class="fa-solid fa-venus" style="margin-right:3px;"></i>${femaleCount}</span>
+       <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:8px;"><i class="fa-solid fa-mars" style="margin-right:3px;"></i>${maleCount}</span>`
     : '';
   const startTime  = b.time || '—';
   const endTime    = formatEndTime(b.endTime);
@@ -4223,10 +4223,10 @@ function formatBookingDate(b) {
       <td style="word-wrap:break-word;overflow-wrap:break-word;">
         <div style="font-weight:600;font-size:1rem;">${clientName}${typeBadge} ${numClients > 1 ? `(${numClients} clients)` : ''}</div>
         ${genderBreakdown ? `<div style="margin-top:3px;">${genderBreakdown}</div>` : ''}
-        <div style="font-size:0.85rem;color:#666;margin-top:4px;"> ${b.guestPhone || 'No phone'}</div>
+        <div style="font-size:0.85rem;color:#666;margin-top:4px;"><i class="fa-solid fa-phone" style="margin-right:4px;"></i>${b.guestPhone || 'No phone'}</div>
         <div style="font-size:0.85rem;color:#666;">
            <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:0.75rem;">
-            ${b.transactionNumber || 'N/A'}
+            <i class="fa-solid fa-hashtag" style="margin-right:4px;"></i>${b.transactionNumber || 'N/A'}
           </span>
         </div>
       </td>

@@ -84,6 +84,9 @@
     } catch (_) {}
   }
 
+  // Poll for real-time updates every 15 seconds
+  setInterval(fetchLiveHomepageStats, 15000);
+
   function reanimateVisible(stats) {
     const MAP = [
       { kw: 'client',  val: stats.totalClients,    dec: false },

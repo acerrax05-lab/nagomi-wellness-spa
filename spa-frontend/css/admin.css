@@ -3421,7 +3421,8 @@ input:checked + .toggle-slider:before {
   background: transparent !important;
   border: none;
   border-left: 3px solid transparent;
-  color: rgba(255,255,255,0.7) !important;
+  color: #4b2e1e !important;
+  opacity: 0.85;
   font-size: 0.9rem; font-weight: 500;
   text-align: left; cursor: pointer;
   transition: all 0.2s;
@@ -3429,14 +3430,16 @@ input:checked + .toggle-slider:before {
 }
 .sidebar .tab-btn .tab-icon { font-size: 1.1rem; flex-shrink: 0; }
 .sidebar .tab-btn:hover {
-  background: rgba(255,255,255,0.1) !important;
-  color: #fff !important;
-  border-left-color: rgba(247,198,165,0.5);
+  background: rgba(75,46,30,0.05) !important;
+  color: #4b2e1e !important;
+  opacity: 1;
+  border-left-color: rgba(75,46,30,0.4);
 }
 .sidebar .tab-btn.active {
-  background: rgba(247,198,165,0.15) !important;
-  color: #f7c6a5 !important;
-  border-left-color: #f7c6a5;
+  background: rgba(75,46,30,0.1) !important;
+  color: #4b2e1e !important;
+  opacity: 1;
+  border-left-color: #4b2e1e;
   font-weight: 700;
 }
 .sidebar-badge {
@@ -3446,7 +3449,7 @@ input:checked + .toggle-slider:before {
   font-size: 0.68rem; font-weight: 700;
 }
 .sidebar-footer {
-  border-top: 1px solid rgba(255,255,255,0.12);
+  border-top: 1px solid rgba(75,46,30,0.12);
   padding: 14px 18px;
   display: flex; flex-direction: column; gap: 10px;
 }

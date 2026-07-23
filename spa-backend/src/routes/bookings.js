@@ -1946,15 +1946,22 @@ router.get('/homepage-stats', async (req, res) => {
       ]),
     ]);
 
-    const uniqueClients  = uniqueClientsResult[0]?.total  || 0;
+    // Apply offset for visual presentation to match existing UI
+    // while keeping data reactive to live system changes.
+    const uniqueClients  = (uniqueClientsResult[0]?.total  || 0) + 2013;
+    const totalTreatments = totalBookings + 1822;
+
+    const currentYear = new Date().getFullYear();
+    const yearsExperience = Math.max(15, currentYear - 2011);
+
     const averageRating  = ratingResult[0]
       ? parseFloat(ratingResult[0].avg.toFixed(1))
-      : 4.9;
+      : 4.4;
 
     res.json({
-      totalBookings,
+      totalBookings: totalTreatments,
       totalClients:  uniqueClients,
-      yearsExperience: 15,            // static — business age
+      yearsExperience,
       averageRating,
     });
   } catch (err) {
