@@ -464,7 +464,9 @@ function renderAppointmentsList(dayBookings) {
     const clientName  = b.guestName || (b.client ? b.client.name : "Guest");
     const serviceName = b.service ? b.service.name : "Service";
     const duration    = b.durationMinutes || 60;
-    const numClients  = b.numberOfClients || 1;
+    const numClients  = (b.femaleClients != null && b.maleClients != null)
+      ? (b.femaleClients + b.maleClients)
+      : (b.numberOfClients || 1);
 
     const coTherapists = (b.therapists && b.therapists.length > 1)
       ? b.therapists.filter(t => t._id !== user._id).map(t => t.name)

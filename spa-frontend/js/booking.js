@@ -959,9 +959,17 @@ function checkGenderColAvailability(gender) {
     return;
   }
 
-  const allUnavailable = cbs.every(cb => cb.disabled);
-  overlay.style.display = allUnavailable ? 'flex' : 'none';
-  if (col) col.style.opacity = allUnavailable ? '0.75' : '1';
+  const limit = gender === 'female' ? femaleClients : maleClients;
+  
+  // A therapist is genuinely available if they aren't on a day off and aren't already booked
+  const actualAvailableCount = cbs.filter(cb => 
+    cb.parentElement.dataset.available !== 'false' && 
+    cb.parentElement.dataset.booked !== 'true'
+  ).length;
+
+  const notEnoughAvailable = actualAvailableCount < limit;
+  overlay.style.display = notEnoughAvailable ? 'flex' : 'none';
+  if (col) col.style.opacity = notEnoughAvailable ? '0.75' : '1';
 }
 function unlockFemaleTherapistField() {
   var el   = document.getElementById('femaleTherapistFieldGroup');

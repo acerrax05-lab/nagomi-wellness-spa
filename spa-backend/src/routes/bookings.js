@@ -560,7 +560,13 @@ try {
         const availableAfterDate = convertTimeToDate(bookingDate, availableAfterTime);
 
         // ── Calculate total clients (needed for price) ─────────────
-        const totalClients = (femaleClients || 0) + (maleClients || 0) || numberOfClients || 1;
+        // femaleClients & maleClients are authoritative when explicitly sent (even if 0).
+        // Only fall back to numberOfClients when both gender fields are absent (undefined/null).
+        const hasFemale = femaleClients != null;
+        const hasMale   = maleClients   != null;
+        const totalClients = (hasFemale || hasMale)
+          ? (femaleClients || 0) + (maleClients || 0)
+          : (numberOfClients || 1);
 
         // ── Calculate price ────────────────────────────────────────
         let finalPrice = totalAmount;

@@ -4025,7 +4025,9 @@ window.getBookingRowActions = getBookingRowActions;
   function generateMobileBookingCard(b, type) {
     const clientName  = b.guestName || 'Guest';
     const serviceName = b.service ? b.service.name : 'N/A';
-    const numClients  = b.numberOfClients || 1;
+    const numClients  = (b.femaleClients != null && b.maleClients != null)
+      ? (b.femaleClients + b.maleClients)
+      : (b.numberOfClients || 1);
     const duration    = b.durationMinutes || 60;
     const price       = (b.price || 0).toLocaleString();
     const startTime   = b.time || '—';
@@ -4183,7 +4185,9 @@ function formatBookingDate(b) {
   `;
 
   const duration   = b.durationMinutes || 60;
-  const numClients = b.numberOfClients || 1;
+  const numClients = (b.femaleClients != null && b.maleClients != null)
+    ? (b.femaleClients + b.maleClients)
+    : (b.numberOfClients || 1);
   const femaleCount = b.femaleClients ?? null;
   const maleCount   = b.maleClients   ?? null;
   const genderBreakdown = (femaleCount !== null && maleCount !== null && (femaleCount > 0 || maleCount > 0))
