@@ -2689,9 +2689,6 @@ input:checked + .toggle-slider:before {
    ENHANCED CLIENT INFO DISPLAY
    ========================================== */
 
-#bookingsTable tbody tr td:first-child {
-  /* removed min-width: 250px — conflicts with table-layout: fixed */
-}
 
 .client-info-cell {
   display: flex;
@@ -2825,10 +2822,7 @@ input:checked + .toggle-slider:before {
    ========================================== */
 
 @media (max-width: 768px) {
-  #bookingsTable tbody tr td:first-child {
-    /* let table-layout: fixed control width on mobile too */
-  }
-  
+
   .booking-search-container input {
     padding: 12px 40px 12px 15px;
     font-size: 0.9rem;
@@ -3575,13 +3569,6 @@ input:checked + .toggle-slider:before {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
   gap: 20px !important;
-}
-/* 4th and 5th chart box span for 2-column bottom row */
-.charts-container .chart-box:nth-child(4),
-.charts-container .chart-box:nth-child(5) {
-  /* Will naturally flow into next row of 3-col grid.
-     To force exactly 2 wide on bottom, we use a sub-wrapper via JS.
-     For CSS-only: just let them flow — they'll be 2 on the last row. */
 }
 @media (max-width: 1100px) {
   #chartsContainer, .charts-container { grid-template-columns: repeat(2, 1fr) !important; }
