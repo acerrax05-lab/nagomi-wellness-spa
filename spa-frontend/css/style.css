@@ -272,7 +272,7 @@ h1, h2, h3 {
 
 /* === SERVICES === */
 .services {
-  padding: 100px 80px;
+  padding: 60px 40px;
   background: #f5f1eb;
   text-align: center;
 }
@@ -355,7 +355,7 @@ h1, h2, h3 {
 
 /* === PROMOS === */
 .promos {
-  padding: 100px 80px;
+  padding: 60px 40px;
   background: #623e2a;
   text-align: center;
 }
@@ -441,7 +441,7 @@ h1, h2, h3 {
 
 /* === THERAPISTS === */
 .therapists {
-  padding: 100px 80px;
+  padding: 60px 40px;
   background: #f5f1eb;
   text-align: center;
 }
@@ -508,7 +508,7 @@ h1, h2, h3 {
 .contact {
   background: #623e2a;
   color: #fff;
-  padding: 100px 80px;
+  padding: 60px 40px;
   text-align: center;
 }
 
@@ -1323,7 +1323,7 @@ footer {
 /* Loading State */
 .catalog-loading {
   text-align: center;
-  padding: 120px 20px;
+  padding: 70px 20px;
   color: #999;
   grid-column: 1 / -1;
 }
@@ -1354,7 +1354,7 @@ footer {
 /* No Services Message */
 .no-services-shop {
   text-align: center;
-  padding: 100px 20px;
+  padding: 60px 20px;
   grid-column: 1 / -1;
 }
 

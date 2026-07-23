@@ -225,22 +225,22 @@
 }
 
 /* ── 8. Stats section ────────────────────────────────────────────────────── */
-.stats-section    { padding: 80px 40px; background: #623e2a; }
+.stats-section    { padding: 40px 20px; background: #623e2a; }
 .stats-container  { display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
-.stat-item        { text-align: center; color: #623e2a; }
-.stat-icon        { font-size: 2rem; margin-bottom: 12px; opacity: 0.85; }
+.stat-item        { text-align: center; color: #4b2e1e; }
+.stat-icon        { font-size: 2.2rem; margin-bottom: 12px; opacity: 1; color: #4b2e1e; }
 
 /* Override the white color enhanced-features.css sets on .stat-number */
 .stat-number {
   font-family: 'Playfair Display', serif !important;
   font-size: 3rem !important;
   font-weight: 700 !important;
-  color: #f7c6a5 !important;
+  color: #4b2e1e !important;
   line-height: 1;
   margin-bottom: 8px;
 }
 
-.stat-item p { font-size: 0.9rem; opacity: 0.85; color: #000000; font-weight: 500; }
+.stat-item p { font-size: 0.95rem; opacity: 1; color: #4b2e1e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* ── 9. Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 768px) {

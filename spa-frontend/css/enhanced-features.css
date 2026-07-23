@@ -206,7 +206,7 @@
 /* === Statistics Section === */
 .stats-section {
   background: linear-gradient(135deg, #4b2e1e 0%, #623e2a 100%);
-  padding: 80px 20px;
+  padding: 50px 20px;
   color: #fff;
   
 }
@@ -848,7 +848,7 @@
 .no-reviews-placeholder {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 80px 40px;
+  padding: 50px 20px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -889,7 +889,7 @@
 }
 
 .reviews-section {
-  padding: 100px 5%;
+  padding: 60px 5%;
   background: linear-gradient(180deg, #ffffff 0%, #faf8f5 50%, #f5f1ed 100%);
   position: relative;
   overflow: hidden;
@@ -919,7 +919,7 @@
 /* Section Header */
 .reviews-section .section-header {
   text-align: center;
-  margin-bottom: 70px;
+  margin-bottom: 40px;
   position: relative;
   z-index: 1;
 }
@@ -945,7 +945,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 40px;
-  margin-bottom: 80px;
+  margin-bottom: 40px;
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
@@ -1216,7 +1216,7 @@
 /* No Reviews Placeholder - Redesigned */
 .no-reviews-placeholder {
   text-align: center;
-  padding: 100px 50px;
+  padding: 60px 40px;
   background: white;
   border-radius: 25px;
   max-width: 700px;
@@ -1332,7 +1332,7 @@
 
 @media (max-width: 768px) {
   .reviews-section {
-    padding: 80px 5%;
+    padding: 50px 5%;
   }
   
   .reviews-section .section-header h2 {
@@ -1362,7 +1362,7 @@
   }
   
   .no-reviews-placeholder {
-    padding: 80px 40px;
+    padding: 50px 20px;
   }
 }
 
@@ -1757,7 +1757,7 @@
 /* Loading State */
 .catalog-loading {
   text-align: center;
-  padding: 100px 20px;
+  padding: 60px 20px;
   color: #999;
   grid-column: 1 / -1;
 }
@@ -1777,7 +1777,7 @@
 /* No Services Message */
 .no-services-shop {
   text-align: center;
-  padding: 80px 20px;
+  padding: 50px 20px;
   grid-column: 1 / -1;
 }
 
@@ -2094,7 +2094,7 @@
 
 /* === Reviews Section === */
 .reviews-section {
-  padding: 100px 80px;
+  padding: 60px 40px;
   background: #f5f1eb;
 }
 
