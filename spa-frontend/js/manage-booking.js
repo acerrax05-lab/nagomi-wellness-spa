@@ -51,12 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function lookupByTransactionId() {
   const transactionId = document.getElementById('lookupTransactionId').value.trim().toUpperCase();
-  if (!transactionId) { showNotification('<i class="fa-solid fa-circle-xmark"></i> Please enter a transaction number', 'error'); return; }
+  if (!transactionId) { showNotification('❌ Please enter a transaction number', 'error'); return; }
 
   try {
     const response = await fetch(`${API_URL}/bookings/lookup-by-id/${transactionId}`);
     const data = await response.json();
-    if (!response.ok) { showNotification(`<i class="fa-solid fa-circle-xmark"></i> ${data.msg}`, 'error'); return; }
+    if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
 
     // Store identity proof for reschedule/cancel calls
     storedIdentity = { transactionNumber: transactionId };
@@ -64,7 +64,7 @@ async function lookupByTransactionId() {
     currentBookings = [data];
     displayBookings([data]);
   } catch (error) {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> Error looking up booking', 'error');
+    showNotification('❌ Error looking up booking', 'error');
   }
 }
 window.lookupByTransactionId = lookupByTransactionId;
@@ -74,7 +74,7 @@ async function lookupBookings() {
   const phone    = rawPhone.replace(/[\s\-\(\)]/g, '');
   const name     = document.getElementById('lookupName').value.trim();
 
-  if (!rawPhone) { showNotification('<i class="fa-solid fa-circle-xmark"></i> Please enter your phone number', 'error'); return; }
+  if (!rawPhone) { showNotification('❌ Please enter your phone number', 'error'); return; }
 
   try {
     const response = await fetch(`${API_URL}/bookings/lookup`, {
@@ -83,7 +83,7 @@ async function lookupBookings() {
       body: JSON.stringify({ phone, name }) // name is optional now
     });
     const data = await response.json();
-    if (!response.ok) { showNotification(`<i class="fa-solid fa-circle-xmark"></i> ${data.msg}`, 'error'); return; }
+    if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
 
     // Store identity proof for reschedule/cancel calls
     storedIdentity = { phone };
@@ -91,7 +91,7 @@ async function lookupBookings() {
     currentBookings = data;
     displayBookings(data);
   } catch (error) {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> Error looking up bookings', 'error');
+    showNotification('❌ Error looking up bookings', 'error');
   }
 }
 
@@ -104,7 +104,7 @@ function displayBookings(bookings) {
   if (bookings.length === 0) {
     bookingsContainer.innerHTML = `
       <div class="no-bookings">
-        <p style="font-size:1.2rem;margin-bottom:10px;"><i class="fa-solid fa-calendar-days"></i></p>
+        <p style="font-size:1.2rem;margin-bottom:10px;">📅</p>
         <p>No bookings found.</p>
         <p style="font-size:0.9rem;color:#999;margin-top:10px;">
           Make sure your phone number and name match exactly as entered when booking.
@@ -124,7 +124,7 @@ function displayBookings(bookings) {
   if (pendingReqs.length > 0) {
     html += `
       <div style="background:#fff3e0;border-left:4px solid #ff9800;padding:15px 20px;border-radius:8px;margin-bottom:20px;">
-        <h4 style="color:#e65100;margin:0 0 5px 0;"><i class="fa-regular fa-clock"></i> Pending Admin Review (${pendingReqs.length})</h4>
+        <h4 style="color:#e65100;margin:0 0 5px 0;">⏳ Pending Admin Review (${pendingReqs.length})</h4>
         <p style="margin:0;color:#666;font-size:0.9rem;">
           The following requests are awaiting admin approval. You'll see the updated status once reviewed.
         </p>
@@ -156,12 +156,12 @@ function renderBookingCard(booking, canModify) {
   const therapistName = booking.therapist?.name || 'To be assigned';
 
   const statusMap = {
-    completed:            { label: '<i class="fa-solid fa-circle-check"></i> Completed',          color: '#28a745', bg: '#e8f5e9' },
-    cancelled:            { label: '<i class="fa-solid fa-circle-xmark"></i> Cancelled',           color: '#dc3545', bg: '#ffebee' },
+    completed:            { label: '✅ Completed',          color: '#28a745', bg: '#e8f5e9' },
+    cancelled:            { label: '❌ Cancelled',           color: '#dc3545', bg: '#ffebee' },
     confirmed:            { label: '✓ Confirmed',            color: '#2196f3', bg: '#e3f2fd' },
-    pending:              { label: '<i class="fa-regular fa-clock"></i> Pending',             color: '#ff9800', bg: '#fff3e0' },
-    pending_cancellation: { label: '<i class="fa-regular fa-clock"></i> Cancellation Pending', color: '#ff5722', bg: '#fbe9e7' },
-    pending_reschedule:   { label: '<i class="fa-regular fa-clock"></i> Reschedule Pending',   color: '#9c27b0', bg: '#f3e5f5' },
+    pending:              { label: '⏳ Pending',             color: '#ff9800', bg: '#fff3e0' },
+    pending_cancellation: { label: '🕐 Cancellation Pending', color: '#ff5722', bg: '#fbe9e7' },
+    pending_reschedule:   { label: '🕐 Reschedule Pending',   color: '#9c27b0', bg: '#f3e5f5' },
   };
   const s = statusMap[booking.status] || { label: booking.status, color: '#6c757d', bg: '#f5f5f5' };
 
@@ -198,7 +198,7 @@ function renderBookingCard(booking, canModify) {
         <div style="margin-bottom:15px;padding:12px;background:#fbe9e7;border-radius:8px;border-left:3px solid #ff5722;">
           <span class="detail-label" style="color:#bf360c;">Your Cancellation Reason:</span>
           <p style="margin-top:5px;color:#bf360c;">${booking.cancellationReason}</p>
-          <p style="margin-top:5px;color:#999;font-size:0.85rem;"><i class="fa-regular fa-clock"></i> Waiting for admin review</p>
+          <p style="margin-top:5px;color:#999;font-size:0.85rem;">⏳ Waiting for admin review</p>
         </div>` : ''}
 
       ${booking.status === 'pending_reschedule' ? `
@@ -209,7 +209,7 @@ function renderBookingCard(booking, canModify) {
             at <strong>${booking.pendingRescheduleTime}</strong>
           </p>
           ${booking.rescheduleReason ? `<p style="color:#6a1b9a;font-size:0.9rem;">Reason: ${booking.rescheduleReason}</p>` : ''}
-          <p style="margin-top:5px;color:#999;font-size:0.85rem;"><i class="fa-regular fa-clock"></i> Waiting for admin review</p>
+          <p style="margin-top:5px;color:#999;font-size:0.85rem;">⏳ Waiting for admin review</p>
         </div>` : ''}
 
       ${booking.adminRejectionNote ? `
@@ -228,22 +228,22 @@ function renderBookingCard(booking, canModify) {
         <div class="booking-actions">
           ${!booking.rescheduledFrom?.date ? `
             <button class="btn-action btn-reschedule" onclick="openRescheduleModal('${booking._id}')">
-              <i class="fa-solid fa-calendar-days"></i> Reschedule
+              📅 Reschedule
             </button>
           ` : `
             <div style="padding:10px;background:#f3e5f5;border-radius:8px;text-align:center;color:#6a1b9a;font-size:0.88rem;border:1px solid #ce93d8;">
-              <i class="fa-solid fa-lock"></i> Reschedule limit reached — only 1 reschedule is allowed per booking
+              🔒 Reschedule limit reached — only 1 reschedule is allowed per booking
             </div>
           `}
           <button class="btn-action btn-cancel" onclick="openCancelModal('${booking._id}')">
-            <i class="fa-solid fa-circle-xmark"></i> Request Cancellation
+            ❌ Request Cancellation
           </button>
         </div>` : `
         <div style="padding:10px;background:#f8f9fa;border-radius:8px;text-align:center;color:#999;font-size:0.9rem;">
-          ${ booking.status === 'completed'            ? '<i class="fa-solid fa-circle-check"></i> This appointment has been completed'
-           : booking.status === 'cancelled'            ? '<i class="fa-solid fa-circle-xmark"></i> This booking was cancelled'
-           : booking.status === 'pending_cancellation' ? '<i class="fa-regular fa-clock"></i> Cancellation request is under review'
-           : booking.status === 'pending_reschedule'   ? '<i class="fa-regular fa-clock"></i> Reschedule request is under review'
+          ${ booking.status === 'completed'            ? '✅ This appointment has been completed'
+           : booking.status === 'cancelled'            ? '❌ This booking was cancelled'
+           : booking.status === 'pending_cancellation' ? '⏳ Cancellation request is under review'
+           : booking.status === 'pending_reschedule'   ? '⏳ Reschedule request is under review'
            : ''}
         </div>`}
 
@@ -251,7 +251,7 @@ function renderBookingCard(booking, canModify) {
         const hasReviewed = localStorage.getItem(`reviewed_${booking._id || booking.transactionNumber}`) === '1';
         return hasReviewed
           ? `<div style="margin-top:10px;padding:12px;background:#e8f5e9;border-radius:10px;text-align:center;color:#2e7d32;font-size:0.9rem;font-weight:600;">
-               <i class="fa-solid fa-circle-check"></i> You've already submitted a review for this booking. Thank you!
+               ✅ You've already submitted a review for this booking. Thank you!
              </div>`
           : `<div style="margin-top:10px;">
                <button onclick="openManageReviewModal('${(booking.service?.name || '').replace(/'/g,"\\'")}','${booking.transactionNumber || ''}','${(booking.guestName || '').replace(/'/g,"\\'")}','${booking._id || ''}')"
@@ -260,7 +260,7 @@ function renderBookingCard(booking, canModify) {
                    color:#fff;border:none;border-radius:10px;font-weight:600;font-size:0.95rem;
                    cursor:pointer;transition:opacity 0.2s;"
                  onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-                 <i class="fa-solid fa-pen"></i> Write a Review
+                 ✍️ Write a Review
                </button>
              </div>`;
       })() : booking.status !== 'cancelled' ? `
@@ -269,7 +269,7 @@ function renderBookingCard(booking, canModify) {
             background:#e0e0e0;color:#aaa;border:none;border-radius:10px;
             font-weight:600;font-size:0.95rem;cursor:not-allowed;"
             title="Available once your appointment is completed">
-            <i class="fa-solid fa-pen"></i> Write a Review <span style="font-size:0.78rem;font-weight:400;">(after appointment)</span>
+            ✍️ Write a Review <span style="font-size:0.78rem;font-weight:400;">(after appointment)</span>
           </button>
         </div>` : ''}
     </div>`;
@@ -312,7 +312,7 @@ function openRescheduleModal(bookingId) {
 
   // Block if already rescheduled once
   if (selectedBooking.rescheduledFrom?.date) {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> You have already rescheduled this booking once. Only 1 reschedule is allowed.', 'error');
+    showNotification('❌ You have already rescheduled this booking once. Only 1 reschedule is allowed.', 'error');
     return;
   }
 
@@ -337,7 +337,7 @@ async function confirmReschedule() {
   clearFieldError('rescheduleReasonError');
 
   if (!newDate || newTime === 'Select time...') {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> Please select both date and time', 'error');
+    showNotification('❌ Please select both date and time', 'error');
     return;
   }
   if (reason.length < 10) {
@@ -352,13 +352,13 @@ async function confirmReschedule() {
       body: JSON.stringify({ newDate, newTime, reason, ...getIdentityProof() })
     });
     const data = await response.json();
-    if (!response.ok) { showNotification(`<i class="fa-solid fa-circle-xmark"></i> ${data.msg}`, 'error'); return; }
+    if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
 
-    showNotification('<i class="fa-solid fa-circle-check"></i> Reschedule request submitted! Awaiting admin approval.', 'success');
+    showNotification('✅ Reschedule request submitted! Awaiting admin approval.', 'success');
     closeRescheduleModal();
     setTimeout(refreshCurrentBookings, 1000);
   } catch (error) {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> Error submitting reschedule request', 'error');
+    showNotification('❌ Error submitting reschedule request', 'error');
   }
 }
 
@@ -396,13 +396,13 @@ async function confirmCancel() {
       body: JSON.stringify({ reason, ...getIdentityProof() })
     });
     const data = await response.json();
-    if (!response.ok) { showNotification(`<i class="fa-solid fa-circle-xmark"></i> ${data.msg}`, 'error'); return; }
+    if (!response.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
 
-    showNotification('<i class="fa-solid fa-circle-check"></i> Cancellation request submitted! Awaiting admin approval.', 'success');
+    showNotification('✅ Cancellation request submitted! Awaiting admin approval.', 'success');
     closeCancelModal();
     setTimeout(refreshCurrentBookings, 1000);
   } catch (error) {
-    showNotification('<i class="fa-solid fa-circle-xmark"></i> Error submitting cancellation request', 'error');
+    showNotification('❌ Error submitting cancellation request', 'error');
   }
 }
 
@@ -597,7 +597,7 @@ async function submitManageReview(e) {
     // Refresh cards so the button changes to "already reviewed"
     setTimeout(() => refreshCurrentBookings(), 800);
   } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = '<i class="fa-solid fa-paper-plane"></i> Submit Review'; }
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Submit Review'; }
     // Use a styled inline error instead of alert
     const errDiv = document.getElementById('mgReviewError');
     if (errDiv) {
@@ -605,7 +605,7 @@ async function submitManageReview(e) {
       errDiv.style.display = 'block';
       setTimeout(() => { if (errDiv) errDiv.style.display = 'none'; }, 5000);
     } else {
-      showNotification('<i class="fa-solid fa-circle-xmark"></i> ' + (e.message || 'Failed to submit review. Please try again.'), 'error');
+      showNotification('❌ ' + (e.message || 'Failed to submit review. Please try again.'), 'error');
     }
   }
 }
@@ -689,9 +689,9 @@ function _buildReviewModal() {
   modal.id = 'manageReviewModal';
   modal.innerHTML = `
     <div class="mg-review-panel" style="position:relative;">
-      <button class="mg-review-close" onclick="closeManageReviewModal()"><i class="fa-solid fa-xmark"></i></button>
+      <button class="mg-review-close" onclick="closeManageReviewModal()">✕</button>
       <div class="mg-review-header">
-        <div style="font-size:2rem;margin-bottom:8px;"><i class="fa-solid fa-pen"></i></div>
+        <div style="font-size:2rem;margin-bottom:8px;">✍️</div>
         <h2>Share Your Experience</h2>
         <p>Help others by sharing your spa experience</p>
       </div>
@@ -729,7 +729,7 @@ function _buildReviewModal() {
         <div id="mgReviewError" style="display:none;color:#8b1a1a;background:#fdecea;border:1px solid #f5a5a5;border-radius:8px;padding:10px 14px;font-size:0.85rem;margin-bottom:10px;">Error submitting review.</div>
         <div class="mg-review-actions">
           <button type="button" class="mg-review-cancel" onclick="closeManageReviewModal()">Cancel</button>
-          <button type="submit" class="mg-review-submit"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
+          <button type="submit" class="mg-review-submit">📤 Submit Review</button>
         </div>
       </form>
     </div>

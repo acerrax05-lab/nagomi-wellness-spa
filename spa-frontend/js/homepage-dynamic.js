@@ -158,7 +158,7 @@
       }
       if (stat.isTrending) {
         bc.insertAdjacentHTML('beforeend',
-          `<span class="badge trending"><i class="fa-solid fa-fire"></i> Trending</span>`);
+          `<span class="badge trending">🔥 Trending</span>`);
       }
       if (stat.averageRating && stat.reviewCount > 0) {
         bc.insertAdjacentHTML('beforeend',
