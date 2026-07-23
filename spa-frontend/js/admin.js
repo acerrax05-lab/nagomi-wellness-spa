@@ -114,40 +114,119 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     socket.emit('join', { userId: user._id, role: user.role });
   });
 
+  // ── Helper: get currently active admin tab ────────────────────────────────
+  function _activeTab() {
+    return document.querySelector('.tab-content.active')?.id || '';
+  }
+
+  // ── Booking events ────────────────────────────────────────────────────────
   socket.on('newBooking', (data) => {
     showNotification('New booking received!', 'success');
-    addNotif(` New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
-    const activeTab = document.querySelector('.tab-content.active')?.id;
-    if (activeTab === 'overview-tab') loadOverviewData();
-    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+    addNotif(`📋 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
   });
 
   socket.on('new-booking', (data) => {
     showNotification('New booking received!', 'success');
-    addNotif(` New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
-    const activeTab = document.querySelector('.tab-content.active')?.id;
-    if (activeTab === 'overview-tab') loadOverviewData();
-    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+    addNotif(`📋 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+  });
+
+  // bookingUpdated — triggered when admin changes status, assigns therapist, etc.
+  socket.on('bookingUpdated', () => {
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    else if (_activeTab() === 'income-tab') loadIncomeData();
   });
 
   socket.on('bookingStatusUpdated', () => {
-    const activeTab = document.querySelector('.tab-content.active')?.id;
-    if (activeTab === 'overview-tab') loadOverviewData();
-    else if (activeTab === 'bookings-tab') loadBookingsCalendar();
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    else if (_activeTab() === 'income-tab') loadIncomeData();
+  });
+
+  // Cancellation request submitted by client
+  socket.on('cancellationRequested', (data) => {
+    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'}`, 'cancel', 'bookings');
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
   });
 
   socket.on('booking-cancelled', (data) => {
-    addNotif(` Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
+    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
+  });
+
+  // Admin approved/rejected cancellation
+  socket.on('bookingCancelled', () => {
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    else if (_activeTab() === 'income-tab') loadIncomeData();
+    loadPendingRequests();
+  });
+
+  socket.on('cancellationRejected', () => {
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
+  });
+
+  // Reschedule request submitted by client
+  socket.on('rescheduleRequested', (data) => {
+    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'}`, 'reschedule', 'bookings');
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
   });
 
   socket.on('reschedule-request', (data) => {
-    addNotif(` Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
+    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
   });
 
+  // Admin approved/rejected reschedule
+  socket.on('bookingRescheduled', () => {
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
+  });
+
+  socket.on('rescheduleRejected', () => {
+    if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    loadPendingRequests();
+  });
+
+  // Booking deleted
+  socket.on('bookingDeleted', () => {
+    if (_activeTab() === 'overview-tab') loadOverviewData();
+    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
+    else if (_activeTab() === 'income-tab') loadIncomeData();
+  });
+
+  // ── Leave requests ─────────────────────────────────────────────────────────
   socket.on('leave-request', (data) => {
-    addNotif(` Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
+    addNotif(`📋 Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
     const badge = document.getElementById('leaveSidebarBadge');
     if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
+    if (_activeTab() === 'leave-requests-tab') loadLeaveRequests();
+  });
+
+  // ── Service updates ────────────────────────────────────────────────────────
+  socket.on('serviceUpdated', () => {
+    if (_activeTab() === 'services-tab') loadServices();
+  });
+
+  // ── Therapist updates ─────────────────────────────────────────────────────
+  socket.on('therapistUpdated', () => {
+    if (_activeTab() === 'therapists-tab') loadTherapists();
+    else if (_activeTab() === 'therapist-analytics-tab') loadTherapistAnalytics();
+  });
+
+  // ── Review updates ─────────────────────────────────────────────────────────
+  socket.on('reviewUpdated', () => {
+    if (_activeTab() === 'reviews-tab') loadReviewsManagement();
   });
 
   // Debounce helper — prevents search firing on every single keystroke

@@ -217,6 +217,8 @@ router.post('/', auth, roles(['admin']), async (req, res) => {
     }
  
     const service = await Service.create(serviceData);
+    const io = req.app.get('socketio');
+    if (io) io.emit('serviceUpdated', { action: 'created', service });
     res.status(201).json({ msg: 'Service created successfully', service });
  
   } catch (err) {
@@ -258,6 +260,8 @@ router.put('/:id', auth, roles(['admin']), async (req, res) => {
  
     if (!updated) return res.status(404).json({ msg: 'Service not found' });
  
+    const io = req.app.get('socketio');
+    if (io) io.emit('serviceUpdated', { action: 'updated', service: updated });
     res.json({ msg: 'Service updated successfully', service: updated });
  
   } catch (err) {
@@ -275,6 +279,8 @@ router.patch('/:id/toggle', auth, roles(['admin']), async (req, res) => {
     service.active = !service.active;
     await service.save();
  
+    const io = req.app.get('socketio');
+    if (io) io.emit('serviceUpdated', { action: 'toggled', service });
     res.json({ msg: `Service ${service.active ? 'activated' : 'hidden'}`, service });
  
   } catch (err) {
@@ -294,6 +300,8 @@ router.delete('/:id', auth, roles(['admin']), async (req, res) => {
  
     if (!service) return res.status(404).json({ msg: 'Service not found' });
  
+    const io = req.app.get('socketio');
+    if (io) io.emit('serviceUpdated', { action: 'deleted', serviceId: req.params.id });
     res.json({ msg: 'Service hidden successfully', service });
  
   } catch (err) {

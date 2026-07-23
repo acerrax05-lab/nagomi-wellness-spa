@@ -77,6 +77,8 @@ router.post('/', auth, roles(['admin']), async (req, res) => {
     });
 
     const safe = await User.findById(therapist._id).select('-passwordHash');
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'created', therapist: safe });
     res.status(201).json({ msg: 'Therapist created. Default password: therapist123', therapist: safe });
   } catch (err) {
     console.error(err);
@@ -100,6 +102,8 @@ router.put('/:id', auth, roles(['admin']), async (req, res) => {
     ).select('-passwordHash');
 
     if (!therapist) return res.status(404).json({ msg: 'Therapist not found' });
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'updated', therapist });
     res.json({ msg: 'Therapist updated', therapist });
   } catch (err) {
     console.error(err);
@@ -120,6 +124,8 @@ router.patch('/:id/expertise', auth, roles(['admin']), async (req, res) => {
     ).select('-passwordHash');
 
     if (!therapist) return res.status(404).json({ msg: 'Therapist not found' });
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'expertiseUpdated', therapist });
     res.json({ msg: 'Expertise updated', therapist });
   } catch (err) {
     console.error(err);
@@ -148,6 +154,8 @@ router.patch('/:id/schedule', auth, roles(['admin']), async (req, res) => {
     ).select('-passwordHash');
 
     if (!therapist) return res.status(404).json({ msg: 'Therapist not found' });
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'scheduleUpdated', therapist });
     res.json({ msg: 'Schedule updated', therapist });
   } catch (err) {
     console.error(err);
@@ -232,6 +240,8 @@ router.patch('/:id/toggle-active', auth, roles(['admin']), async (req, res) => {
     await therapist.save();
 
     const updated = await User.findById(therapist._id).select('-passwordHash');
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'toggled', therapist: updated });
     res.json({ msg: `Therapist ${therapist.isActive ? 'activated' : 'deactivated'}`, therapist: updated });
   } catch (err) {
     console.error(err);
@@ -257,6 +267,8 @@ router.put('/:id/pay-settings', auth, roles(['admin']), async (req, res) => {
     );
 
     if (!therapist) return res.status(404).json({ msg: 'Therapist not found' });
+    const io = req.app.get('socketio');
+    if (io) io.emit('therapistUpdated', { action: 'paySettingsUpdated', therapist });
     res.json({ msg: 'Pay settings updated', therapist });
   } catch (err) {
     console.error(err);

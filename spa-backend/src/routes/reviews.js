@@ -189,6 +189,8 @@
       }
       
       console.log(`✅ Review approved: ${review._id}`);
+      const io = req.app.get('socketio');
+      if (io) io.emit('reviewUpdated', { action: 'approved', review });
       res.json({ msg: 'Review approved', review });
       
     } catch (err) {
@@ -216,6 +218,8 @@
       }
       
       console.log(`✅ Review rejected: ${review._id}`);
+      const io = req.app.get('socketio');
+      if (io) io.emit('reviewUpdated', { action: 'rejected', review });
       res.json({ msg: 'Review rejected', review });
       
     } catch (err) {
@@ -240,6 +244,8 @@
       await review.save();
       
       console.log(`✅ Review visibility toggled: ${review._id}, hidden: ${review.hidden}`);
+      const io = req.app.get('socketio');
+      if (io) io.emit('reviewUpdated', { action: 'visibilityToggled', review });
       res.json({ 
         msg: review.hidden ? 'Review hidden' : 'Review visible',
         review 
