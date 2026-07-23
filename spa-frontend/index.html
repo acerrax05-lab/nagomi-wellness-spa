@@ -428,6 +428,28 @@
   <script src="js/service-catalog-simple.js"></script>
   <script src="js/guest-reviews.js"></script>
   <script src="js/homepage-dynamic.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script>
+    // Socket.IO: refresh homepage stats instantly on any booking change
+    (function () {
+      const BACKEND = 'https://nagomi-backend.onrender.com';
+      function connect() {
+        try {
+          const sock = io(BACKEND, { transports: ['websocket', 'polling'] });
+          const refresh = () => {
+            if (typeof fetchLiveHomepageStats === 'function') fetchLiveHomepageStats();
+          };
+          sock.on('newBooking',            refresh);
+          sock.on('new-booking',           refresh);
+          sock.on('bookingStatusUpdated',  refresh);
+          sock.on('bookingUpdated',        refresh);
+        } catch (e) { /* silent */ }
+      }
+      const t = setInterval(() => {
+        if (typeof io !== 'undefined') { clearInterval(t); connect(); }
+      }, 300);
+    })();
+  </script>
   <script src="js/sakura-petals.js"></script>
 </body>
 

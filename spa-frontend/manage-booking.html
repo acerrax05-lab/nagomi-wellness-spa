@@ -533,7 +533,34 @@
       })
     );
   </script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="js/manage-booking.js"></script>
+  <script>
+    // Real-time: auto-refresh booking status when admin approves/rejects
+    (function () {
+      const BACKEND = 'https://nagomi-backend.onrender.com';
+      function connect() {
+        try {
+          const sock = io(BACKEND, { transports: ['websocket', 'polling'] });
+          const refresh = () => {
+            if (typeof refreshCurrentBookings === 'function') {
+              setTimeout(refreshCurrentBookings, 800);
+            }
+          };
+          sock.on('bookingCancelled',      refresh);
+          sock.on('cancellationRejected',  refresh);
+          sock.on('bookingRescheduled',    refresh);
+          sock.on('rescheduleRejected',    refresh);
+          sock.on('bookingStatusUpdated',  refresh);
+          sock.on('bookingUpdated',        refresh);
+        } catch (e) { /* silent — socket not critical for manage-booking */ }
+      }
+      // Wait for io to be available
+      const t = setInterval(() => {
+        if (typeof io !== 'undefined') { clearInterval(t); connect(); }
+      }, 300);
+    })();
+  </script>
 
   <footer style="text-align:center;padding:1.5rem;background:#3b1f10;color:rgba(255,255,255,0.6);font-size:0.85rem;margin-top:2rem;">
     <p>© 2026 Nagomi Wellness Spa | All Rights Reserved</p>

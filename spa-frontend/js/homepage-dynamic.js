@@ -535,4 +535,7 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // Expose for Socket.IO real-time trigger in index.html
+  window.fetchLiveHomepageStats = fetchLiveHomepageStats;
+
 })();
