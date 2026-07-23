@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,15 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/enhanced-features.css">
   <link rel="stylesheet" href="css/homepage-dynamic.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
   <!-- Font Awesome for Stars -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/sakura-petals.css">
 </head>
+
 <body>
   <!-- Navbar -->
   <header>
@@ -23,15 +27,15 @@
           <span class="logo-short" style="display:none;">Nagomi Wellness Spa</span>
         </h1>
       </div>
-      
+
       <div class="hamburger" id="hamburger">
         <span></span>
         <span></span>
         <span></span>
       </div>
-      
+
       <ul class="nav-links" id="navLinks">
-        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html">Home1</a></li>
         <li><a href="booking.html">Book Now</a></li>
         <li><a href="#services">Services</a></li>
         <li><a href="#promos">Our Spa</a></li>
@@ -57,14 +61,14 @@
           <a href="booking.html" class="btn btn-primary">Book Appointment</a>
           <a href="#services" class="btn btn-secondary">Explore Services</a>
         </div>
-        
+
         <!-- Trust Indicators -->
         <div class="trust-indicators" id="trustIndicators">
-  <!-- Will be populated by JavaScript -->
-</div>
+          <!-- Will be populated by JavaScript -->
+        </div>
       </div>
     </div>
-    
+
     <!-- Scroll Indicator -->
     <div class="scroll-indicator">
       <span>Scroll to Explore</span>
@@ -170,55 +174,51 @@
 
   <!-- Service Catalog Modal (Magazine Style) -->
   <div id="serviceCatalogModal" class="catalog-modal">
-  <div class="catalog-container-shop">
-    
-    <!-- Close Button -->
-    <button class="close-catalog" onclick="closeCatalog()" aria-label="Close catalog">
-      <i class="fas fa-times"></i>
-    </button>
-    
-    <!-- Left Sidebar - Categories -->
-    <div class="catalog-sidebar">
-      <h3>Categories</h3>
-      <ul class="catalog-categories" id="categoryList">
-        <!-- Categories will be populated by JavaScript -->
-      </ul>
-    </div>
-    
-    <!-- Right Content Area -->
-    <div class="catalog-content">
-      
-      <!-- Header -->
-      <div class="catalog-header-shop">
-        <h2>Nagomi Wellness Spa</h2>
-        <p class="catalog-subtitle">Choose the perfect treatment for your wellness journey</p>
+    <div class="catalog-container-shop">
+
+      <!-- Close Button -->
+      <button class="close-catalog" onclick="closeCatalog()" aria-label="Close catalog">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- Left Sidebar - Categories -->
+      <div class="catalog-sidebar">
+        <h3>Categories</h3>
+        <ul class="catalog-categories" id="categoryList">
+          <!-- Categories will be populated by JavaScript -->
+        </ul>
       </div>
-      
-      <!-- Search Bar -->
-      <div class="catalog-search">
-        <input 
-          type="text" 
-          id="catalogSearch" 
-          placeholder="Search services..." 
-          aria-label="Search services"
-          oninput="searchServices()">
-        <button type="button" onclick="searchServices()" aria-label="Search">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-      
-      <!-- Services Grid -->
-      <div class="services-grid-shop" id="servicesGrid">
-        <!-- Services will be populated by JavaScript -->
-        <div class="catalog-loading">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p>Loading services...</p>
+
+      <!-- Right Content Area -->
+      <div class="catalog-content">
+
+        <!-- Header -->
+        <div class="catalog-header-shop">
+          <h2>Nagomi Wellness Spa</h2>
+          <p class="catalog-subtitle">Choose the perfect treatment for your wellness journey</p>
         </div>
+
+        <!-- Search Bar -->
+        <div class="catalog-search">
+          <input type="text" id="catalogSearch" placeholder="Search services..." aria-label="Search services"
+            oninput="searchServices()">
+          <button type="button" onclick="searchServices()" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="services-grid-shop" id="servicesGrid">
+          <!-- Services will be populated by JavaScript -->
+          <div class="catalog-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading services...</p>
+          </div>
+        </div>
+
       </div>
-      
     </div>
   </div>
-</div>
 
   <!-- Statistics Section -->
   <section class="stats-section">
@@ -250,12 +250,13 @@
   <section id="promos" class="promos">
     <h2 data-aos="fade-up">Rejuvenate, Relax, and Rediscover Your Inner Peace</h2>
     <p class="promo-intro" data-aos="fade-up">
-      At Nagomi Wellness Spa, we believe self-care is not a luxury—it's a necessity. 
-      Nestled in the heart of Baguio City, our spa offers a tranquil escape where you can unwind, recharge, and achieve holistic wellness.
+      At Nagomi Wellness Spa, we believe self-care is not a luxury—it's a necessity.
+      Nestled in the heart of Baguio City, our spa offers a tranquil escape where you can unwind, recharge, and achieve
+      holistic wellness.
     </p>
-    
+
     <h2 class="promo-subtitle" data-aos="fade-up">Why Choose Nagomi Wellness Spa?</h2>
-    
+
     <div class="promo-grid">
       <div class="promo-card" data-aos="zoom-in" data-aos-delay="100">
         <img src="img/Holistic.png" alt="Holistic Wellness Experience">
@@ -293,7 +294,8 @@
         <img src="img/Family-Friendly.png" alt="Family-Friendly Atmosphere">
         <div class="promo-info">
           <h3>Family-Friendly Atmosphere</h3>
-          <p>Embrace our family-friendly atmosphere, welcoming guests of all ages to enjoy a serene and inclusive spa experience.</p>
+          <p>Embrace our family-friendly atmosphere, welcoming guests of all ages to enjoy a serene and inclusive spa
+            experience.</p>
         </div>
       </div>
 
@@ -301,22 +303,24 @@
         <img src="img/comfort.png" alt="Indulgent Comfort">
         <div class="promo-info">
           <h3>Indulgent Comfort</h3>
-          <p>Delight in indulgent comfort with our luxurious spa services, creating an oasis of tranquility and pampering for every guest.</p>
+          <p>Delight in indulgent comfort with our luxurious spa services, creating an oasis of tranquility and
+            pampering for every guest.</p>
         </div>
       </div>
     </div>
 
     <h2 class="promo-closing" data-aos="fade-up">Pamper Yourself Today!</h2>
     <p class="promo-closing-text" data-aos="fade-up">
-      Your well-being is our priority. Discover the art of relaxation at Nagomi Wellness Spa—where stress melts away, and tranquility begins.
+      Your well-being is our priority. Discover the art of relaxation at Nagomi Wellness Spa—where stress melts away,
+      and tranquility begins.
     </p>
   </section>
   <!-- Reviews Section -->
   <section id="reviews" class="reviews-section">
     <div class="section-header" data-aos="fade-up">
       <section class="reviews-section">
-      <h2>What Our Clients Say</h2>
-      <p class="section-subtitle">Real experiences from real people</p>
+        <h2>What Our Clients Say</h2>
+        <p class="section-subtitle">Real experiences from real people</p>
     </div>
 
     <div class="reviews-container">
@@ -336,7 +340,7 @@
         </div>
         <p>Based on 247 reviews</p>
       </div>
-      
+
       <div class="rating-breakdown">
         <div class="rating-row">
           <span>5 stars</span>
@@ -377,8 +381,8 @@
     </div>
 
     <div class="center-btn" data-aos="fade-up" style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-  <a href="#" class="btn-outline">Read All Reviews</a>
-</div>
+      <a href="#" class="btn-outline">Read All Reviews</a>
+    </div>
   </section>
 
   <!-- Contact Section (unchanged) -->
@@ -418,12 +422,13 @@
   </footer>
 
   <!-- AOS Animation Library -->
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script src="js/homepage.js"></script>
-<script src="js/enhanced-features.js"></script>
-<script src="js/service-catalog-simple.js"></script>
-<script src="js/guest-reviews.js"></script>
-<script src="js/homepage-dynamic.js"></script>
-<script src="js/sakura-petals.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="js/homepage.js"></script>
+  <script src="js/enhanced-features.js"></script>
+  <script src="js/service-catalog-simple.js"></script>
+  <script src="js/guest-reviews.js"></script>
+  <script src="js/homepage-dynamic.js"></script>
+  <script src="js/sakura-petals.js"></script>
 </body>
+
 </html>
