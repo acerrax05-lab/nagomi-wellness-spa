@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/sakura-petals.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <!-- Navbar -->
@@ -25,13 +26,13 @@
             text-decoration:none;white-space:nowrap;transition:all 0.2s;
             border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 2px 8px rgba(0,0,0,0.12);"
           onmouseover="this.style.background='#f5e6cc'" onmouseout="this.style.background='#fff'">
-          🚶 Walk-in
+          <i class="fa-solid fa-person-walking" style="margin-right:5px;"></i> Walk-in
         </a>
         <span id="adminName">Admin</span>
         <!-- Notification Bell -->
         <div class="notif-bell-wrap" id="notifBellWrap">
           <button class="notif-bell" id="notifBellBtn" onclick="toggleNotifPanel()" title="Notifications">
-            🔔
+            <i class="fa-solid fa-bell"></i>
             <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
           </button>
           <div class="notif-panel" id="notifPanel" style="display:none;">
@@ -53,33 +54,33 @@
   <aside class="sidebar" id="adminSidebar">
     <nav class="sidebar-nav">
       <button class="tab-btn active" data-tab="overview">
-        <span class="tab-icon">📊</span><span>Overview</span>
+        <span class="tab-icon"><i class="fa-solid fa-chart-line"></i></span><span>Overview</span>
       </button>
       <button class="tab-btn" data-tab="bookings">
-        <span class="tab-icon">📅</span><span>Bookings</span>
+        <span class="tab-icon"><i class="fa-solid fa-calendar-days"></i></span><span>Bookings</span>
       </button>
       <button class="tab-btn" data-tab="services">
-        <span class="tab-icon">💆</span><span>Services</span>
+        <span class="tab-icon"><i class="fa-solid fa-hands-holding"></i></span><span>Services</span>
       </button>
       <button class="tab-btn" data-tab="therapists">
-        <span class="tab-icon">👥</span><span>Therapists</span>
+        <span class="tab-icon"><i class="fa-solid fa-users"></i></span><span>Therapists</span>
       </button>
       <button class="tab-btn" data-tab="income">
-        <span class="tab-icon">💰</span><span>Income</span>
+        <span class="tab-icon"><i class="fa-solid fa-circle-dollar-sign"></i></span><span>Income</span>
       </button>
       <button class="tab-btn" data-tab="grace-periods">
-        <span class="tab-icon">⏰</span><span>Grace Periods</span>
+        <span class="tab-icon"><i class="fa-solid fa-clock"></i></span><span>Grace Periods</span>
       </button>
       <button class="tab-btn" data-tab="reviews">
-        <span class="tab-icon">📝</span><span>Reviews</span>
+        <span class="tab-icon"><i class="fa-solid fa-star-half-stroke"></i></span><span>Reviews</span>
       </button>
       <button class="tab-btn" data-tab="leave-requests" id="leaveTabBtn">
-        <span class="tab-icon">🌴</span><span>Leave Requests</span>
+        <span class="tab-icon"><i class="fa-solid fa-umbrella-beach"></i></span><span>Leave Requests</span>
         <span class="sidebar-badge" id="leaveSidebarBadge" style="display:none;">0</span>
       </button>
     </nav>
     <div class="sidebar-footer">
-      <button id="logoutBtn" class="sidebar-logout-btn">🚪 Logout</button>
+      <button id="logoutBtn" class="sidebar-logout-btn"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px;"></i>Logout</button>
     </div>
   </aside>
 
@@ -119,7 +120,7 @@
 
 <!-- Date Range Display (will be populated by JS) -->
 <div class="date-range-display" style="padding: 8px 14px; background: rgba(201,168,130,0.12); border-left: 3px solid #c9a882; border-radius: 0 6px 6px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-  <span style="font-size:1rem;">📅</span>
+  <i class="fa-solid fa-calendar-days" style="font-size:1rem;color:#8b6045;"></i>
   <span id="dateRangeValue" style="font-weight:700; color:#4b2e1e; font-size:0.95rem;"></span>
   <span id="dateRangeSub" style="color:#8b6045; font-size:0.82rem; opacity:0.85;"></span>
 </div>
@@ -208,7 +209,7 @@
             font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;
             box-shadow:0 2px 8px rgba(40,167,69,0.35);transition:opacity 0.2s;"
           onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-          📥 Export to Excel
+          <i class="fa-solid fa-file-arrow-down" style="margin-right:6px;"></i>Export to Excel
         </button>
       </div>
 
@@ -217,7 +218,7 @@
           <input 
             type="text" 
             id="bookingSearchInput" 
-            placeholder="🔍 Search by name, phone, service, or transaction number..." 
+            placeholder="Search by name, phone, service, or transaction number..." 
             style="width: 100%; padding: 15px 50px 15px 20px; font-size: 1rem; border: 2px solid #d8c3b2; border-radius: 10px;"
           />
           <button 
@@ -225,7 +226,7 @@
             onclick="clearBookingSearch()" 
             style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #666; display: none;"
           >
-            ✕
+            <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
         <div id="searchResultsInfo" style="margin-top: 10px; color: #666; font-size: 0.9rem;"></div>
@@ -246,12 +247,12 @@
       <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <span style="font-size:0.82rem;font-weight:600;color:#8b6f47;margin-right:4px;">Filter:</span>
         <button class="bsf-btn filter-btn active" data-status="all"                  onclick="setBookingFilter('all')">All</button>
-        <button class="bsf-btn filter-btn"        data-status="pending"              onclick="setBookingFilter('pending')">⏳ Pending</button>
-        <button class="bsf-btn filter-btn"        data-status="confirmed"            onclick="setBookingFilter('confirmed')">✅ Confirmed</button>
-        <button class="bsf-btn filter-btn"        data-status="completed"            onclick="setBookingFilter('completed')">✔ Completed</button>
-        <button class="bsf-btn filter-btn"        data-status="cancelled"            onclick="setBookingFilter('cancelled')">❌ Cancelled</button>
-        <button class="bsf-btn filter-btn"        data-status="pending_reschedule"   onclick="setBookingFilter('pending_reschedule')">🔄 Reschedule Req.</button>
-        <button class="bsf-btn filter-btn"        data-status="pending_cancellation" onclick="setBookingFilter('pending_cancellation')">🚫 Cancel Req.</button>
+        <button class="bsf-btn filter-btn"        data-status="pending"              onclick="setBookingFilter('pending')"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>Pending</button>
+        <button class="bsf-btn filter-btn"        data-status="confirmed"            onclick="setBookingFilter('confirmed')"><i class="fa-solid fa-circle-check" style="margin-right:4px;color:#2196f3;"></i>Confirmed</button>
+        <button class="bsf-btn filter-btn"        data-status="completed"            onclick="setBookingFilter('completed')"><i class="fa-solid fa-check" style="margin-right:4px;color:#28a745;"></i>Completed</button>
+        <button class="bsf-btn filter-btn"        data-status="cancelled"            onclick="setBookingFilter('cancelled')"><i class="fa-solid fa-circle-xmark" style="margin-right:4px;color:#dc3545;"></i>Cancelled</button>
+        <button class="bsf-btn filter-btn"        data-status="pending_reschedule"   onclick="setBookingFilter('pending_reschedule')"><i class="fa-solid fa-rotate" style="margin-right:4px;"></i>Reschedule Req.</button>
+        <button class="bsf-btn filter-btn"        data-status="pending_cancellation" onclick="setBookingFilter('pending_cancellation')"><i class="fa-solid fa-ban" style="margin-right:4px;"></i>Cancel Req.</button>
       </div>
 
       <div class="bookings-table-section">
@@ -310,15 +311,15 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
           <button id="addTherapistBtn" class="btn-primary">+ Add Therapist</button>
-          <button onclick="openManageArchiveModal()" class="btn-secondary" style="background:#6c757d;color:white;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:0.95rem;">🗃️ Manage Archive</button>
+          <button onclick="openManageArchiveModal()" class="btn-secondary" style="background:#6c757d;color:white;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:0.95rem;"><i class="fa-solid fa-box-archive" style="margin-right:6px;"></i>Manage Archive</button>
         </div>
       </div>
 
       <div class="therapist-status-section">
         <div class="status-header">
-          <h3>🟢 Live Status Dashboard</h3>
+          <h3><i class="fa-solid fa-circle" style="color:#28a745;font-size:0.7rem;margin-right:6px;vertical-align:middle;"></i>Live Status Dashboard</h3>
           <div class="auto-refresh-indicator">
-            <span class="refresh-icon">🔄</span>
+            <span class="refresh-icon"><i class="fa-solid fa-rotate"></i></span>
             <span>Auto-refreshing every 30 seconds</span>
           </div>
         </div>
@@ -363,7 +364,7 @@
     <section id="income-tab" class="tab-content">
       <div class="section-header">
         <div>
-          <h2>💰 Income & Commission Tracking</h2>
+          <h2><i class="fa-solid fa-circle-dollar-sign" style="margin-right:8px;color:#8b6f47;"></i>Income & Commission Tracking</h2>
           <p style="color: #666; font-size: 0.95rem; margin-top: 8px;">
             Track therapist earnings based on completed services
           </p>
@@ -374,14 +375,14 @@
             font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;
             box-shadow:0 2px 8px rgba(40,167,69,0.35);transition:opacity 0.2s;"
           onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-          📥 Export Commission to Excel
+          <i class="fa-solid fa-file-arrow-down" style="margin-right:6px;"></i>Export Commission to Excel
         </button>
       </div>
 
       <div class="commission-settings-box">
         <div class="commission-header">
-          <h4>⚙️ Commission Settings</h4>
-          <button class="btn-primary" onclick="saveCommissionSettings()">💾 Save Settings</button>
+          <h4><i class="fa-solid fa-gear" style="margin-right:6px;"></i>Commission Settings</h4>
+          <button class="btn-primary" onclick="saveCommissionSettings()"><i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>Save Settings</button>
         </div>
         <div class="commission-form">
           <div class="form-group">
@@ -427,7 +428,7 @@
     <section id="leave-requests-tab" class="tab-content">
       <div class="section-header">
         <div>
-          <h2>🌴 Leave & Overtime Requests</h2>
+          <h2><i class="fa-solid fa-umbrella-beach" style="margin-right:8px;color:#8b6f47;"></i>Leave & Overtime Requests</h2>
           <p style="color:#666;font-size:0.95rem;margin-top:8px;">Review and approve therapist leave, vacation, and overtime requests</p>
         </div>
       </div>
@@ -446,7 +447,7 @@
           </p>
         </div>
         <button class="btn-primary" onclick="saveGracePeriods()">
-          💾 Save All Changes
+          <i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>Save All Changes
         </button>
       </div>
 
@@ -456,7 +457,7 @@
 
       <div class="grace-section">
         <h3 style="color: #4b2e1e; margin-bottom: 16px; font-size: 1.3rem;">
-          📅 Weekly Rest Periods
+          <i class="fa-solid fa-calendar-days" style="margin-right:8px;"></i>Weekly Rest Periods
         </h3>
         <p style="color: #666; font-size: 0.9rem; margin-bottom: 24px;">
           Set specific times when all therapists must take a break (e.g., lunch, team meetings)
@@ -468,7 +469,7 @@
     <!-- REVIEWS TAB -->
     <section id="reviews-tab" class="tab-content">
       <div class="section-header">
-        <h2>📝 Review Management</h2>
+        <h2><i class="fa-solid fa-star-half-stroke" style="margin-right:8px;color:#8b6f47;"></i>Review Management</h2>
       </div>
       <div id="reviewsManagementContainer"></div>
     </section>
@@ -478,12 +479,12 @@
   <!-- Income Detail Modal -->
   <div id="incomeDetailModal" class="modal">
     <div class="modal-content large">
-      <button class="close-modal-btn" onclick="closeIncomeDetail()">✕</button>
+      <button class="close-modal-btn" onclick="closeIncomeDetail()"><i class="fa-solid fa-xmark"></i></button>
       <h3 id="incomeDetailTitle">Therapist Income Details</h3>
       <div id="incomeDetailContent"></div>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeIncomeDetail()">Close</button>
-        <button class="btn-primary" onclick="exportIncomeReport()">📊 Export Report</button>
+        <button class="btn-primary" onclick="exportIncomeReport()"><i class="fa-solid fa-chart-line" style="margin-right:6px;"></i>Export Report</button>
       </div>
     </div>
   </div>

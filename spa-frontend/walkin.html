@@ -6,6 +6,7 @@
   <title>Walk-in Booking | Nagomi Wellness Spa</title>
   <link rel="stylesheet" href="css/booking.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* Gender columns — Step 2 */
     .gender-columns {
@@ -71,7 +72,7 @@
   <section class="booking-section">
     <div class="booking-container">
       <div style="background:rgba(247,198,165,0.15);border:1.5px solid rgba(247,198,165,0.4);border-radius:12px;padding:12px 20px;margin-bottom:20px;text-align:center;">
-        <span style="font-size:1.1rem;font-weight:700;color:#f7c6a5;">🚶 Walk-in Booking</span>
+        <i class="fa-solid fa-person-walking" style="margin-right:6px;"></i><span style="font-size:1.1rem;font-weight:700;color:#f7c6a5;">Walk-in Booking</span>
         <p style="color:rgba(255,255,255,0.75);font-size:0.82rem;margin-top:4px;">For in-spa use only. Today's date is pre-filled. Payment collected at the spa.</p>
       </div>
       <h2>Walk-in Appointment</h2>
@@ -134,7 +135,7 @@
         <p class="step-subheading">Today's date is pre-filled — just choose a time and therapist</p>
 
         <div class="couples-notice" id="couplesNotice">
-          👫 You've selected a Couples Package. A minimum of 2 clients is required.
+          <i class="fa-solid fa-people-group" style="margin-right:6px;"></i>You've selected a Couples Package. A minimum of 2 clients is required.
         </div>
 
         <!-- Date + Time row -->
@@ -159,8 +160,8 @@
               <option>9:30 PM</option><option>10:00 PM</option><option>10:30 PM</option>
               <option>11:00 PM</option>
             </select>
-            <div class="end-time-badge" id="endTimeBadge">⏱ End time: —</div>
-            <span class="lock-hint" id="timeLockHint">⟳ Select a date first</span>
+            <div class="end-time-badge" id="endTimeBadge"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>End time: —</div>
+            <span class="lock-hint" id="timeLockHint"><i class="fa-solid fa-lock" style="margin-right:4px;"></i>Select a date first</span>
           </div>
         </div>
 
@@ -178,7 +179,7 @@
           line-height: 1.5;
           display: flex; align-items: flex-start; gap: 8px;
         ">
-          <span style="font-size:1rem;flex-shrink:0;margin-top:1px;">⚠️</span>
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:1rem;flex-shrink:0;margin-top:1px;color:#b45309;"></i>
           <span><strong>Note:</strong> Strictly female clients are for <strong>female therapists only</strong>, and male clients are for <strong>male therapists only</strong>.</span>
         </div>
 
@@ -197,7 +198,7 @@
               align-items:center; justify-content:center;
               text-align:center; padding:20px; gap:8px;
             ">
-              <span style="font-size:1.6rem;">🚫</span>
+              <i class="fa-solid fa-ban" style="font-size:1.6rem;color:#f7c6a5;"></i>
               <p style="color:#f7c6a5;font-size:0.82rem;font-weight:600;line-height:1.4;">
                 Not enough female therapists available at this time.<br>
                 <span style="font-weight:400;opacity:0.8;">Please consider choosing another time or date.</span>
@@ -231,7 +232,7 @@
                 </div>
                 <div class="selection-info">Select up to <span id="femaleMaxSelections">0</span> therapist(s)</div>
               </div>
-              <span class="lock-hint" id="femaleTherapistLockHint">⟳ Add female clients first</span>
+              <span class="lock-hint" id="femaleTherapistLockHint"><i class="fa-solid fa-lock" style="margin-right:4px;"></i>Add female clients first</span>
             </div>
           </div>
 
@@ -247,7 +248,7 @@
               align-items:center; justify-content:center;
               text-align:center; padding:20px; gap:8px;
             ">
-              <span style="font-size:1.6rem;">🚫</span>
+              <i class="fa-solid fa-ban" style="font-size:1.6rem;color:#f7c6a5;"></i>
               <p style="color:#f7c6a5;font-size:0.82rem;font-weight:600;line-height:1.4;">
                 Not enough male therapists available at this time.<br>
                 <span style="font-weight:400;opacity:0.8;">Please consider choosing another time or date.</span>
@@ -281,7 +282,7 @@
                 </div>
                 <div class="selection-info">Select up to <span id="maleMaxSelections">0</span> therapist(s)</div>
               </div>
-              <span class="lock-hint" id="maleTherapistLockHint">⟳ Add male clients first</span>
+              <span class="lock-hint" id="maleTherapistLockHint"><i class="fa-solid fa-lock" style="margin-right:4px;"></i>Add male clients first</span>
             </div>
           </div>
 
@@ -289,7 +290,7 @@
 
         <div class="total-clients-bar" id="totalClientsBar">
           Total clients: <strong id="totalClientsDisplay">0</strong>
-          <span id="totalClientsWarning" class="clients-warning" style="display:none;">⚠️ Please add at least 1 client</span>
+          <span id="totalClientsWarning" class="clients-warning" style="display:none;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px;"></i>Please add at least 1 client</span>
         </div>
 
         <div class="step-nav">
@@ -386,7 +387,7 @@
 
         <!-- Arrival Warning Notice -->
         <div style="margin-top:16px;padding:16px 20px;background:#fff3e0;border-radius:10px;border-left:5px solid #ff6f00;display:flex;align-items:flex-start;gap:14px;">
-          <span style="font-size:1.6rem;flex-shrink:0;">⏰</span>
+          <i class="fa-solid fa-clock" style="font-size:1.5rem;flex-shrink:0;color:#e65100;"></i>
           <div>
             <strong style="color:#e65100;font-size:0.95rem;display:block;margin-bottom:4px;">Arrival Reminder</strong>
             <p style="color:#bf360c;font-size:0.88rem;margin:0;line-height:1.6;">

@@ -58,7 +58,7 @@ const CAT_META = {
   'Body Scrub':        { icon: '🧖', order: 4 },
   'Facial Treatment':  { icon: '✨', order: 5 },
   'Packages':          { icon: '🎁', order: 6 },
-  'Couples Packages':  { icon: '👫', order: 7 },
+  'Couples Packages':  { icon: '', order: 7 },
 };
 
 // ─── Global state ─────────────────────────────────────────────────────────────
@@ -496,7 +496,7 @@ function goToStep(step) {
   if (step === 2) {
     // Validate step 1
     if (!selectedService || !selectedMinutes) {
-      showNotification('❌ Please select a service and duration first.', 'error');
+      showNotification('Please select a service and duration first.', 'error');
       return;
     }
     // For couples, ensure min 1 female + 1 male
@@ -518,21 +518,21 @@ function goToStep(step) {
 
   if (step === 3) {
     if (!dateInputEl.value) {
-      showNotification('❌ Please select a date.', 'error');
+      showNotification('Please select a date.', 'error');
       return;
     }
     if (!timeSelectEl.value) {
-      showNotification('❌ Please select a time.', 'error');
+      showNotification('Please select a time.', 'error');
       return;
     }
     if (numClients < 1) {
-      showNotification('❌ Please add at least 1 client.', 'error');
+      showNotification('Please add at least 1 client.', 'error');
       return;
     }
     // Couples: must have at least 1 female + 1 male
     if (selectedService?.category === 'Couples Packages') {
       if (femaleClients < 1 || maleClients < 1) {
-        showNotification('👫 Couples Package requires at least 1 female and 1 male client.', 'warning');
+        showNotification('Couples Package requires at least 1 female and 1 male client.', 'warning');
         return;
       }
     }
@@ -710,7 +710,7 @@ function validateClosingTime() {
   if (endMins > closeMin) {
     const latest = formatTimeFromMinutes(closeMin - selectedMinutes);
     showNotification(
-      `❌ Service would end after closing time (11:00 PM). Latest start time for ${selectedMinutes} min is ${latest}.`,
+      `Service would end after closing time (11:00 PM). Latest start time for ${selectedMinutes} min is ${latest}.`,
       'error'
     );
     return false;
@@ -724,7 +724,7 @@ function calculateEndTime() {
     return;
   }
   const endMins = parseTimeToMinutes(timeSelectEl.value) + selectedMinutes;
-  endTimeBadgeEl.textContent = `⏱ End time: ${formatTimeFromMinutes(endMins)}`;
+  endTimeBadgeEl.innerHTML = `<i class="fa-regular fa-clock" style="margin-right:4px;"></i>End time: ${formatTimeFromMinutes(endMins)}`;
   endTimeBadgeEl.classList.add('visible');
 }
 
@@ -749,7 +749,7 @@ function validateTimeForToday() {
   const selMins = parseTimeToMinutes(timeSelectEl.value);
   const nowMins = today.getHours() * 60 + today.getMinutes();
   if (selMins < nowMins) {
-    showNotification('❌ Cannot book for a time that has already passed today.', 'error');
+    showNotification('Cannot book for a time that has already passed today.', 'error');
     timeSelectEl.value = '';
     endTimeBadgeEl.classList.remove('visible');
     checkStep2Ready();
@@ -1066,7 +1066,7 @@ async function checkDateAvailability(dateStr) {
   if (data.blockedByAdmin) {
     const title = data.blockReason === 'vacation'
       ? `🏖️ The spa is closed: "${data.blockLabel}"`
-      : `🚫 ${data.blockLabel || 'Store Holiday'}`;
+      : `${data.blockLabel || 'Store Holiday'}`;
     showDateWarning(title, 'Please choose another date to continue.', 'caution');
     lockTimeField();
     updateStep2Next(); // re-evaluate button
@@ -1131,7 +1131,7 @@ function showDateWarning(title, detail, type) {
   var isError = type === "error";
   el.className = "date-avail-warning " + (isError ? "daw-error" : "daw-caution");
   el.innerHTML =
-    "<span class=\"daw-icon\">" + (isError ? "⛔" : "⚠️") + "</span>" +
+    "<span class=\"daw-icon\">" + (isError ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>') + "</span>" +
     "<div><strong>" + title + "</strong>" +
     (detail ? "<br><span class=\"daw-detail\">" + detail + "</span>" : "") + "</div>";
   el.style.display = "flex";
@@ -1472,7 +1472,7 @@ function submitStep3() {
   const name  = document.getElementById('guestName')?.value?.trim();
   const phone = document.getElementById('guestPhone')?.value?.trim();
   if (!name || !phone) {
-    showNotification('❌ Please enter your name and phone number.', 'error');
+    showNotification('Please enter your name and phone number.', 'error');
     return;
   }
   populateSummaryModal();
@@ -1603,7 +1603,7 @@ function setupConfirmBtn() {
   confirmBookingBtn?.addEventListener('click', async () => {
     const termsCheckbox = document.getElementById('termsCheckbox');
     if (!termsCheckbox?.checked) {
-      showNotification('❌ Please accept the Terms and Conditions to proceed.', 'error');
+      showNotification('Please accept the Terms and Conditions to proceed.', 'error');
       return;
     }
 
@@ -1614,7 +1614,7 @@ function setupConfirmBtn() {
     const time  = timeSelectEl.value;
 
     if (!selectedService || !selectedMinutes || !date || !time || !name || !phone) {
-      showNotification('❌ Please complete all required fields.', 'error');
+      showNotification('Please complete all required fields.', 'error');
       return;
     }
 
@@ -1666,11 +1666,11 @@ function setupConfirmBtn() {
         showSuccessMessage(txn);
         resetForm();
       } else {
-        showNotification(`⚠️ ${data.msg || 'Booking failed. Please try again.'}`, 'error');
+        showNotification(data.msg || 'Booking failed. Please try again.', 'error');
       }
     } catch (err) {
       console.error('Booking submit error:', err);
-      showNotification('❌ Server error. Please try again later.', 'error');
+      showNotification('Server error. Please try again later.', 'error');
     } finally {
       confirmBookingBtn.disabled = false;
       confirmBookingBtn.textContent = 'Confirm Booking →';
@@ -1687,7 +1687,7 @@ function showSuccessMessage(txn) {
     text-align:center;max-width:480px;width:90%;
   `;
   el.innerHTML = `
-    <div style="font-size:3rem;margin-bottom:20px">✅</div>
+    <div style="font-size:2.5rem;margin-bottom:20px;color:#28a745"><i class="fa-solid fa-circle-check"></i></div>
     <h3 style="color:#28a745;margin-bottom:15px;font-size:1.5rem">Booking Confirmed!</h3>
     <p style="color:#666;margin-bottom:20px">Your appointment has been successfully booked.</p>
     <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:20px">
