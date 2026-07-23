@@ -52,12 +52,12 @@ const MAX_CLIENTS    = 6;
 
 // ─── Category meta (icons + ordering) ────────────────────────────────────────
 const CAT_META = {
-  'Massage Services':  { icon: '💆', order: 1 },
-  'Foot Treatment':    { icon: '🦶', order: 2 },
-  'Spot Massage':      { icon: '✋', order: 3 },
-  'Body Scrub':        { icon: '🧖', order: 4 },
-  'Facial Treatment':  { icon: '✨', order: 5 },
-  'Packages':          { icon: '🎁', order: 6 },
+  'Massage Services':  { icon: '<i class="fa-solid fa-spa"></i>', order: 1 },
+  'Foot Treatment':    { icon: '<i class="fa-solid fa-shoe-prints"></i>', order: 2 },
+  'Spot Massage':      { icon: '<i class="fa-solid fa-hand"></i>', order: 3 },
+  'Body Scrub':        { icon: '<i class="fa-solid fa-person-dots-from-line"></i>', order: 4 },
+  'Facial Treatment':  { icon: '<i class="fa-solid fa-wand-magic-sparkles"></i>', order: 5 },
+  'Packages':          { icon: '<i class="fa-solid fa-gift"></i>', order: 6 },
   'Couples Packages':  { icon: '', order: 7 },
 };
 
@@ -183,7 +183,7 @@ async function loadServices() {
     allServices = await res.json();
     buildCategoryTabs();
   } catch (err) {
-    console.error('❌ Failed to load services:', err);
+    console.error(' Failed to load services:', err);
     servicesGridEl.innerHTML = '<div class="services-loading" style="color:#e07b5a">Could not load services. Please refresh.</div>';
   }
 }
@@ -200,7 +200,7 @@ function buildCategoryTabs() {
 
   categoryTabsEl.innerHTML = '';
   cats.forEach(cat => {
-    const meta = CAT_META[cat] || { icon: '🌿' };
+    const meta = CAT_META[cat] || { icon: '<i class="fa-solid fa-leaf"></i>' };
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'cat-tab';
@@ -486,7 +486,7 @@ function updateTotal() {
     ? '₱' + totalAmount.toLocaleString()
     : '₱—';
 
-  console.log('💰 Price debug:', { pricing, selectedMinutes, basePrice, clientCount, totalAmount });
+  console.log(' Price debug:', { pricing, selectedMinutes, basePrice, clientCount, totalAmount });
 
   validateStep3();
 }
@@ -1075,7 +1075,7 @@ async function checkDateAvailability(dateStr) {
 
   // Fully booked by appointments
   showDateWarning(
-    "⛔ This date is fully booked",
+    "<i class="fa-solid fa-circle-xmark"></i> This date is fully booked",
     "All therapists are occupied for " + selectedMinutes + "-minute services on this day. Please select a different date to continue.",
     "error"
   );
@@ -1171,7 +1171,7 @@ async function loadTherapists() {
     populateGenderDropdown('female', noneHaveGender || femaleList.length === 0 ? allTherapists : femaleList);
     populateGenderDropdown('male',   noneHaveGender || maleList.length   === 0 ? allTherapists : maleList);
 
-    console.log(`✅ Loaded ${allTherapists.length} therapists`);
+    console.log(` Loaded ${allTherapists.length} therapists`);
     // If date already selected, apply day-off greyout immediately
     if (dateInputEl && dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
   } catch (err) {

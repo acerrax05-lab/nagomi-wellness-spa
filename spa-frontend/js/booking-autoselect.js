@@ -19,7 +19,7 @@
   const wantedName  = isMongoId ? nameParam : serviceParam;
   const wantedId    = isMongoId ? serviceParam : null;
 
-  console.log(`🎯 Auto-select: name="${wantedName || '(none)'}" cat="${catParam || '(none)'}"`);
+  console.log(` Auto-select: name="${wantedName || '(none)'}" cat="${catParam || '(none)'}"`);
 
   // ── Boot ───────────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
@@ -39,10 +39,10 @@
         const found    = services.find(s => s._id === wantedId);
         if (found) {
           resolvedCat = found.category || '';
-          console.log(`📂 Resolved category from API: "${resolvedCat}"`);
+          console.log(` Resolved category from API: "${resolvedCat}"`);
         }
       } catch (_) {
-        console.warn('⚠️ Could not fetch service list for category lookup');
+        console.warn(' Could not fetch service list for category lookup');
       }
     }
 
@@ -66,7 +66,7 @@
     }
     if (!catTab.classList.contains('active')) {
       catTab.click();
-      console.log(`📂 Switched to tab: "${cat}"`);
+      console.log(` Switched to tab: "${cat}"`);
     }
     // Wait for cards to render then select the first one
     setTimeout(() => selectFirstCard(cat, 0), 700);
@@ -90,7 +90,7 @@
       first.style.boxShadow = '';
       first.style.transform = '';
     }, 1800);
-    console.log(`✅ Auto-selected first card in "${cat}": "${getCardName(first)}"`);
+    console.log(` Auto-selected first card in "${cat}": "${getCardName(first)}"`);
   }
 
   // ── Retry loop ─────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@
 
   function tryAutoSelect(name, cat, attempt) {
     if (attempt >= MAX_ATTEMPTS) {
-      console.warn('⚠️ Auto-select: gave up after max attempts.');
+      console.warn(' Auto-select: gave up after max attempts.');
       return;
     }
 
@@ -107,7 +107,7 @@
       const catTab = findCatTab(cat);
       if (catTab && !catTab.classList.contains('active')) {
         catTab.click();
-        console.log(`📂 Clicked category tab: "${cat}"`);
+        console.log(` Clicked category tab: "${cat}"`);
         // Give the tab render time before looking for cards (increased to 700ms)
         setTimeout(() => tryAutoSelect(name, cat, attempt + 1), 700);
         return;
@@ -138,8 +138,8 @@
         matched.style.transform = '';
       }, 1800);
 
-      showNotification(`✨ ${name} selected`);
-      console.log(`✅ Auto-selected: "${getCardName(matched)}"`);
+      showNotification(`<i class="fa-solid fa-wand-magic-sparkles"></i> ${name} selected`);
+      console.log(` Auto-selected: "${getCardName(matched)}"`);
       return;
     }
 
@@ -159,7 +159,7 @@
   // ── Scan every category tab until we find the card ────────────────────────
   function tryScanAllTabs(name, tabs, tabIndex) {
     if (tabIndex >= tabs.length) {
-      console.warn(`⚠️ Auto-select: "${name}" not found in any category.`);
+      console.warn(` Auto-select: "${name}" not found in any category.`);
       return;
     }
 
@@ -177,8 +177,8 @@
         matched.style.transition = 'box-shadow 0.3s';
         matched.style.boxShadow  = '0 0 0 3px #8b4513, 0 8px 24px rgba(139,69,19,0.35)';
         setTimeout(() => { matched.style.boxShadow = ''; }, 1800);
-        showNotification(`✨ ${name} selected`);
-        console.log(`✅ Auto-selected via tab scan: "${getCardName(matched)}"`);
+        showNotification(`<i class="fa-solid fa-wand-magic-sparkles"></i> ${name} selected`);
+        console.log(` Auto-selected via tab scan: "${getCardName(matched)}"`);
       } else {
         tryScanAllTabs(name, tabs, tabIndex + 1);
       }

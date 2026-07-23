@@ -10,7 +10,7 @@ if (!token || user.role !== "therapist") {
 
 const loader = document.getElementById("loader");
 let allBookings = [];
-let therapistProfile = null;   // ✅ NEW: stores full profile (weeklySchedule, dateOverrides)
+let therapistProfile = null;   // <i class="fa-solid fa-circle-check"></i> NEW: stores full profile (weeklySchedule, dateOverrides)
 let appointmentToComplete = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
@@ -23,7 +23,7 @@ const socket = io('https://nagomi-backend.onrender.com', {
 });
 
 socket.on('connect', () => {
-  console.log('✅ Connected to server');
+  console.log(' Connected to server');
   socket.emit('join', { userId: user._id, role: user.role });
 });
 
@@ -43,12 +43,12 @@ socket.on('appointmentRemoved', () => {
 // ── Re-sync profile + calendar when leave is approved or rejected ─────────
 socket.on('leave-approved', (data) => {
   if (!data || data.therapistId !== user._id) return;
-  showNotification('🌴 Your leave request was approved!', 'success');
+  showNotification('<i class="fa-solid fa-umbrella-beach"></i> Your leave request was approved!', 'success');
   loadTherapistData(); // refreshes profile → dateOverrides → calendar
 });
 socket.on('leave-rejected', (data) => {
   if (!data || data.therapistId !== user._id) return;
-  showNotification('❌ Your leave request was not approved.', 'error');
+  showNotification('<i class="fa-solid fa-circle-xmark"></i> Your leave request was not approved.', 'error');
 });
 
 // Display welcome message
@@ -119,7 +119,7 @@ function isTherapistDayOff(dateStr) {
 // ── Load therapist data ────────────────────────────────────────────────────
 async function loadTherapistData() {
   try {
-    // ✅ Load profile + bookings in parallel
+    // <i class="fa-solid fa-circle-check"></i> Load profile + bookings in parallel
     const [_, bookingsRes] = await Promise.all([
       loadTherapistProfile(),
       fetch(`${apiBase}/bookings/my-appointments`, {
@@ -223,8 +223,8 @@ async function showPayrollPanel() {
     const nextPay    = new Date(summary.currentPeriod.nextPayDate);
     const nextPayFmt = nextPay.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' });
     const schedText  = summary.therapist.paySchedule === 'weekly'
-      ? '📅 You are on <strong>weekly pay</strong> (every Friday)'
-      : '📅 You are on <strong>semi-monthly pay</strong> (15th & last day of month)';
+      ? '<i class="fa-solid fa-calendar-days"></i> You are on <strong>weekly pay</strong> (every Friday)'
+      : '<i class="fa-solid fa-calendar-days"></i> You are on <strong>semi-monthly pay</strong> (15th & last day of month)';
 
     const historyRows = history.history.map(p => `
       <tr style="border-bottom:1px solid #f0f0f0;">
@@ -238,10 +238,10 @@ async function showPayrollPanel() {
     `).join('');
 
     const summaryCards = [
-      { label: 'Services This Period', value: summary.currentPeriod.count,                                        icon: '💆', hi: false },
-      { label: 'Revenue Generated',    value: `₱${(summary.currentPeriod.totalRevenue || 0).toLocaleString()}`,   icon: '💵', hi: false },
-      { label: 'Your Commission',      value: `₱${(summary.currentPeriod.commissionEarned || 0).toLocaleString()}`, icon: '💰', hi: true  },
-      { label: 'This Month Total',     value: `₱${(summary.thisMonth.commissionEarned || 0).toLocaleString()}`,    icon: '📆', hi: false },
+      { label: 'Services This Period', value: summary.currentPeriod.count,                                        icon: '<i class="fa-solid fa-spa"></i>', hi: false },
+      { label: 'Revenue Generated',    value: `₱${(summary.currentPeriod.totalRevenue || 0).toLocaleString()}`,   icon: '<i class="fa-solid fa-money-bill-wave"></i>', hi: false },
+      { label: 'Your Commission',      value: `₱${(summary.currentPeriod.commissionEarned || 0).toLocaleString()}`, icon: '<i class="fa-solid fa-circle-dollar-sign"></i>', hi: true  },
+      { label: 'This Month Total',     value: `₱${(summary.thisMonth.commissionEarned || 0).toLocaleString()}`,    icon: '<i class="fa-solid fa-calendar-check"></i>', hi: false },
     ];
 
     panel.innerHTML = `
@@ -253,19 +253,19 @@ async function showPayrollPanel() {
         margin: 12px 0 28px 0;
       ">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
-          <h2 style="color:#4b2e1e;margin:0;font-size:1.35rem;">💰 Commission & Payroll</h2>
+          <h2 style="color:#4b2e1e;margin:0;font-size:1.35rem;"><i class="fa-solid fa-circle-dollar-sign"></i> Commission & Payroll</h2>
           <button onclick="document.getElementById('payrollModal').style.display='none'"
             style="background:#f5f1eb;color:#4b2e1e;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">
-            ✕ Close
+            <i class="fa-solid fa-xmark"></i> Close
           </button>
         </div>
 
         <div style="background:#f5f1eb;border-radius:10px;padding:16px 20px;margin-bottom:22px;border-left:4px solid #c8a882;">
           <p style="margin:0 0 5px 0;color:#4b2e1e;font-size:0.95rem;">${schedText}</p>
-          <p style="margin:0 0 4px 0;color:#555;font-size:0.88rem;">🗓️ Next pay date: <strong>${nextPayFmt}</strong></p>
-          <p style="margin:0;color:#555;font-size:0.88rem;">📊 Commission rate: <strong>${summary.therapist.commissionRate}%</strong> of completed service price</p>
+          <p style="margin:0 0 4px 0;color:#555;font-size:0.88rem;"><i class="fa-regular fa-calendar"></i> Next pay date: <strong>${nextPayFmt}</strong></p>
+          <p style="margin:0;color:#555;font-size:0.88rem;"><i class="fa-solid fa-chart-line"></i> Commission rate: <strong>${summary.therapist.commissionRate}%</strong> of completed service price</p>
           ${summary.therapist.payrollNotes
-            ? `<p style="margin:5px 0 0 0;color:#888;font-size:0.82rem;font-style:italic;">📝 ${summary.therapist.payrollNotes}</p>`
+            ? `<p style="margin:5px 0 0 0;color:#888;font-size:0.82rem;font-style:italic;"><i class="fa-solid fa-star-half-stroke"></i> ${summary.therapist.payrollNotes}</p>`
             : ''}
         </div>
 
@@ -282,7 +282,7 @@ async function showPayrollPanel() {
           `).join('')}
         </div>
 
-        <h3 style="color:#4b2e1e;margin:0 0 14px 0;font-size:1.05rem;">📋 Pay Period History</h3>
+        <h3 style="color:#4b2e1e;margin:0 0 14px 0;font-size:1.05rem;"><i class="fa-solid fa-clipboard-list"></i> Pay Period History</h3>
         <div style="overflow-x:auto;border-radius:10px;border:1px solid #f0f0f0;">
           <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
             <thead>
@@ -309,7 +309,7 @@ async function showPayrollPanel() {
     console.error(err);
     panel.innerHTML = `
       <div style="background:white;border-radius:12px;padding:24px;text-align:center;color:#c62828;margin:12px 0;">
-        ⚠️ Could not load payroll data. Please try again later.
+        <i class="fa-solid fa-triangle-exclamation"></i> Could not load payroll data. Please try again later.
         <br><button onclick="document.getElementById('payrollModal').style.display='none'"
           style="margin-top:12px;background:#eee;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">
           Close
@@ -328,7 +328,7 @@ function renderCalendar() {
   const firstDay      = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth   = new Date(currentYear, currentMonth + 1, 0).getDate();
   const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
-  const calendarDays  = document.getElementById('calendarDays'); // ✅ fixed: was "calendarGrid"
+  const calendarDays  = document.getElementById('calendarDays'); // <i class="fa-solid fa-circle-check"></i> fixed: was "calendarGrid"
   calendarDays.innerHTML = '';
 
   // Trailing days from previous month
@@ -345,18 +345,18 @@ function renderCalendar() {
     dayCell.className = 'calendar-day';
 
     const dateStr  = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const isDayOff = isTherapistDayOff(dateStr);  // ✅ NEW
+    const isDayOff = isTherapistDayOff(dateStr);  // <i class="fa-solid fa-circle-check"></i> NEW
 
     const hasBookings = allBookings.some(b =>
       new Date(b.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }) === dateStr
     );
 
     if (hasBookings) dayCell.classList.add('has-appointments');
-    if (isDayOff)    dayCell.classList.add('day-off');       // ✅ NEW: matches legend CSS
+    if (isDayOff)    dayCell.classList.add('day-off');       // <i class="fa-solid fa-circle-check"></i> NEW: matches legend CSS
 
     dayCell.innerHTML = `
       <span class="day-number">${day}</span>
-      ${isDayOff ? `<span class="day-off-badge">😴<br>Day Off</span>` : ''}
+      ${isDayOff ? `<span class="day-off-badge"><i class="fa-solid fa-bed"></i><br>Day Off</span>` : ''}
     `;
 
     if (isDayOff) {
@@ -366,7 +366,7 @@ function renderCalendar() {
       dayCell.addEventListener('click', () => selectDate(dateStr, dayCell));
     }
 
-    calendarDays.appendChild(dayCell);  // ✅ fixed: was "calendarGrid"
+    calendarDays.appendChild(dayCell);  // <i class="fa-solid fa-circle-check"></i> fixed: was "calendarGrid"
   }
 
   // Leading days for next month
@@ -447,7 +447,7 @@ function displayAppointmentsForDate(dateStr) {
   if (dayBookings.length === 0) {
     appointmentsList.innerHTML = `
       <div style="text-align:center;padding:60px 20px;color:white;">
-        <div style="font-size:3rem;margin-bottom:20px;">📅</div>
+        <div style="font-size:3rem;margin-bottom:20px;"><i class="fa-solid fa-calendar-days"></i></div>
         <p style="font-size:1.2rem;">No appointments for this date</p>
       </div>`;
     return;
@@ -479,23 +479,23 @@ function renderAppointmentsList(dayBookings) {
     let timeMessage = '', timeBadgeClass = '';
 
     if (isCompleted) {
-      buttonText = '✅ Completed'; buttonClass = 'btn-complete disabled';
-      timeMessage = '✅ Appointment completed'; timeBadgeClass = 'time-badge-completed';
+      buttonText = '<i class="fa-solid fa-circle-check"></i> Completed'; buttonClass = 'btn-complete disabled';
+      timeMessage = '<i class="fa-solid fa-circle-check"></i> Appointment completed'; timeBadgeClass = 'time-badge-completed';
     } else if (ts.isBeforeStart) {
       buttonText = 'Appointment not started'; buttonClass = 'btn-complete disabled';
-      timeMessage = `⏳ Starts in ${formatTimeRemaining(ts.minutesUntilStart)} at ${b.time}`;
+      timeMessage = `<i class="fa-regular fa-clock"></i> Starts in ${formatTimeRemaining(ts.minutesUntilStart)} at ${b.time}`;
       timeBadgeClass = 'time-badge-waiting';
     } else if (ts.isDuringAppointment) {
       buttonText = `In Progress (${formatTimeRemaining(ts.minutesUntilEnd)} left)`;
       buttonClass = 'btn-complete disabled in-progress';
-      timeMessage = `🔴 Session in progress - ends at ${formatEndTime(ts.appointmentEnd)}`;
+      timeMessage = `<i class="fa-solid fa-circle" style="color:#dc3545;"></i> Session in progress - ends at ${formatEndTime(ts.appointmentEnd)}`;
       timeBadgeClass = 'time-badge-active';
     } else if (ts.isAfterEnd) {
       buttonDisabled = false;
-      buttonText = '✅ Mark as Complete'; buttonClass = 'btn-complete enabled';
+      buttonText = '<i class="fa-solid fa-circle-check"></i> Mark as Complete'; buttonClass = 'btn-complete enabled';
       timeMessage = ts.minutesSinceEnd <= 30
-        ? '✅ Session ended - ready to complete'
-        : `⚠️ Session ended ${formatTimeRemaining(ts.minutesSinceEnd)} ago - please complete`;
+        ? '<i class="fa-solid fa-circle-check"></i> Session ended - ready to complete'
+        : `<i class="fa-solid fa-triangle-exclamation"></i> Session ended ${formatTimeRemaining(ts.minutesSinceEnd)} ago - please complete`;
       timeBadgeClass = ts.minutesSinceEnd <= 30 ? 'time-badge-ready' : 'time-badge-overdue';
     }
 
@@ -516,7 +516,7 @@ function renderAppointmentsList(dayBookings) {
             display:flex;align-items:center;gap:8px;padding:8px 12px;
             background:#e3f2fd;border-left:3px solid #2196f3;
             border-radius:6px;margin:8px 0;font-size:0.9rem;">
-            <span style="font-weight:600;color:#1565c0;">👥 Co-therapists:</span>
+            <span style="font-weight:600;color:#1565c0;"><i class="fa-solid fa-users"></i> Co-therapists:</span>
             <span style="color:#424242;">${coTherapists.join(', ')}</span>
           </div>` : ''}
 
@@ -568,7 +568,7 @@ function openCompleteModal(bookingId, canComplete, minutesUntilEnd) {
   if (!canComplete) {
     const h = Math.floor(minutesUntilEnd / 60), m = minutesUntilEnd % 60;
     const msg = h > 0 ? `${h}h ${m}m` : `${m} minute${m !== 1 ? 's' : ''}`;
-    showNotification(`⏰ Cannot mark complete yet. Session ends in ${msg}.`, 'warning', 5000);
+    showNotification(`<i class="fa-regular fa-clock"></i> Cannot mark complete yet. Session ends in ${msg}.`, 'warning', 5000);
     return;
   }
   appointmentToComplete = bookingId;
@@ -591,7 +591,7 @@ document.getElementById("confirmComplete").addEventListener("click", async () =>
     const data = await res.json();
     if (!res.ok) throw new Error(data.msg || 'Failed to complete appointment');
 
-    showNotification("✅ Appointment marked as completed!", 'success');
+    showNotification("<i class="fa-solid fa-circle-check"></i> Appointment marked as completed!", 'success');
     document.getElementById("completeModal").classList.remove("active");
     appointmentToComplete = null;
 
@@ -748,18 +748,18 @@ async function _loadMyLeaveRequests() {
     if (!requests || requests.length === 0) {
       container.innerHTML = `
         <div style="text-align:center;padding:32px;color:#aaa;">
-          <div style="font-size:2.2rem;margin-bottom:10px;">📭</div>
+          <div style="font-size:2.2rem;margin-bottom:10px;"><i class="fa-regular fa-envelope-open"></i></div>
           <p style="font-size:0.88rem;">No leave or vacation requests yet.</p>
         </div>`;
       return;
     }
 
     const statusStyles = {
-      pending:  { bg:'#fff8e1', border:'#ffc107', color:'#856404', label:'⏳ Pending'  },
-      approved: { bg:'#e8f5e9', border:'#28a745', color:'#1a5c2a', label:'✅ Approved' },
-      rejected: { bg:'#ffebee', border:'#dc3545', color:'#b71c1c', label:'❌ Rejected' },
+      pending:  { bg:'#fff8e1', border:'#ffc107', color:'#856404', label:'<i class="fa-regular fa-clock"></i> Pending'  },
+      approved: { bg:'#e8f5e9', border:'#28a745', color:'#1a5c2a', label:'<i class="fa-solid fa-circle-check"></i> Approved' },
+      rejected: { bg:'#ffebee', border:'#dc3545', color:'#b71c1c', label:'<i class="fa-solid fa-circle-xmark"></i> Rejected' },
     };
-    const typeLabels = { leave:'🌴 Leave', vacation:'✈️ Vacation' };
+    const typeLabels = { leave:'<i class="fa-solid fa-umbrella-beach"></i> Leave', vacation:'<i class="fa-solid fa-plane"></i> Vacation' };
 
     container.innerHTML = requests.map(r => {
       const s     = statusStyles[r.status] || { bg:'#f5f5f5', border:'#ccc', color:'#555', label: r.status };
@@ -774,7 +774,7 @@ async function _loadMyLeaveRequests() {
             <div>
               <div style="font-weight:700;font-size:0.95rem;color:#4b2e1e;">${type}</div>
               <div style="font-size:0.8rem;color:#888;margin-top:2px;">
-                📅 ${from} → ${to}${sub ? ' &nbsp;·&nbsp; Submitted: ' + sub : ''}
+                <i class="fa-solid fa-calendar-days"></i> ${from} → ${to}${sub ? ' &nbsp;·&nbsp; Submitted: ' + sub : ''}
               </div>
             </div>
             <span style="background:${s.border}20;color:${s.color};padding:4px 12px;border-radius:20px;
@@ -835,7 +835,7 @@ async function submitLeaveRequest() {
       document.getElementById('leaveReason').value = '';
       // Switch to history tab to show the new pending request
       _switchLeaveTab('history');
-      showNotification('✅ Request submitted! Waiting for admin approval.', 'success');
+      showNotification('<i class="fa-solid fa-circle-check"></i> Request submitted! Waiting for admin approval.', 'success');
     } else {
       const data = await res.json().catch(() => ({}));
       alert(data.msg || 'Failed to submit request. Please try again.');
@@ -843,9 +843,9 @@ async function submitLeaveRequest() {
   } catch(e) {
     // Graceful fallback
     _switchLeaveTab('history');
-    showNotification('✅ Request submitted! (Note: admin will be notified)', 'success');
+    showNotification('<i class="fa-solid fa-circle-check"></i> Request submitted! (Note: admin will be notified)', 'success');
   } finally {
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '📤 Submit Request'; }
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '<i class="fa-solid fa-paper-plane"></i> Submit Request'; }
   }
 }
 

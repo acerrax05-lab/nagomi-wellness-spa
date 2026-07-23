@@ -223,7 +223,7 @@ document.head.appendChild(style);
 
 // CONSOLE WELCOME MESSAGE
 
-console.log('%cWelcome to Nagomi Wellness Spa! 🌸', 
+console.log('%cWelcome to Nagomi Wellness Spa! ', 
   'font-size: 20px; color: #4b2e1e; font-weight: bold; padding: 10px;');
 console.log('%cBuilt with care for your relaxation experience', 
   'font-size: 12px; color: #8b4513;');
