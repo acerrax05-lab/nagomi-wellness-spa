@@ -760,11 +760,18 @@ function checkStep2Ready() {
   const hasDateTime = dateInputEl.value && timeSelectEl.value;
   const hasClients  = numClients >= 1;
 
-  // Therapist fields are optional — confirmed after dropdown close
-  const femaleOk = femaleClients === 0 || femaleTherapistConfirmed || selectedFemaleTherapists.length > 0;
-  const maleOk   = maleClients   === 0 || maleTherapistConfirmed   || selectedMaleTherapists.length   > 0;
+  const femaleOverlay = document.getElementById('femaleNoAvailOverlay');
+  const maleOverlay   = document.getElementById('maleNoAvailOverlay');
 
-  // Block next if date is fully booked — client must pick another date
+  const femaleAllUnavailable = femaleOverlay && femaleOverlay.style.display === 'flex';
+  const maleAllUnavailable   = maleOverlay && maleOverlay.style.display === 'flex';
+
+  const anyFemaleChecked = document.getElementById('any-female-therapist')?.checked;
+  const anyMaleChecked   = document.getElementById('any-male-therapist')?.checked;
+
+  const femaleOk = femaleClients === 0 || (!femaleAllUnavailable && (femaleTherapistConfirmed || selectedFemaleTherapists.length > 0 || anyFemaleChecked));
+  const maleOk   = maleClients   === 0 || (!maleAllUnavailable && (maleTherapistConfirmed || selectedMaleTherapists.length > 0 || anyMaleChecked));
+
   btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk) || dateFullyBooked;
 }
 
