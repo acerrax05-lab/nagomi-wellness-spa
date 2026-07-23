@@ -1480,14 +1480,15 @@ function populateSummaryModal() {
   document.getElementById('summary-clients').textContent    =
     `${numClients} (${femaleClients}F / ${maleClients}M)`;
 
-  const femaleNames = selectedFemaleTherapists.length > 0
-    ? selectedFemaleTherapists.map(t => t.name).join(', ')
-    : 'Any available female therapist';
-  const maleNames = selectedMaleTherapists.length > 0
-    ? selectedMaleTherapists.map(t => t.name).join(', ')
-    : (maleClients > 0 ? 'Any available male therapist' : 'None');
+  const therapistParts = [];
+  if (selectedFemaleTherapists.length > 0) {
+    therapistParts.push(`Female: ${selectedFemaleTherapists.map(t => t.name).join(', ')}`);
+  }
+  if (selectedMaleTherapists.length > 0) {
+    therapistParts.push(`Male: ${selectedMaleTherapists.map(t => t.name).join(', ')}`);
+  }
   document.getElementById('summary-therapists').textContent =
-    `Female: ${femaleNames}` + (maleClients > 0 ? ` | Male: ${maleNames}` : '');
+    therapistParts.length > 0 ? therapistParts.join(' | ') : '—';
 
   document.getElementById('summary-date').textContent = dateInputEl.value
     ? new Date(dateInputEl.value).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
