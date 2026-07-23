@@ -158,7 +158,7 @@
       }
       if (stat.isTrending) {
         bc.insertAdjacentHTML('beforeend',
-          `<span class="badge trending">🔥 Trending</span>`);
+          `<span class="badge trending"> Trending</span>`);
       }
       if (stat.averageRating && stat.reviewCount > 0) {
         bc.insertAdjacentHTML('beforeend',
@@ -336,11 +336,11 @@
 
         <div class="arm-tabs" id="armTabs">
           <button class="arm-tab active" data-rating="0">All</button>
-          <button class="arm-tab" data-rating="5">5 ★</button>
-          <button class="arm-tab" data-rating="4">4 ★</button>
-          <button class="arm-tab" data-rating="3">3 ★</button>
-          <button class="arm-tab" data-rating="2">2 ★</button>
-          <button class="arm-tab" data-rating="1">1 ★</button>
+          <button class="arm-tab" data-rating="5">5 </button>
+          <button class="arm-tab" data-rating="4">4 </button>
+          <button class="arm-tab" data-rating="3">3 </button>
+          <button class="arm-tab" data-rating="2">2 </button>
+          <button class="arm-tab" data-rating="1">1 </button>
         </div>
 
         <div class="arm-body">

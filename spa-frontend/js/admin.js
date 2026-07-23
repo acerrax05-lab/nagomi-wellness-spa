@@ -110,13 +110,13 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   });
 
   socket.on('connect', () => {
-    console.log('✅ Connected to server');
+    console.log(' Connected to server');
     socket.emit('join', { userId: user._id, role: user.role });
   });
 
   socket.on('newBooking', (data) => {
     showNotification('New booking received!', 'success');
-    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    addNotif(` New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
@@ -124,7 +124,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
 
   socket.on('new-booking', (data) => {
     showNotification('New booking received!', 'success');
-    addNotif(`📅 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
+    addNotif(` New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
     const activeTab = document.querySelector('.tab-content.active')?.id;
     if (activeTab === 'overview-tab') loadOverviewData();
     else if (activeTab === 'bookings-tab') loadBookingsCalendar();
@@ -137,15 +137,15 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   });
 
   socket.on('booking-cancelled', (data) => {
-    addNotif(`❌ Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
+    addNotif(` Cancellation request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'cancel', 'bookings');
   });
 
   socket.on('reschedule-request', (data) => {
-    addNotif(`🔄 Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
+    addNotif(` Reschedule request: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'reschedule', 'bookings');
   });
 
   socket.on('leave-request', (data) => {
-    addNotif(`🌴 Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
+    addNotif(` Leave request from ${data?.therapistName || 'a therapist'}`, 'leave', 'leave-requests');
     const badge = document.getElementById('leaveSidebarBadge');
     if (badge) { badge.style.display = 'flex'; badge.textContent = (parseInt(badge.textContent)||0)+1; }
   });
@@ -161,7 +161,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     if (searchTerm) {
       clearBtn.style.display = 'block';
       // Show "searching…" immediately so the UI doesn't appear frozen
-      if (infoDiv) infoDiv.innerHTML = `<span style="color:#999;font-size:0.9rem;">🔍 Searching…</span>`;
+      if (infoDiv) infoDiv.innerHTML = `<span style="color:#999;font-size:0.9rem;"> Searching…</span>`;
       clearTimeout(searchDebounceTimer);
       // 500ms debounce — waits until user stops typing before filtering
       searchDebounceTimer = setTimeout(() => {
@@ -201,13 +201,13 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   if (results.length === 0) {
     infoDiv.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:#dc3545;font-weight:600;">❌ No bookings found matching "${searchTerm}"</span>
+        <span style="color:#dc3545;font-weight:600;"> No bookings found matching "${searchTerm}"</span>
       </div>`;
   } else {
     infoDiv.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-weight:600;color:#2196f3;">✅ Found ${results.length} booking${results.length !== 1 ? 's' : ''}</span>
-        <span style="color:#666;font-size:0.85rem;">👆 Click any booking to view its full details on the calendar</span>
+        <span style="font-weight:600;color:#2196f3;"> Found ${results.length} booking${results.length !== 1 ? 's' : ''}</span>
+        <span style="color:#666;font-size:0.85rem;"> Click any booking to view its full details on the calendar</span>
       </div>`;
   }
 
@@ -215,7 +215,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   if (results.length === 0) {
     tbody.innerHTML = `
       <tr><td colspan="8" style="text-align:center;padding:40px;color:#999;">
-        <div style="font-size:3rem;margin-bottom:15px;">🔍</div>
+        <div style="font-size:3rem;margin-bottom:15px;"></div>
         <p style="font-size:1.1rem;margin-bottom:8px;">No bookings found</p>
         <p style="font-size:0.9rem;">Try: name, phone, transaction number, service, or status</p>
       </td></tr>`;
@@ -238,8 +238,8 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     const statusColor = statusColors[booking.status] || '#6c757d';
     const genderHtml = (booking.femaleClients > 0 || booking.maleClients > 0)
       ? `<div style="margin-bottom:4px;">
-           <span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${booking.femaleClients ?? 0}</span>
-           <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${booking.maleClients ?? 0}</span>
+           <span style="font-size:0.78rem;color:#be185d;font-weight:600;">${booking.femaleClients ?? 0}</span>
+           <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">${booking.maleClients ?? 0}</span>
          </div>`
       : '';
 
@@ -252,8 +252,8 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
         <td>
           <div style="font-weight:600;font-size:1rem;margin-bottom:4px;">${booking.guestName}</div>
           ${genderHtml}
-          <div style="font-size:0.85rem;color:#666;">📞 ${booking.guestPhone || '—'}</div>
-          <div style="font-size:0.85rem;color:#666;">🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;">${booking.transactionNumber || '—'}</span></div>
+          <div style="font-size:0.85rem;color:#666;"> ${booking.guestPhone || '—'}</div>
+          <div style="font-size:0.85rem;color:#666;"> <span style="font-family:monospace;background:#f5f5f5;padding:2px 6px;border-radius:4px;">${booking.transactionNumber || '—'}</span></div>
         </td>
         <td>
           <div style="font-weight:600;color:#4b2e1e;">${dateStr}</div>
@@ -264,7 +264,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
         <td>${booking.durationMinutes} mins</td>
         <td style="font-weight:600;">₱${(booking.price || 0).toLocaleString()}</td>
         <td><span class="status-badge status-${booking.status}" style="background:${statusColor};color:white;">${booking.status}</span></td>
-        <td><div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:#2196f3;font-weight:600;">📍 View on Calendar →</div></td>
+        <td><div style="display:flex;align-items:center;gap:6px;font-size:0.9rem;color:#2196f3;font-weight:600;"> View on Calendar →</div></td>
       </tr>`;
   }).join('');
 
@@ -273,7 +273,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
 }
 
   function navigateToBookingDate(bookingId) {
-  console.log('🔍 Navigating to booking:', bookingId);
+  console.log(' Navigating to booking:', bookingId);
   
   const booking = allBookings.find(b => b._id === bookingId);
   
@@ -283,7 +283,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   }
   
   const bookingDate = new Date(booking.date);
-  console.log('📅 Booking date:', bookingDate);
+  console.log(' Booking date:', bookingDate);
   
   // Clear search first
   clearBookingSearch();
@@ -292,7 +292,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   currentMonth = bookingDate.getMonth();
   currentYear = bookingDate.getFullYear();
   
-  console.log('📆 Setting calendar to:', currentYear, currentMonth);
+  console.log(' Setting calendar to:', currentYear, currentMonth);
   
   // Render calendar
   renderCalendar();
@@ -300,7 +300,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   // Wait for calendar to render, then select the date
   setTimeout(() => {
     const dateStr = bookingDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-    console.log('🎯 Selecting date:', dateStr);
+    console.log(' Selecting date:', dateStr);
     
     // Remove existing selections
     document.querySelectorAll('.calendar-day').forEach(day => {
@@ -324,7 +324,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
       
       // Check if this is the target date
       if (cellDateStr === dateStr) {
-        console.log('✅ Found matching day:', cellDay);
+        console.log(' Found matching day:', cellDay);
         foundDay = true;
         
         // Add selected class
@@ -353,23 +353,23 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     });
     
     if (!foundDay) {
-      console.warn('⚠️ Could not find day in calendar for date:', dateStr);
+      console.warn('️ Could not find day in calendar for date:', dateStr);
       showNotification('Date found but not visible in calendar', 'warning');
     }
   }, 300);
 }
 
   function highlightBookingRow(bookingId) {
-  console.log('🎨 Highlighting booking row:', bookingId);
+  console.log(' Highlighting booking row:', bookingId);
   
   const rows = document.querySelectorAll('#bookingsTable tbody tr[data-booking-id]');
-  console.log('📊 Found rows:', rows.length);
+  console.log(' Found rows:', rows.length);
   
   let foundRow = false;
   
   rows.forEach(row => {
     if (row.dataset.bookingId === bookingId) {
-      console.log('✅ Found target row');
+      console.log(' Found target row');
       foundRow = true;
       
       // Add highlight animation
@@ -396,7 +396,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
   });
   
   if (!foundRow) {
-    console.warn('⚠️ Could not find row with booking ID:', bookingId);
+    console.warn('️ Could not find row with booking ID:', bookingId);
   }
 }
 
@@ -432,7 +432,7 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
       tbody.innerHTML = `
         <tr>
           <td colspan="8" style="text-align:center;padding:40px;color:#999;">
-            <div style="font-size:3rem;margin-bottom:15px;">📅</div>
+            <div style="font-size:3rem;margin-bottom:15px;"></div>
             <p style="font-size:1.1rem;">Select a date from the calendar to view bookings</p>
           </td>
         </tr>`;
@@ -480,7 +480,7 @@ function normalizeDate(date) {
 
       // Only reload if stale — prevents unnecessary re-fetching on tab switch
       if (!isTabStale(tab)) {
-        console.log(`⚡ Tab "${tab}" cached — skipping reload`);
+        console.log(` Tab "${tab}" cached — skipping reload`);
         return;
       }
       
@@ -527,7 +527,7 @@ function normalizeDate(date) {
   //Load Therapist
   async function loadTherapistsWithAnalytics() {
     try {
-      console.log('📊 Loading therapists tab with analytics...');
+      console.log(' Loading therapists tab with analytics...');
       
       // Load therapist cards first (most important — show immediately)
       await loadTherapists();
@@ -542,10 +542,10 @@ function normalizeDate(date) {
       // Start auto-refresh for status (every 30 seconds)
       startStatusAutoRefresh();
       
-      console.log('✅ Therapists tab fully loaded');
+      console.log(' Therapists tab fully loaded');
       
     } catch (err) {
-      console.error('❌ Error loading therapists tab:', err);
+      console.error(' Error loading therapists tab:', err);
       showNotification('Failed to load therapist analytics', 'error');
     }
   }
@@ -563,7 +563,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.add('active');
 
     currentPeriod = btn.dataset.period;
-    console.log('🔄 Period changed to:', currentPeriod);
+    console.log(' Period changed to:', currentPeriod);
 
     // Invalidate overview cache so it reloads with new period
     tabLastLoaded['overview'] = null;
@@ -587,21 +587,21 @@ async function loadSarimaStatus() {
     if (data.available && data.sarimaEnabled) {
       indicator.innerHTML = `
         <span style="color:#28a745;font-weight:600;font-size:0.85rem;">
-          🔬 SARIMA Active
+           SARIMA Active
         </span>`;
     } else if (data.available && !data.sarimaEnabled) {
       indicator.innerHTML = `
         <span style="color:#ff9800;font-weight:600;font-size:0.85rem;">
-          ⚠️ Service up but statsmodels missing — run: pip install statsmodels
+          ️ Service up but statsmodels missing — run: pip install statsmodels
         </span>`;
     } else {
       indicator.innerHTML = `
         <span style="color:#dc3545;font-weight:600;font-size:0.85rem;">
-          ⚙️ JS Fallback (SARIMA offline — run: python sarima_service.py)
+          ️ JS Fallback (SARIMA offline — run: python sarima_service.py)
         </span>`;
     }
   } catch {
-    indicator.innerHTML = `<span style="color:#dc3545;font-size:0.85rem;">⚙️ JS Fallback active</span>`;
+    indicator.innerHTML = `<span style="color:#dc3545;font-size:0.85rem;">️ JS Fallback active</span>`;
   }
 }
 
@@ -647,7 +647,7 @@ if (currentPeriod === 'month' || currentPeriod === 'year') {
     const currentLabels = labels[currentPeriod];
     
     if (!currentLabels) {
-      console.warn('⚠️ Invalid period:', currentPeriod);
+      console.warn('️ Invalid period:', currentPeriod);
       return;
     }
     
@@ -675,12 +675,12 @@ if (currentPeriod === 'month' || currentPeriod === 'year') {
     try {
       // Return cached data if still valid
       if (isAnalyticsCacheValid(currentPeriod)) {
-        console.log(`⚡ Analytics cache hit for period: ${currentPeriod}`);
+        console.log(` Analytics cache hit for period: ${currentPeriod}`);
         comprehensiveAnalytics = analyticsCache[currentPeriod].data;
         return comprehensiveAnalytics;
       }
 
-      console.log('📊 Loading comprehensive analytics...');
+      console.log(' Loading comprehensive analytics...');
       
       const res = await fetch(`${apiBase}/analytics/comprehensive?period=${currentPeriod}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -694,13 +694,13 @@ if (currentPeriod === 'month' || currentPeriod === 'year') {
       // Cache the result
       analyticsCache[currentPeriod] = { data: comprehensiveAnalytics, timestamp: Date.now() };
       
-      console.log('✅ Comprehensive analytics loaded');
+      console.log(' Comprehensive analytics loaded');
       updateLastUpdatedTimestamp();
       startDataRefreshTimer();
       return comprehensiveAnalytics;
       
     } catch (err) {
-      console.error('❌ Error loading comprehensive analytics:', err);
+      console.error(' Error loading comprehensive analytics:', err);
       showNotification('Failed to load advanced analytics', 'error');
       return null;
     }
@@ -914,7 +914,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       // Only refresh if overview tab is active
       const overviewTab = document.getElementById('overview-tab');
       if (overviewTab && overviewTab.classList.contains('active')) {
-        console.log('🔄 Auto-refreshing analytics data...');
+        console.log(' Auto-refreshing analytics data...');
         loadOverviewData();
         loadComprehensiveAnalytics();
       }
@@ -943,11 +943,11 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     const chartTitles = {
       peakHours: '⏰ Peak Hours Forecast & Capacity Planning',
-      services: '💆 Service Performance & Demand Forecast',
-      revenue: '💰 Revenue Forecast & Trends',
-      revenueStatus: '📊 Revenue Status & Financial Health',
-      bookingDist: '📅 Booking Distribution & Completion Rate',
-      predictions: '📈 Booking Predictions & Insights'
+      services: ' Service Performance & Demand Forecast',
+      revenue: ' Revenue Forecast & Trends',
+      revenueStatus: ' Revenue Status & Financial Health',
+      bookingDist: ' Booking Distribution & Completion Rate',
+      predictions: ' Booking Predictions & Insights'
     };
     
     title.textContent = chartTitles[chartType] || 'Analytics & Forecast';
@@ -991,7 +991,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
         ${analytics.recommendations && analytics.recommendations.length > 0 ? `
           <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #fff8e1 0%, #ffe082 30%, #fff8e1 100%); border-radius: 12px; border-left: 4px solid #ff9800;">
             <h3 style="color: #4b2e1e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 2rem;">💡</span>
+              <span style="font-size: 2rem;"></span>
               <span>AI-Powered Recommendations</span>
             </h3>
             ${analytics.recommendations.slice(0, 3).map(rec => `
@@ -1049,14 +1049,14 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Predicted Peak Hours for Next 7 Days -->
       <div style="margin-bottom: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📈 Predicted Peak Hours </h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Predicted Peak Hours </h4>
         ${topPeakHours.length > 0 ? `
           <div style="display: grid; gap: 12px;">
             ${topPeakHours.map(([hour, count], index) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: ${index === 0 ? '#fff8e1' : '#f8f9fa'}; border-radius: 8px; ${index === 0 ? 'border: 2px solid #ffc107;' : ''}">
                 <div>
                   <div style="font-weight: 700; color: #4b2e1e;">
-                    ${index === 0 ? '🥇 ' : index === 1 ? '🥈 ' : index === 2 ? '🥉 ' : '⏰ '}${hour}
+                    ${index === 0 ? ' ' : index === 1 ? ' ' : index === 2 ? ' ' : '⏰ '}${hour}
                   </div>
                   <div style="color: #666; font-size: 0.85rem; margin-top: 4px;">
                     ${index === 0 ? 'Highest demand period' : 'High demand period'}
@@ -1074,7 +1074,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Capacity Planning Recommendations -->
       <div style="padding: 20px; background: #e3f2fd; border-radius: 12px; border-left: 4px solid #2196f3;">
-        <h4 style="color: #1565c0; margin: 0 0 15px 0;">💡 Capacity Planning Recommendations</h4>
+        <h4 style="color: #1565c0; margin: 0 0 15px 0;"> Capacity Planning Recommendations</h4>
         <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
           <li><strong>Peak Hours:</strong> Ensure all therapists are available during ${topPeakHours[0]?.[0] || 'busy periods'}</li>
           <li><strong>Staffing:</strong> Schedule ${Math.ceil(topPeakHours[0]?.[1] / 2 || 2)} therapists minimum during peak times</li>
@@ -1091,7 +1091,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     return `
       <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">💆 Service Performance Analysis</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;"> Service Performance Analysis</h3>
         <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
           Analyze service demand and forecast future bookings
         </p>
@@ -1099,13 +1099,13 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Predicted Top Services -->
       <div style="margin-bottom: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📈 Predicted Top Services </h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Predicted Top Services </h4>
         ${overallTopServices && overallTopServices.length > 0 ? `
           <div style="display: grid; gap: 12px;">
             ${overallTopServices.map((service, index) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: ${index < 3 ? '#fff8e1' : '#f8f9fa'}; border-radius: 8px; ${index < 3 ? 'border: 2px solid #ffc107;' : ''}">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <span style="font-size: 1.8rem;">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '⭐'}</span>
+                  <span style="font-size: 1.8rem;">${index === 0 ? '' : index === 1 ? '' : index === 2 ? '' : '⭐'}</span>
                   <div>
                     <div style="font-weight: 700; color: #4b2e1e;">${service.name}</div>
                     <div style="color: #666; font-size: 0.85rem;">Expected demand</div>
@@ -1123,7 +1123,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Current Performance -->
       <div style="margin-top: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📊 Current Period Performance</h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Current Period Performance</h4>
         ${servicePerformance && servicePerformance.length > 0 ? `
           <div style="display: grid; gap: 10px;">
             ${servicePerformance.slice(0, 5).map((service, index) => `
@@ -1141,7 +1141,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Service Recommendations -->
       <div style="margin-top: 25px; padding: 20px; background: #fff3e0; border-radius: 12px; border-left: 4px solid #ff9800;">
-        <h4 style="color: #e65100; margin: 0 0 15px 0;">💡 Service Optimization Tips</h4>
+        <h4 style="color: #e65100; margin: 0 0 15px 0;"> Service Optimization Tips</h4>
         <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
           <li><strong>Top Service:</strong> Ensure adequate therapist capacity for ${overallTopServices?.[0]?.name || 'popular services'}</li>
           <li><strong>Cross-Selling:</strong> Create bundles combining top and underperforming services</li>
@@ -1164,7 +1164,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     return `
       <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">💰 Revenue Forecast & Analysis</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;"> Revenue Forecast & Analysis</h3>
         <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
           Track revenue trends and predict future earnings
         </p>
@@ -1181,14 +1181,14 @@ function buildServicesChartForecast(labels, serviceCounts) {
           <div style="font-size: 0.9rem; opacity: 0.9;">Predicted Revenue </div>
           <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">₱${(totalPredictedRevenue || 0).toLocaleString()}</div>
           <div style="font-size: 0.85rem; opacity: 0.8;">
-            ${revenueGrowth >= 0 ? '📈' : '📉'} ${Math.abs(revenueGrowth).toFixed(1)}% vs current period
+            ${revenueGrowth >= 0 ? '' : ''} ${Math.abs(revenueGrowth).toFixed(1)}% vs current period
           </div>
         </div>
       </div>
       
       <!-- Daily Revenue Forecast -->
       <div style="margin-bottom: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📅 Daily Revenue Forecast</h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Daily Revenue Forecast</h4>
         ${predictions && predictions.length > 0 ? `
           <div style="display: grid; gap: 10px;">
             ${predictions.slice(0, 7).map((pred, index) => `
@@ -1209,7 +1209,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Revenue Growth Tips -->
       <div style="padding: 20px; background: #e8f5e9; border-radius: 12px; border-left: 4px solid #4caf50;">
-        <h4 style="color: #2e7d32; margin: 0 0 15px 0;">💡 Revenue Growth Strategies</h4>
+        <h4 style="color: #2e7d32; margin: 0 0 15px 0;"> Revenue Growth Strategies</h4>
         <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
           <li><strong>Upselling:</strong> Train staff to recommend longer duration services (90 or 120 minutes)</li>
           <li><strong>Package Deals:</strong> Create service bundles to increase average transaction value</li>
@@ -1230,7 +1230,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     return `
       <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">📊 Revenue Status & Financial Health</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;"> Revenue Status & Financial Health</h3>
         <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
           Track earned revenue, retained deposits, and revenue loss
         </p>
@@ -1257,7 +1257,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Financial Health Metrics -->
       <div style="margin-bottom: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📈 Financial Health Metrics</h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Financial Health Metrics</h4>
         <div style="display: grid; gap: 12px;">
           <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
             <div style="display: flex; justify-content: space-between;">
@@ -1296,7 +1296,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       <!-- Predicted Future Revenue -->
       ${totalPredictedRevenue ? `
         <div style="padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; border-left: 4px solid #2196f3;">
-          <h4 style="color: #1565c0; margin: 0 0 12px 0;">🔮 Predicted Revenue </h4>
+          <h4 style="color: #1565c0; margin: 0 0 12px 0;"> Predicted Revenue </h4>
           <div style="font-size: 2rem; font-weight: 700; color: #1976d2; margin-bottom: 8px;">₱${totalPredictedRevenue.toLocaleString()}</div>
           <p style="color: #666; margin: 0; line-height: 1.6;">
             Expected down payment collection: <strong>₱${Math.round(totalPredictedRevenue * 0.25).toLocaleString()}</strong>
@@ -1320,7 +1320,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     return `
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">📅 Booking Distribution & Completion Analysis</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;"> Booking Distribution & Completion Analysis</h3>
         <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
           Analyze booking patterns and predict future demand
         </p>
@@ -1346,7 +1346,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Predicted Bookings -->
       <div style="margin-bottom: 30px;">
-        <h4 style="color: #4b2e1e; margin-bottom: 20px;">📈 Predicted Bookings </h4>
+        <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Predicted Bookings </h4>
         ${predictions && predictions.length > 0 ? `
           <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white; margin-bottom: 20px;">
             <div style="font-size: 0.9rem; opacity: 0.9;">Total Predicted Bookings</div>
@@ -1376,7 +1376,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       
       <!-- Performance Insights -->
       <div style="padding: 20px; background: #fff3e0; border-radius: 12px; border-left: 4px solid #ff9800;">
-        <h4 style="color: #e65100; margin: 0 0 15px 0;">💡 Performance Insights</h4>
+        <h4 style="color: #e65100; margin: 0 0 15px 0;"> Performance Insights</h4>
         <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
           <li><strong>Target:</strong> Maintain completion rate above 85% and cancellation rate below 15%</li>
           <li><strong>Action:</strong> ${completionRate < 85 ? 'Implement reminder system to reduce no-shows' : 'Excellent completion rate - keep it up!'}</li>
@@ -1429,7 +1429,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     return `
       <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; border-left: 4px solid #2196f3;">
         <h3 style="color: #1565c0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 2rem;">📊</span>
+          <span style="font-size: 2rem;"></span>
           <span>${periodLabels[currentStats.period]} Performance Summary</span>
         </h3>
         
@@ -1479,11 +1479,11 @@ function buildServicesChartForecast(labels, serviceCounts) {
     const content = document.getElementById('statDetailContent');
     
     const chartTitles = {
-      bookings: '📅 Booking Forecast & Insights',
-      revenue: '💰 Revenue Forecast & Trends',
-      services: '💆 Service Performance Analysis',
+      bookings: ' Booking Forecast & Insights',
+      revenue: ' Revenue Forecast & Trends',
+      services: ' Service Performance Analysis',
       peakHours: '⏰ Peak Hours & Capacity Planning',
-      therapists: '👥 Therapist Performance Analytics'
+      therapists: ' Therapist Performance Analytics'
     };
     
     title.textContent = chartTitles[chartType] || 'Analytics & Forecast';
@@ -1513,7 +1513,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
         ${recommendations && recommendations.length > 0 ? `
           <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #fff8e1 0%, #ffe082 30%, #fff8e1 100%); border-radius: 12px; border-left: 4px solid #ff9800;">
             <h3 style="color: #4b2e1e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 2rem;">💡</span>
+              <span style="font-size: 2rem;"></span>
               <span>AI-Powered Recommendations</span>
             </h3>
             ${recommendations.slice(0, 5).map(rec => `
@@ -1569,7 +1569,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
         ${anomalies && anomalies.length > 0 ? `
           <div style="margin-top: 25px; padding: 20px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
             <h4 style="color: #856404; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
-              <span>⚠️</span>
+              <span>️</span>
               <span>Unusual Activity Detected</span>
             </h4>
             <p style="color: #856404; margin: 0 0 10px 0;">
@@ -1608,7 +1608,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
             <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white;">
               <div style="font-size: 0.9rem; opacity: 0.9;">Trend Direction</div>
               <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">
-                ${trends.bookings.direction === 'increasing' ? '📈' : trends.bookings.direction === 'decreasing' ? '📉' : '➡️'}
+                ${trends.bookings.direction === 'increasing' ? '' : trends.bookings.direction === 'decreasing' ? '' : '️'}
               </div>
               <div style="font-size: 0.85rem; opacity: 0.8; text-transform: capitalize;">${trends.bookings.direction}</div>
             </div>
@@ -1617,7 +1617,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
           <!-- 7-Day Forecast -->
           <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
             <h3 style="color: #4b2e1e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span>📈</span>
+              <span></span>
               <span>7-Day Booking Forecast</span>
             </h3>
             <div style="display: grid; gap: 12px;">
@@ -1654,7 +1654,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
             <div style="padding: 20px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 12px; color: white;">
               <div style="font-size: 0.9rem; opacity: 0.9;">Revenue Trend</div>
               <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;">
-                ${trends.revenue.direction === 'increasing' ? '📈' : trends.revenue.direction === 'decreasing' ? '📉' : '➡️'}
+                ${trends.revenue.direction === 'increasing' ? '' : trends.revenue.direction === 'decreasing' ? '' : '️'}
               </div>
               <div style="font-size: 0.85rem; opacity: 0.8; text-transform: capitalize;">${trends.revenue.direction}</div>
             </div>
@@ -1668,7 +1668,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
             ${servicePerformance.slice(0, 10).map((service, idx) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: ${idx < 3 ? '#fff8e1' : '#f8f9fa'}; border-radius: 8px; margin-bottom: 10px; ${idx < 3 ? 'border: 2px solid #ffc107;' : ''}">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                  <span style="font-size: 2rem;">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '⭐'}</span>
+                  <span style="font-size: 2rem;">${idx === 0 ? '' : idx === 1 ? '' : idx === 2 ? '' : '⭐'}</span>
                   <div>
                     <div style="font-weight: 700; color: #4b2e1e;">${service.name}</div>
                     <div style="color: #666; font-size: 0.85rem;">${service.bookings} booking${service.bookings !== 1 ? 's' : ''}</div>
@@ -1689,7 +1689,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
             ${therapistUtilization.map((therapist, idx) => `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: ${idx < 3 ? '#e8f5e9' : '#f8f9fa'}; border-radius: 8px; margin-bottom: 10px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                  <span style="font-size: 2rem;">${idx === 0 ? '👑' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '👤'}</span>
+                  <span style="font-size: 2rem;">${idx === 0 ? '' : idx === 1 ? '' : idx === 2 ? '' : ''}</span>
                   <div>
                     <div style="font-weight: 700; color: #4b2e1e;">${therapist.name}</div>
                     <div style="color: #666; font-size: 0.85rem;">${therapist.completed}/${therapist.bookings} completed</div>
@@ -1739,7 +1739,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       // Add button
       const button = document.createElement('button');
       button.className = 'see-analytics-btn';
-      button.innerHTML = '📊 See Forecast & Insights';
+      button.innerHTML = ' See Forecast & Insights';
       button.style.cssText = `
         position: absolute;
         top: 15px;
@@ -1815,7 +1815,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
 
   // Update stat cards
 
-  console.log(`📊 Forecast ${forecastEnabled ? 'enabled' : 'disabled'}`);
+  console.log(` Forecast ${forecastEnabled ? 'enabled' : 'disabled'}`);
 }
 
 //period range
@@ -1863,13 +1863,13 @@ function buildServicesChartForecast(labels, serviceCounts) {
 
   async function loadEnhancedPredictions() {
     try {
-      console.log('📈 Loading enhanced predictions for period:', currentPeriod);
+      console.log(' Loading enhanced predictions for period:', currentPeriod);
 
       // Check predictions cache
       const cacheKey = `predictions_${currentPeriod}`;
       const cached = analyticsCache[cacheKey];
       if (cached && (Date.now() - cached.timestamp) < ANALYTICS_CACHE_TTL) {
-        console.log(`⚡ Predictions cache hit for: ${currentPeriod}`);
+        console.log(` Predictions cache hit for: ${currentPeriod}`);
         const data = cached.data;
         predictionsData = data.predictions || [];
         if (forecastEnabled && (filteredBookingsData || currentBookingsData)) {
@@ -1886,7 +1886,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       if (!res.ok) { console.error('Failed to load enhanced predictions'); return null; }
       
       const data = await res.json();
-      console.log('✅ Loaded enhanced predictions');
+      console.log(' Loaded enhanced predictions');
 
       // Cache it
       analyticsCache[cacheKey] = { data, timestamp: Date.now() };
@@ -1900,7 +1900,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       return data;
       
     } catch (err) {
-      console.error('❌ Error loading enhanced predictions:', err);
+      console.error(' Error loading enhanced predictions:', err);
       return null;
     }
   }
@@ -1920,7 +1920,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     const { predictions, forecastHorizon } = data;
     
     if (!predictions || predictions.length === 0) {
-      console.warn('⚠️ No predictions data to display');
+      console.warn('️ No predictions data to display');
       return;
     }
     
@@ -2011,7 +2011,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
           },
           title: {
             display: true,
-            text: `📈 Booking Predictions (${forecastHorizon})`,
+            text: ` Booking Predictions (${forecastHorizon})`,
             font: {
               size: 14,
               weight: 'bold'
@@ -2107,7 +2107,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     
     const indicator = document.createElement('div');
     indicator.className = 'forecast-indicator';
-    indicator.textContent = '📊 Forecast Active';
+    indicator.textContent = ' Forecast Active';
     chartContainer.style.position = 'relative';
     chartContainer.appendChild(indicator);
   }
@@ -2117,7 +2117,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     const title = document.getElementById('statDetailTitle');
     const content = document.getElementById('statDetailContent');
     
-    title.textContent = '📊 Forecast & Prescription Insights';
+    title.textContent = ' Forecast & Prescription Insights';
     
     content.innerHTML = `
       <div style="padding: 20px; text-align: center;">
@@ -2140,10 +2140,10 @@ function buildServicesChartForecast(labels, serviceCounts) {
       displayComprehensiveInsightsContent(predictionsData, analyticsData);
       
     } catch (err) {
-      console.error('❌ Error loading insights:', err);
+      console.error(' Error loading insights:', err);
       content.innerHTML = `
         <div style="padding: 40px; text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+          <div style="font-size: 3rem; margin-bottom: 15px;">️</div>
           <p style="color: #dc3545; font-size: 1.1rem; margin-bottom: 10px;">Failed to load insights</p>
           <p style="color: #666; font-size: 0.9rem;">${err.message}</p>
           <button onclick="showComprehensiveInsights()" style="margin-top: 20px; padding: 10px 20px; background: #4b2e1e; color: white; border: none; border-radius: 6px; cursor: pointer;">
@@ -2176,7 +2176,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       <div style="padding: 20px;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; margin-bottom: 25px;">
-          <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;">📊 Forecast Period: ${forecastHorizon}</h3>
+          <h3 style="margin: 0 0 10px 0; font-size: 1.5rem;"> Forecast Period: ${forecastHorizon}</h3>
           <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">
             ${new Date(forecastStart).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} 
             → 
@@ -2213,14 +2213,14 @@ function buildServicesChartForecast(labels, serviceCounts) {
           <div class="forecast-comparison-card">
             <div class="forecast-comparison-label">Forecast Confidence</div>
             <div class="forecast-comparison-value" style="font-size: 1.5rem;">
-              ${predictions.filter(p => p.confidence === 'High').length > predictions.length / 2 ? 'High 🟢' : 'Medium 🟡'}
+              ${predictions.filter(p => p.confidence === 'High').length > predictions.length / 2 ? 'High ' : 'Medium '}
             </div>
           </div>
         </div>
         
         <!-- Timeline View -->
         <div style="margin-top: 35px;">
-          <h4 style="color: #4b2e1e; margin-bottom: 20px;">📅 Detailed Forecast Timeline</h4>
+          <h4 style="color: #4b2e1e; margin-bottom: 20px;"> Detailed Forecast Timeline</h4>
           <div class="insight-timeline">
             ${predictions.slice(0, 7).map((pred, index) => {
               const date = new Date(pred.date);
@@ -2263,7 +2263,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
         ${recommendations && recommendations.length > 0 ? `
           <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #fff8e1 0%, #ffe082 30%, #fff8e1 100%); border-radius: 12px; border-left: 4px solid #ff9800;">
             <h3 style="color: #4b2e1e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 2rem;">💡</span>
+              <span style="font-size: 2rem;"></span>
               <span>Recommended Actions Based on Forecast</span>
             </h3>
             ${recommendations.slice(0, 5).map(rec => `
@@ -2305,7 +2305,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
                 <li><strong>This Year:</strong> Predicts next 90 days (~3 months)</li>
               </ul>
               <p style="color: #666; margin: 10px 0 0 0; line-height: 1.6; font-size: 0.85rem; font-style: italic;">
-                💡 Use the forecast toggle in the main dashboard to enable/disable predictions on charts.
+                 Use the forecast toggle in the main dashboard to enable/disable predictions on charts.
               </p>
             </div>
           </div>
@@ -2352,7 +2352,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
 
   async function loadOverviewData() {
     try {
-      console.log('📊 Loading overview data...');
+      console.log(' Loading overview data...');
 
       updatePeriodRange(currentPeriod);
       if (!currentPeriod) currentPeriod = 'today';
@@ -2399,7 +2399,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       if (!fastRes.ok) throw new Error('Failed to fetch bookings');
 
       const periodBookings = await fastRes.json();
-      console.log('⚡ Fast load:', periodBookings.length, 'bookings for', currentPeriod);
+      console.log(' Fast load:', periodBookings.length, 'bookings for', currentPeriod);
 
       // Show dashboard immediately with period data
       allBookings = periodBookings;
@@ -2421,7 +2421,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       })
         .then(r => r.json())
         .then(fullBookings => {
-          console.log('📦 Full range loaded:', fullBookings.length, 'bookings');
+          console.log(' Full range loaded:', fullBookings.length, 'bookings');
           allBookings = fullBookings;
           filteredBookingsData = filterByPeriod(allBookings, currentPeriod);
           currentBookingsData  = filteredBookingsData;
@@ -2446,7 +2446,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       }
 
     } catch (err) {
-      console.error('❌ Error loading dashboard:', err);
+      console.error(' Error loading dashboard:', err);
       hideLoader();
       showNotification('Failed to load dashboard data', 'error');
     }
@@ -2456,8 +2456,8 @@ function buildServicesChartForecast(labels, serviceCounts) {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    console.log('🔍 Filtering for period:', period);
-    console.log('📅 Today is:', today.toDateString());
+    console.log(' Filtering for period:', period);
+    console.log(' Today is:', today.toDateString());
     
     const filtered = bookings.filter(b => {
       const bookingDate = new Date(b.date);
@@ -2465,7 +2465,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       switch(period) {
         case 'today':
           const isToday = bookingDate.toDateString() === today.toDateString();
-          if (isToday) console.log('✅ Today booking:', b.date, b.time);
+          if (isToday) console.log(' Today booking:', b.date, b.time);
           return isToday;
         
         case 'week':
@@ -2475,7 +2475,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
           weekEnd.setDate(weekEnd.getDate() + 6); // Sunday
           
           const isThisWeek = bookingDate >= weekStart && bookingDate <= weekEnd;
-          if (isThisWeek) console.log('✅ This week booking:', b.date, b.time);
+          if (isThisWeek) console.log(' This week booking:', b.date, b.time);
           return isThisWeek;
         
         case 'month':
@@ -2490,7 +2490,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
       }
     });
     
-    console.log(`📊 Found ${filtered.length} bookings for ${period}`);
+    console.log(` Found ${filtered.length} bookings for ${period}`);
     return filtered;
   }
 
@@ -2531,7 +2531,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     setCard('bscCompleted', 'bscCompletedSub', completedCount, `₱${revenue.toLocaleString()} revenue`);
     setCard('bscCancelled', 'bscCancelledSub', cancelledCount, pct(cancelledCount));
     
-    // ✅ ADD INLINE INSIGHTS
+    //  ADD INLINE INSIGHTS
     const avgRevenue = bookingCount > 0 ? Math.round(revenue / bookingCount) : 0;
     const completionRate = bookingCount > 0 ? ((completedCount / bookingCount) * 100).toFixed(1) : 0;
     const cancellationRate = bookingCount > 0 ? ((cancelledCount / bookingCount) * 100).toFixed(1) : 0;
@@ -2548,7 +2548,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
         revenueInsight.textContent = `${diff > 0 ? '↑' : '↓'} ${Math.abs(percentDiff)}% vs forecast`;
       } else {
         revenueInsight.className = 'stat-insight neutral';
-        revenueInsight.textContent = '✓ On track with forecast';
+        revenueInsight.textContent = ' On track with forecast';
       }
     } else if (revenueInsight) {
       revenueInsight.textContent = `Avg: ₱${avgRevenue.toLocaleString()} per booking`;
@@ -2632,7 +2632,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
     notification.className = 'chart-notification';
     notification.style.cssText = `margin-top:12px;padding:12px 16px;background:#f8f9fa;border-left:4px solid #4b2e1e;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:0.88rem;`;
     notification.innerHTML = `
-      <span style="font-size:1.4rem;">${isCurrency ? '💰' : '📅'}</span>
+      <span style="font-size:1.4rem;">${isCurrency ? '' : ''}</span>
       <div>
         <strong style="color:#4b2e1e;">
           ${isCurrency ? `Total revenue ${label}: ${fmt(actualTotal)}` : `Total bookings ${label}: ${fmt(actualTotal)}`}
@@ -2670,7 +2670,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
   // ── CASE A: No actual data yet ─────────────────────────────────────────────
   if (actualTotal === 0) {
     notification.innerHTML = `
-      <span style="font-size:1.4rem;">📈</span>
+      <span style="font-size:1.4rem;"></span>
       <div>
         <strong style="color:#4b2e1e;">Forecast Available</strong>
         <div style="color:#666;margin-top:2px;">
@@ -2686,7 +2686,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
   if (overlapSlots === 0) {
     const actualAvg   = filledActualSlots  > 0 ? actualTotal  / filledActualSlots  : 0;
     const forecastAvg = filledForecastSlots > 0 ? forecastTotal / filledForecastSlots : 0;
-    const trend = forecastAvg >= actualAvg ? '📈' : '📉';
+    const trend = forecastAvg >= actualAvg ? '' : '';
     const color = forecastAvg >= actualAvg ? '#28a745' : '#e67e22';
 
     notification.style.borderLeftColor = color;
@@ -2720,7 +2720,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
   const { value: pct, capped } = clampPercent(rawPct);
   const absPct   = Math.abs(pct).toFixed(1);
   const cappedNote = capped ? (rawPct > 0 ? '>' : '<') : '';
-  const icon  = rawPct >  2 ? '📈' : rawPct < -2 ? '📉' : '➡️';
+  const icon  = rawPct >  2 ? '' : rawPct < -2 ? '' : '️';
   const color = rawPct >  2 ? '#28a745' : rawPct < -2 ? '#dc3545' : '#ffc107';
   const forecastWord = rawPct > 2 ? 'above' : rawPct < -2 ? 'below' : 'on par with';
 
@@ -2766,7 +2766,7 @@ function buildServicesChartForecast(labels, serviceCounts) {
   function createPeakHoursChart(bookings) {
   const ctx = document.getElementById('peakHoursChart');
   if (!ctx) {
-    console.warn('⚠️ Peak hours chart canvas not found');
+    console.warn('️ Peak hours chart canvas not found');
     return;
   }
   
@@ -2919,7 +2919,7 @@ const indexAxis = 'x';   // always vertical bars for today, line for others
           cornerRadius: 8,
           callbacks: {
             title: function(context) {
-              return `${currentPeriod === 'today' ? '⏰' : '📅'} ${context[0].label}`;
+              return `${currentPeriod === 'today' ? '⏰' : ''} ${context[0].label}`;
             },
             label: function(context) {
               const count = context.parsed.y ?? context.parsed.x;
@@ -2971,7 +2971,7 @@ function createServicesChart(bookings) {
   let predictedData = null;
 
   const serviceCounts = {};
-  console.log('🔍 First booking sample:', JSON.stringify(bookings[0], null, 2)); // ADD THIS
+  console.log(' First booking sample:', JSON.stringify(bookings[0], null, 2)); // ADD THIS
 bookings.forEach(b => {
     // Handle both populated objects and plain strings
     const serviceName = b.service?.name || (typeof b.service === 'string' ? b.service : null);
@@ -2980,7 +2980,7 @@ bookings.forEach(b => {
     }
   });
 
-console.log('📊 Services chart - bookings:', bookings.length, 'unique services:', Object.keys(serviceCounts).length, serviceCounts);
+console.log(' Services chart - bookings:', bookings.length, 'unique services:', Object.keys(serviceCounts).length, serviceCounts);
 
   const sorted     = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]);
   const labels     = sorted.map(s => s[0]);
@@ -3073,11 +3073,11 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
   function createRevenueChart(bookings) {
   const ctx = document.getElementById('revenueChart');
   if (!ctx) {
-    console.warn('⚠️ Revenue chart canvas not found');
+    console.warn('️ Revenue chart canvas not found');
     return;
   }
   
-  // ✅ DECLARE forecastRevenue HERE
+  //  DECLARE forecastRevenue HERE
   let forecastRevenue = null;
   let labels, historicalData;
   
@@ -3142,7 +3142,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     currentChart.revenue.destroy();
   }
   
-  // ✅ BUILD DATASETS
+  //  BUILD DATASETS
   const datasets = [
     {
       label: 'Actual Revenue',
@@ -3160,8 +3160,8 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     }
   ];
   
-  // ✅ ADD FORECAST if enabled
-  // ✅ ADD FORECAST — aggregate per period so daily predictions
+  //  ADD FORECAST if enabled
+  //  ADD FORECAST — aggregate per period so daily predictions
   //    roll up to the right hourly / daily / weekly / monthly buckets.
   if (forecastEnabled && predictionsData && predictionsData.length > 0) {
 
@@ -3249,12 +3249,12 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
           cornerRadius: 8,
           displayColors: true,
           callbacks: {
-            // 🎯 TITLE: Show period label
+            //  TITLE: Show period label
             title: function(context) {
               return context[0].label;
             },
             
-            // 💰 LABEL: Show revenue with insight
+            //  LABEL: Show revenue with insight
             label: function(context) {
               const datasetLabel = context.dataset.label;
               const value = context.parsed.y;
@@ -3275,7 +3275,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
               return `${datasetLabel}: ₱${value.toLocaleString()}${insight}`;
             },
             
-            // 📊 FOOTER: Show additional insights
+            //  FOOTER: Show additional insights
             footer: function(context) {
               const actualValue = context[0].parsed.y;
               
@@ -3288,8 +3288,8 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
                 
                 if (Math.abs(percentDiff) > 5) {
                   const status = difference > 0 ? 
-                    `✅ Exceeding forecast by ${percentDiff}%` :
-                    `⚠️ Below forecast by ${Math.abs(percentDiff)}%`;
+                    ` Exceeding forecast by ${percentDiff}%` :
+                    `️ Below forecast by ${Math.abs(percentDiff)}%`;
                   return `\n${status}`;
                 }
               }
@@ -3314,7 +3314,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
               }).length;
               
               if (relevantBookings > 0) {
-                return `\n📅 ${relevantBookings} booking${relevantBookings !== 1 ? 's' : ''} completed`;
+                return `\n ${relevantBookings} booking${relevantBookings !== 1 ? 's' : ''} completed`;
               }
               
               return '';
@@ -3343,7 +3343,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     }
   });
 
-  // ✅ ADD CHART NOTIFICATION (NOW forecastRevenue is in scope!)
+  //  ADD CHART NOTIFICATION (NOW forecastRevenue is in scope!)
   if (forecastEnabled && forecastRevenue && forecastRevenue.length > 0) {
     addChartNotification('revenueChart', historicalData, forecastRevenue, 'revenue');
   }
@@ -3400,7 +3400,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
       const revenueLoss = cancelled.reduce((sum, b) => sum + (b.price || 0), 0);
       
       const growthRate = earnedRevenue > 0 ? ((earnedRevenue - revenueLoss) / earnedRevenue * 100).toFixed(1) : 0;
-      const icon = growthRate > 0 ? '📈' : growthRate < 0 ? '📉' : '➡️';
+      const icon = growthRate > 0 ? '' : growthRate < 0 ? '' : '️';
       const color = growthRate > 0 ? '#28a745' : growthRate < 0 ? '#dc3545' : '#ffc107';
       
       const notification = document.createElement('div');
@@ -3477,7 +3477,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
         headers: { Authorization: `Bearer ${token}` }
       });
       allBookings = await res.json();
-      console.log(`📅 Calendar loaded ${allBookings.length} bookings (${from} → ${to})`);
+      console.log(` Calendar loaded ${allBookings.length} bookings (${from} → ${to})`);
     }
     renderCalendar();
     const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
@@ -3500,7 +3500,7 @@ console.log('📊 Services chart - bookings:', bookings.length, 'unique services
     );
     renderPendingRequestsPanel(pending);
   } catch (err) {
-    console.error('❌ Error loading pending requests:', err);
+    console.error(' Error loading pending requests:', err);
   }
 }
 window.loadPendingRequests = loadPendingRequests;
@@ -3548,7 +3548,7 @@ function renderPendingRequestsPanel(requests) {
         <button
           onclick="loadPendingRequests()"
           style="padding:8px 16px;background:#4b2e1e;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85rem;">
-          🔄 Refresh
+           Refresh
         </button>
       </div>
 
@@ -3568,7 +3568,7 @@ function renderPendingRequestCard(booking) {
 
   const color      = isCancellation ? '#dc3545' : '#9c27b0';
   const bg         = isCancellation ? '#ffebee' : '#f3e5f5';
-  const typeLabel  = isCancellation ? '❌ Cancellation Request' : '📅 Reschedule Request';
+  const typeLabel  = isCancellation ? ' Cancellation Request' : ' Reschedule Request';
   const requestedAt = isCancellation
     ? (booking.cancellationRequestedAt
         ? new Date(booking.cancellationRequestedAt).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
@@ -3602,8 +3602,8 @@ function renderPendingRequestCard(booking) {
           </div>
           <h4 style="margin:0;color:#4b2e1e;font-size:1.1rem;">${booking.guestName}</h4>
           <div style="color:#666;font-size:0.88rem;margin-top:4px;">
-            📞 ${booking.guestPhone} &nbsp;|&nbsp;
-            🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;">
+             ${booking.guestPhone} &nbsp;|&nbsp;
+             <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;">
               ${booking.transactionNumber || booking._id.substring(0,8).toUpperCase()}
             </span>
           </div>
@@ -3618,7 +3618,7 @@ function renderPendingRequestCard(booking) {
                 cursor:pointer;font-weight:600;font-size:0.9rem;transition:0.2s;"
               onmouseover="this.style.background='#1e7e34'"
               onmouseout="this.style.background='#28a745'">
-              ✅ Approve Cancellation
+               Approve Cancellation
             </button>
             <button
               onclick="rejectCancellation('${booking._id}')"
@@ -3626,7 +3626,7 @@ function renderPendingRequestCard(booking) {
                 cursor:pointer;font-weight:600;font-size:0.9rem;transition:0.2s;"
               onmouseover="this.style.background='#c82333'"
               onmouseout="this.style.background='#dc3545'">
-              ✕ Reject
+               Reject
             </button>
           ` : `
             <button
@@ -3635,7 +3635,7 @@ function renderPendingRequestCard(booking) {
                 cursor:pointer;font-weight:600;font-size:0.9rem;transition:0.2s;"
               onmouseover="this.style.background='#1e7e34'"
               onmouseout="this.style.background='#28a745'">
-              ✅ Approve Reschedule
+               Approve Reschedule
             </button>
             <button
               onclick="rejectReschedule('${booking._id}')"
@@ -3643,7 +3643,7 @@ function renderPendingRequestCard(booking) {
                 cursor:pointer;font-weight:600;font-size:0.9rem;transition:0.2s;"
               onmouseover="this.style.background='#c82333'"
               onmouseout="this.style.background='#dc3545'">
-              ✕ Reject
+               Reject
             </button>
           `}
         </div>
@@ -3721,9 +3721,9 @@ async function approveCancellation(bookingId) {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    if (!res.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+    if (!res.ok) { showNotification(` ${data.msg}`, 'error'); return; }
 
-    showNotification('✅ Cancellation approved. Booking has been cancelled.', 'success');
+    showNotification(' Cancellation approved. Booking has been cancelled.', 'success');
     loadPendingRequests();
     if (allBookings) {
   const idx = allBookings.findIndex(b => b._id === bookingId);
@@ -3732,7 +3732,7 @@ async function approveCancellation(bookingId) {
     if (selectedDate) loadBookingsForDate(selectedDate);
 
   } catch (err) {
-    showNotification('❌ Error approving cancellation', 'error');
+    showNotification(' Error approving cancellation', 'error');
   }
 }
 window.approveCancellation = approveCancellation;
@@ -3752,14 +3752,14 @@ async function rejectCancellation(bookingId) {
       body: JSON.stringify({ adminNote: adminNote.trim() || 'Cancellation request was not approved.' })
     });
     const data = await res.json();
-    if (!res.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+    if (!res.ok) { showNotification(` ${data.msg}`, 'error'); return; }
 
-    showNotification('❌ Cancellation request rejected. Booking remains active.', 'success');
+    showNotification(' Cancellation request rejected. Booking remains active.', 'success');
     loadPendingRequests();
     if (selectedDate) loadBookingsForDate(selectedDate);
 
   } catch (err) {
-    showNotification('❌ Error rejecting cancellation', 'error');
+    showNotification(' Error rejecting cancellation', 'error');
   }
 }
 window.rejectCancellation = rejectCancellation;
@@ -3774,9 +3774,9 @@ async function approveReschedule(bookingId) {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    if (!res.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+    if (!res.ok) { showNotification(` ${data.msg}`, 'error'); return; }
 
-    showNotification('✅ Reschedule approved. Booking has been moved.', 'success');
+    showNotification(' Reschedule approved. Booking has been moved.', 'success');
     loadPendingRequests();
     if (allBookings) {
   const idx = allBookings.findIndex(b => b._id === bookingId);
@@ -3785,7 +3785,7 @@ async function approveReschedule(bookingId) {
     if (selectedDate) loadBookingsForDate(selectedDate);
 
   } catch (err) {
-    showNotification('❌ Error approving reschedule', 'error');
+    showNotification(' Error approving reschedule', 'error');
   }
 }
 window.approveReschedule = approveReschedule;
@@ -3805,14 +3805,14 @@ async function rejectReschedule(bookingId) {
       body: JSON.stringify({ adminNote: adminNote.trim() || 'Reschedule request was not approved.' })
     });
     const data = await res.json();
-    if (!res.ok) { showNotification(`❌ ${data.msg}`, 'error'); return; }
+    if (!res.ok) { showNotification(` ${data.msg}`, 'error'); return; }
 
-    showNotification('❌ Reschedule request rejected. Booking stays at original time.', 'success');
+    showNotification(' Reschedule request rejected. Booking stays at original time.', 'success');
     loadPendingRequests();
     if (selectedDate) loadBookingsForDate(selectedDate);
 
   } catch (err) {
-    showNotification('❌ Error rejecting reschedule', 'error');
+    showNotification(' Error rejecting reschedule', 'error');
   }
 }
 window.rejectReschedule = rejectReschedule;
@@ -3823,10 +3823,10 @@ function getBookingRowActions(b) {
       <div style="display:flex;flex-direction:column;gap:6px;">
         <button class="btn-confirm"
           onclick="approveCancellation('${b._id}')"
-          style="background:#28a745;">✅ Approve Cancel</button>
+          style="background:#28a745;"> Approve Cancel</button>
         <button class="btn-cancel-booking"
           onclick="rejectCancellation('${b._id}')"
-          style="background:#dc3545;">✕ Reject</button>
+          style="background:#dc3545;"> Reject</button>
       </div>`;
   }
   if (b.status === 'pending_reschedule') {
@@ -3834,10 +3834,10 @@ function getBookingRowActions(b) {
       <div style="display:flex;flex-direction:column;gap:6px;">
         <button class="btn-confirm"
           onclick="approveReschedule('${b._id}')"
-          style="background:#28a745;">✅ Approve Reschedule</button>
+          style="background:#28a745;"> Approve Reschedule</button>
         <button class="btn-cancel-booking"
           onclick="rejectReschedule('${b._id}')"
-          style="background:#dc3545;">✕ Reject</button>
+          style="background:#dc3545;"> Reject</button>
       </div>`;
   }
   if (b.status === 'pending') {
@@ -3895,7 +3895,7 @@ window.getBookingRowActions = getBookingRowActions;
 
   dayCell.innerHTML = `
     <span class="day-number">${day}</span>
-    ${isBlocked ? `<span class="closure-badge">${isSingle ? '🚫' : '🏖️'} ${closure.label || 'Closed'}</span>` : ''}
+    ${isBlocked ? `<span class="closure-badge">${isSingle ? '' : '️'} ${closure.label || 'Closed'}</span>` : ''}
   `;
 
   if (!isBlocked) {
@@ -3970,11 +3970,11 @@ window.getBookingRowActions = getBookingRowActions;
       return;
     }
     
-    // ✅ Separate walk-in and online bookings
+    //  Separate walk-in and online bookings
     const walkInBookings = dayBookings.filter(b => b.bookingType === 'walk-in');
     const onlineBookings = dayBookings.filter(b => b.bookingType === 'online' || !b.bookingType);
     
-    console.log(`📊 ${formattedDate}:`, {
+    console.log(` ${formattedDate}:`, {
       total: allDayBookings.length,
       filtered: dayBookings.length,
       filter: activeBookingStatusFilter,
@@ -3986,36 +3986,36 @@ window.getBookingRowActions = getBookingRowActions;
     const mobileList = document.getElementById('mobileBookingList');
     if (mobileList) mobileList.innerHTML = '';
 
-    // ✅ Display Online Bookings First
+    //  Display Online Bookings First
     if (onlineBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #e3f2fd; font-weight: 700;">
           <td colspan="9" style="padding: 12px; color: #1976d2; font-size: 1.1rem;">
-  💻 ONLINE BOOKINGS (${onlineBookings.length})
+   ONLINE BOOKINGS (${onlineBookings.length})
 </td>
         </tr>
       `;
       tbody.innerHTML += onlineBookings.map(b => generateBookingRow(b, 'online')).join('');
 
       if (mobileList) {
-        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-online">💻 ONLINE BOOKINGS (${onlineBookings.length})</div>`;
+        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-online"> ONLINE BOOKINGS (${onlineBookings.length})</div>`;
         mobileList.innerHTML += onlineBookings.map(b => generateMobileBookingCard(b, 'online')).join('');
       }
     }
 
-    // ✅ Display Walk-in Bookings
+    //  Display Walk-in Bookings
     if (walkInBookings.length > 0) {
       tbody.innerHTML += `
         <tr style="background: #fff3e0; font-weight: 700; border-top: 3px solid #ff9800;">
           <td colspan="9" style="padding: 12px; color: #f57c00; font-size: 1.1rem;">
-  🚶 WALK-IN BOOKINGS (${walkInBookings.length})
+   WALK-IN BOOKINGS (${walkInBookings.length})
 </td>
         </tr>
       `;
       tbody.innerHTML += walkInBookings.map(b => generateBookingRow(b, 'walk-in')).join('');
 
       if (mobileList) {
-        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-walkin">🚶 WALK-IN BOOKINGS (${walkInBookings.length})</div>`;
+        mobileList.innerHTML += `<div class="mobile-group-header mobile-group-walkin"> WALK-IN BOOKINGS (${walkInBookings.length})</div>`;
         mobileList.innerHTML += walkInBookings.map(b => generateMobileBookingCard(b, 'walk-in')).join('');
       }
     }
@@ -4038,7 +4038,7 @@ window.getBookingRowActions = getBookingRowActions;
     const femaleCount = b.femaleClients ?? null;
     const maleCount   = b.maleClients   ?? null;
     const genderHtml  = (femaleCount !== null && maleCount !== null)
-      ? `<span class="mc-gender mc-female">♀${femaleCount}</span><span class="mc-gender mc-male">♂${maleCount}</span>`
+      ? `<span class="mc-gender mc-female">${femaleCount}</span><span class="mc-gender mc-male">${maleCount}</span>`
       : '';
 
     let therapistName = 'Any Available';
@@ -4046,8 +4046,8 @@ window.getBookingRowActions = getBookingRowActions;
     else if (b.therapist) therapistName = b.therapist.name || b.therapist;
 
     const typeBadge = type === 'walk-in'
-      ? `<span class="mc-type-badge mc-walkin">🚶 WALK-IN</span>`
-      : `<span class="mc-type-badge mc-online">💻 ONLINE</span>`;
+      ? `<span class="mc-type-badge mc-walkin"> WALK-IN</span>`
+      : `<span class="mc-type-badge mc-online"> ONLINE</span>`;
 
     let actionsHtml = '';
     if (b.status === 'pending') {
@@ -4072,23 +4072,23 @@ window.getBookingRowActions = getBookingRowActions;
         </div>
         ${genderHtml ? `<div class="mc-gender-row">${genderHtml}</div>` : ''}
         <div class="mc-time-service">
-          <span class="mc-time-pill">🕐 ${startTime}${endTime !== '—' ? ` – ${endTime}` : ''}</span>
+          <span class="mc-time-pill"> ${startTime}${endTime !== '—' ? ` – ${endTime}` : ''}</span>
           <span class="mc-service">${serviceName}</span>
         </div>
         <div class="mc-meta">
-          <span>👤 ${therapistName}</span>
+          <span> ${therapistName}</span>
           <span class="mc-sep">·</span>
           <span>${duration} mins</span>
           <span class="mc-sep">·</span>
           <span class="mc-price">₱${price}</span>
         </div>
         <div class="mc-contact">
-          <span>📞 ${phone}</span>
+          <span> ${phone}</span>
           <span class="mc-sep">·</span>
-          <span class="mc-txn">🎫 ${txn}</span>
+          <span class="mc-txn"> ${txn}</span>
         </div>
         <div style="margin:5px 0 3px;">
-          <button class="mc-reassign-btn" onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g,"\\'")}')">👤 Reassign</button>
+          <button class="mc-reassign-btn" onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g,"\\'")}')"> Reassign</button>
           ${b.assignNote ? `<span class="mc-assign-note">${b.assignNote}</span>` : ''}
         </div>
         <div class="mc-footer">
@@ -4179,7 +4179,7 @@ function formatBookingDate(b) {
       onclick="openAssignTherapist('${b._id}', '${therapistName.replace(/'/g, "\\'")}')"
       style="margin-top:5px;font-size:0.72rem;padding:3px 10px;background:#4b2e1e;
         color:#fff;border:none;border-radius:5px;cursor:pointer;white-space:nowrap;">
-      👤 Reassign
+       Reassign
     </button>
     ${b.assignNote ? `<div style="font-size:0.72rem;color:#888;margin-top:3px;font-style:italic;">${b.assignNote}</div>` : ''}
   `;
@@ -4191,8 +4191,8 @@ function formatBookingDate(b) {
   const femaleCount = b.femaleClients ?? null;
   const maleCount   = b.maleClients   ?? null;
   const genderBreakdown = (femaleCount !== null && maleCount !== null && (femaleCount > 0 || maleCount > 0))
-    ? `<span style="font-size:0.78rem;color:#be185d;font-weight:600;">♀${femaleCount}</span>
-       <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">♂${maleCount}</span>`
+    ? `<span style="font-size:0.78rem;color:#be185d;font-weight:600;">${femaleCount}</span>
+       <span style="font-size:0.78rem;color:#1d4ed8;font-weight:600;margin-left:4px;">${maleCount}</span>`
     : '';
   const startTime  = b.time || '—';
   const endTime    = formatEndTime(b.endTime);
@@ -4208,10 +4208,10 @@ function formatBookingDate(b) {
   const typeBadge = type === 'walk-in'
     ? `<span style="display:inline-block;padding:4px 8px;background:#fff3e0;color:#f57c00;
         border-radius:4px;font-size:0.75rem;font-weight:600;margin-left:8px;border:1px solid #ff9800;">
-        🚶 WALK-IN</span>`
+         WALK-IN</span>`
     : `<span style="display:inline-block;padding:4px 8px;background:#e3f2fd;color:#1976d2;
         border-radius:4px;font-size:0.75rem;font-weight:600;margin-left:8px;border:1px solid #2196f3;">
-        💻 ONLINE</span>`;
+         ONLINE</span>`;
 
   const actions = b.status === 'pending'
     ? `<button class="btn-confirm" onclick="confirmBooking('${b._id}')">Confirm</button>
@@ -4223,9 +4223,9 @@ function formatBookingDate(b) {
       <td style="word-wrap:break-word;overflow-wrap:break-word;">
         <div style="font-weight:600;font-size:1rem;">${clientName}${typeBadge} ${numClients > 1 ? `(${numClients} clients)` : ''}</div>
         ${genderBreakdown ? `<div style="margin-top:3px;">${genderBreakdown}</div>` : ''}
-        <div style="font-size:0.85rem;color:#666;margin-top:4px;">📞 ${b.guestPhone || 'No phone'}</div>
+        <div style="font-size:0.85rem;color:#666;margin-top:4px;"> ${b.guestPhone || 'No phone'}</div>
         <div style="font-size:0.85rem;color:#666;">
-          🎫 <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:0.75rem;">
+           <span style="font-family:monospace;background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:0.75rem;">
             ${b.transactionNumber || 'N/A'}
           </span>
         </div>
@@ -4273,7 +4273,7 @@ function formatBookingDate(b) {
       const available = data.available || [];
       
       if (available.length === 0) {
-        alert('❌ No therapists available for this time slot.\n\nReasons could be:\n• All therapists are booked\n• No therapists have expertise in this service\n• No therapists are working at this time');
+        alert(' No therapists available for this time slot.\n\nReasons could be:\n• All therapists are booked\n• No therapists have expertise in this service\n• No therapists are working at this time');
         return;
       }
       
@@ -4293,7 +4293,7 @@ function formatBookingDate(b) {
       
       modal.innerHTML = `
         <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-          <h3 style="color: #4b2e1e; margin-bottom: 20px;">✅ Available Therapists (${available.length})</h3>
+          <h3 style="color: #4b2e1e; margin-bottom: 20px;"> Available Therapists (${available.length})</h3>
           <p style="color: #666; margin-bottom: 20px;">Select a therapist to assign to this booking:</p>
           <div style="max-height: 400px; overflow-y: auto;">
             ${available.map(t => `
@@ -4305,7 +4305,7 @@ function formatBookingDate(b) {
               >
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <div style="width: 50px; height: 50px; background: #4b2e1e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                    👤
+                    
                   </div>
                   <div style="flex: 1;">
                     <div style="font-weight: 700; color: #4b2e1e; margin-bottom: 4px;">${t.name}</div>
@@ -4346,14 +4346,14 @@ function formatBookingDate(b) {
       });
       
       if (res.ok) {
-        showNotification('✅ Therapist assigned successfully!', 'success');
+        showNotification(' Therapist assigned successfully!', 'success');
         
         document.querySelectorAll('[style*="z-index: 10001"]').forEach(el => el.remove());
         
         loadBookingsForDate(selectedDate);
       } else {
         const data = await res.json();
-        alert(`❌ ${data.msg || 'Failed to assign therapist'}`);
+        alert(` ${data.msg || 'Failed to assign therapist'}`);
       }
     } catch (err) {
       console.error(err);
@@ -4396,7 +4396,7 @@ function formatBookingDate(b) {
         class="btn-assign-therapist" 
         onclick="openAssignTherapist('${booking._id}', '${name}')"
         style="margin-top:5px; font-size:0.75rem; padding:3px 10px; background:#4b2e1e; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-        👤 Assign Therapist
+         Assign Therapist
       </button>
     </td>
   `;
@@ -4453,7 +4453,7 @@ async function saveClosures() {
     });
     if (!res.ok) throw new Error('Save failed');
   } catch (e) {
-    showNotification('❌ Failed to save closures', 'error');
+    showNotification(' Failed to save closures', 'error');
     throw e;
   }
 }
@@ -4513,7 +4513,7 @@ function renderClosurePanel() {
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
         <h3 style="margin:0;color:#4b2e1e;display:flex;align-items:center;gap:8px;font-size:1.1rem;">
-          🚫 Store Closures
+           Store Closures
           <span style="font-size:0.78rem;color:#888;font-weight:400;">
             (right-click a calendar day for single-day holidays)
           </span>
@@ -4536,14 +4536,14 @@ function renderClosurePanel() {
 
           ${vacations.length > 0 ? `
             <div style="font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;
-              letter-spacing:0.06em;margin-bottom:2px;">🏖️ Vacation / Multi-day Closures</div>
+              letter-spacing:0.06em;margin-bottom:2px;">️ Vacation / Multi-day Closures</div>
             ${vacations.map(c => renderClosureRow(c)).join('')}
             <div style="margin-bottom:4px;"></div>
           ` : ''}
 
           ${holidays.length > 0 ? `
             <div style="font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;
-              letter-spacing:0.06em;margin-bottom:2px;">🚫 Single-day Holidays</div>
+              letter-spacing:0.06em;margin-bottom:2px;"> Single-day Holidays</div>
             ${holidays.map(c => renderClosureRow(c)).join('')}
           ` : ''}
 
@@ -4615,7 +4615,7 @@ function renderClosurePanel() {
       background:rgba(0,0,0,0.55);z-index:10000;align-items:center;justify-content:center;">
       <div style="background:white;padding:32px;border-radius:16px;width:380px;
         max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.25);text-align:center;">
-        <div id="holidayModalIcon" style="font-size:3rem;margin-bottom:12px;">🚫</div>
+        <div id="holidayModalIcon" style="font-size:3rem;margin-bottom:12px;"></div>
         <h3 id="holidayModalTitle" style="margin:0 0 10px 0;color:#4b2e1e;"></h3>
         <p id="holidayModalDate" style="font-weight:700;color:#666;margin-bottom:6px;"></p>
         <p id="holidayModalMsg" style="color:#888;font-size:0.9rem;margin-bottom:20px;"></p>
@@ -4665,8 +4665,8 @@ function renderClosureRow(c) {
         <div style="font-weight:700;color:#4b2e1e;font-size:0.95rem;">${c.label || 'Store Closed'}</div>
         <div style="color:#666;font-size:0.83rem;margin-top:2px;">
           ${isSingle
-            ? `📅 ${startFmt}`
-            : `📅 ${startFmt} → ${endFmt}
+            ? ` ${startFmt}`
+            : ` ${startFmt} → ${endFmt}
                <span style="color:${color};font-weight:600;margin-left:6px;">
                  ${days} days
                </span>`
@@ -4677,7 +4677,7 @@ function renderClosureRow(c) {
         style="padding:5px 12px;background:white;color:#c62828;
           border:1px solid #ef9a9a;border-radius:6px;cursor:pointer;
           font-weight:600;font-size:0.82rem;white-space:nowrap;">
-        🗑 Remove
+         Remove
       </button>
     </div>
   `;
@@ -4744,7 +4744,7 @@ async function confirmAddClosure() {
     await saveClosures();
     const days = Math.round((new Date(end) - new Date(start)) / 86400000) + 1;
     showNotification(
-      `🚫 "${label}" saved — ${days} day${days !== 1 ? 's' : ''} blocked`,
+      ` "${label}" saved — ${days} day${days !== 1 ? 's' : ''} blocked`,
       'success'
     );
     closeClosureModal();
@@ -4758,7 +4758,7 @@ async function deleteClosure(id) {
   storeClosures = storeClosures.filter(c => c.id !== id);
   try {
     await saveClosures();
-    showNotification('✅ Closure removed', 'success');
+    showNotification(' Closure removed', 'success');
     renderClosurePanel();
     renderCalendar();
   } catch (e) {}
@@ -4777,7 +4777,7 @@ function openHolidayModal(dateStr, isCurrentlyHoliday) {
   const label = d.toLocaleDateString('en-US',
     { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-  document.getElementById('holidayModalIcon').textContent  = isCurrentlyHoliday ? '✅' : '🚫';
+  document.getElementById('holidayModalIcon').textContent  = isCurrentlyHoliday ? '' : '';
   document.getElementById('holidayModalTitle').textContent = isCurrentlyHoliday
     ? 'Remove Holiday?' : 'Mark as Holiday?';
   document.getElementById('holidayModalDate').textContent  = label;
@@ -4805,7 +4805,7 @@ async function confirmHolidayToggle() {
     storeClosures = storeClosures.filter(c =>
       !(c.start === _holidayTargetDate && c.end === _holidayTargetDate)
     );
-    showNotification('✅ Holiday removed', 'success');
+    showNotification(' Holiday removed', 'success');
   } else {
     const labelVal = document.getElementById('holidayLabelInput').value.trim() || 'Store Holiday';
     storeClosures.push({
@@ -4814,7 +4814,7 @@ async function confirmHolidayToggle() {
       start: _holidayTargetDate,
       end:   _holidayTargetDate
     });
-    showNotification(`🚫 "${labelVal}" marked as holiday`, 'success');
+    showNotification(` "${labelVal}" marked as holiday`, 'success');
   }
 
   try {
@@ -4875,14 +4875,14 @@ async function confirmAssignTherapist() {
       body:    JSON.stringify(body)
     });
     if (res.ok) {
-      showNotification('✅ Therapist assigned successfully', 'success');
+      showNotification(' Therapist assigned successfully', 'success');
       closeAssignTherapist();
       if (selectedDate) loadBookingsForDate(selectedDate);
     } else {
-      showNotification('❌ Failed to assign therapist', 'error');
+      showNotification(' Failed to assign therapist', 'error');
     }
   } catch (e) {
-    showNotification('❌ Server error', 'error');
+    showNotification(' Server error', 'error');
   }
 }
 
@@ -5064,7 +5064,7 @@ async function confirmAssignTherapist() {
               flex-shrink:0;background:#faf7f4;
             ">
             <span style="font-size:0.68rem;color:#b09070;text-align:center;line-height:1.3;padding:4px;">
-              📷<br>No image
+              <br>No image
             </span>
           </div>`;
 
@@ -5101,7 +5101,7 @@ async function confirmAssignTherapist() {
               class="${isHidden ? 'btn-confirm' : 'btn-cancel-booking'}"
               onclick="toggleServiceVisibility('${s._id}', ${isHidden})"
               style="min-width:76px;"
-            >${isHidden ? '👁 Show' : '🚫 Hide'}</button>
+            >${isHidden ? ' Show' : ' Hide'}</button>
           </div>
         </div>
       `;
@@ -5123,7 +5123,7 @@ async function confirmAssignTherapist() {
       });
       if (res.ok) {
         showNotification(
-          currentlyHidden ? '✅ Service is now visible' : '🚫 Service hidden from booking page',
+          currentlyHidden ? ' Service is now visible' : ' Service hidden from booking page',
           'success'
         );
         loadServices();
@@ -5210,7 +5210,7 @@ async function confirmAssignTherapist() {
     const hasImg = !!currentImageUrl;
     panel.innerHTML = `
       <p style="font-weight:600;color:#4b2e1e;margin:0 0 10px;font-size:0.9rem;">
-        📷 Service Image
+         Service Image
       </p>
 
       <!-- Preview -->
@@ -5243,7 +5243,7 @@ async function confirmAssignTherapist() {
           transition:background 0.2s;
         " onmouseover="this.style.background='#a07850'"
            onmouseout="this.style.background='#c9a882'">
-          📁 ${hasImg ? 'Change Image' : 'Upload Image'}
+           ${hasImg ? 'Change Image' : 'Upload Image'}
           <input type="file" id="svcImgFileInput"
             accept="image/jpeg,image/png,image/webp"
             style="display:none;" />
@@ -5256,7 +5256,7 @@ async function confirmAssignTherapist() {
           font-size:0.82rem;font-weight:600;transition:background 0.2s;
         " onmouseover="this.style.background='#fff0f0'"
            onmouseout="this.style.background='#fff'">
-          🗑 Remove
+           Remove
         </button>
       </div>
 
@@ -5286,7 +5286,7 @@ async function confirmAssignTherapist() {
 
       // Client-side validation
       if (file.size > 5 * 1024 * 1024) {
-        showImgStatus('❌ File too large. Max size is 5 MB.', 'error');
+        showImgStatus(' File too large. Max size is 5 MB.', 'error');
         return;
       }
 
@@ -5324,9 +5324,9 @@ async function confirmAssignTherapist() {
         panel.querySelector('#svcImgPlaceholder').style.display = 'none';
         panel.querySelector('#svcImgRemoveBtn').style.display = 'inline-flex';
         panel.querySelector('#svcImgUploadBtn').querySelector('span') && 
-          (panel.querySelector('#svcImgUploadBtn').childNodes[0].textContent = '📁 Change Image');
+          (panel.querySelector('#svcImgUploadBtn').childNodes[0].textContent = ' Change Image');
 
-        showImgStatus('✅ Image uploaded successfully!', 'success');
+        showImgStatus(' Image uploaded successfully!', 'success');
         setTimeout(() => progressWrap.style.display = 'none', 1000);
 
         // Refresh the service list in background so thumbnail updates
@@ -5334,7 +5334,7 @@ async function confirmAssignTherapist() {
 
       } catch (err) {
         progressWrap.style.display = 'none';
-        showImgStatus(`❌ ${err.message}`, 'error');
+        showImgStatus(` ${err.message}`, 'error');
       }
 
       fileInput.value = ''; // reset input
@@ -5353,10 +5353,10 @@ async function confirmAssignTherapist() {
         panel.querySelector('#svcImgPreviewWrap').style.display = 'none';
         panel.querySelector('#svcImgPlaceholder').style.display = 'flex';
         panel.querySelector('#svcImgRemoveBtn').style.display = 'none';
-        showImgStatus('🗑 Image removed.', 'success');
+        showImgStatus(' Image removed.', 'success');
         loadServices();
       } catch (err) {
-        showImgStatus(`❌ ${err.message}`, 'error');
+        showImgStatus(` ${err.message}`, 'error');
       }
     });
 
@@ -5378,7 +5378,7 @@ async function confirmAssignTherapist() {
     if (document.getElementById('duration120').checked) allowedDurations.push(120);
     
     if (allowedDurations.length === 0) {
-      alert('❌ Please select at least one duration');
+      alert(' Please select at least one duration');
       return;
     }
     
@@ -5484,14 +5484,14 @@ async function confirmAssignTherapist() {
         
         return `
           <div class="therapist-card">
-            <div class="therapist-avatar">👤</div>
+            <div class="therapist-avatar"></div>
             <h3>${t.name}</h3>
             <p>${t.email}</p>
             <p style="margin-top:6px;">
               <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;
                 background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};
                 color:${t.gender === 'male' ? '#1d4ed8' : '#be185d'};">
-                ${t.gender === 'male' ? '♂ Male' : '♀ Female'}
+                ${t.gender === 'male' ? ' Male' : ' Female'}
               </span>
             </p>
             <p style="color: ${t.isActive ? '#28a745' : '#dc3545'}; font-weight: 600; margin-top: 8px;">
@@ -5502,11 +5502,11 @@ async function confirmAssignTherapist() {
             </p>
             <div class="service-actions" style="justify-content: center; margin-top: 16px; flex-direction: column; gap: 10px;">
               <button class="btn-schedule" onclick="openScheduleModal('${t._id}')">
-                📅 Manage Schedule
+                 Manage Schedule
               </button>
               <div style="display: flex; gap: 8px;">
                 <button class="btn-edit" onclick="editTherapist('${t._id}')">Edit</button>
-                <button class="btn-archive" onclick="archiveTherapist('${t._id}', '${t.name}')">🗃️ Archive</button>
+                <button class="btn-archive" onclick="archiveTherapist('${t._id}', '${t.name}')">️ Archive</button>
               </div>
             </div>
           </div>
@@ -5557,12 +5557,12 @@ async function confirmAssignTherapist() {
     // Add after you populate the modal content in openScheduleModal()
   setTimeout(() => {
     const tabs = document.querySelectorAll('.schedule-tab');
-    console.log('📋 Schedule tabs found:', tabs.length);
+    console.log(' Schedule tabs found:', tabs.length);
     
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const targetTab = tab.dataset.tab;
-        console.log('🔄 Switching to tab:', targetTab);
+        console.log(' Switching to tab:', targetTab);
         
         // Remove active from all tabs
         document.querySelectorAll('.schedule-tab').forEach(t => t.classList.remove('active'));
@@ -5578,7 +5578,7 @@ async function confirmAssignTherapist() {
         if (targetContent) {
           targetContent.classList.add('active');
         } else {
-          console.error('❌ Tab content not found:', `${targetTab}-tab`);
+          console.error(' Tab content not found:', `${targetTab}-tab`);
         }
       });
     });
@@ -5631,7 +5631,7 @@ async function confirmAssignTherapist() {
           
           <div class="shifts-container" id="shifts-${day}" style="display: ${daySchedule.isWorking ? 'flex' : 'none'}; flex-direction: column; gap: 10px;">
             <h5 style="width: 100%; margin: 10px 0 8px 0 !important; color: #4b2e1e; font-size: 1rem !important; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid #e0e0e0;">
-              💼 Working Hours
+               Working Hours
             </h5>
             ${daySchedule.shifts.map((shift, idx) => `
               <div class="shift-row" data-shift-index="${idx}">
@@ -5839,7 +5839,7 @@ async function confirmAssignTherapist() {
               month: 'long', 
               day: 'numeric' 
             })}</h5>
-            <p><strong>Status:</strong> ${override.isWorking ? '✅ Working (Custom Hours)' : '❌ Not Working'}</p>
+            <p><strong>Status:</strong> ${override.isWorking ? ' Working (Custom Hours)' : ' Not Working'}</p>
             ${override.reason ? `<p><strong>Reason:</strong> ${override.reason}</p>` : ''}
             ${override.shifts && override.shifts.length > 0 ? 
               `<p><strong>Hours:</strong> ${override.shifts.map(s => `${s.startTime} - ${s.endTime}`).join(', ')}</p>` 
@@ -5998,7 +5998,7 @@ async function confirmAssignTherapist() {
         body: JSON.stringify({ expertise })
       });
       
-      showNotification('✅ Schedule updated successfully!', 'success');
+      showNotification(' Schedule updated successfully!', 'success');
       closeScheduleModal();
       loadTherapists();
       
@@ -6216,7 +6216,7 @@ async function confirmAssignTherapist() {
     if (archives.length === 0) {
       container.innerHTML = `
         <div style="text-align:center; padding:60px; color:#999;">
-          <div style="font-size:3rem; margin-bottom:12px;">🗃️</div>
+          <div style="font-size:3rem; margin-bottom:12px;">️</div>
           <p style="font-size:1.1rem;">No archived therapists yet.</p>
         </div>`;
     } else {
@@ -6229,7 +6229,7 @@ async function confirmAssignTherapist() {
         return `
           <div class="archived-therapist-card">
             <div class="archived-card-header">
-              <div class="archived-avatar">👤</div>
+              <div class="archived-avatar"></div>
               <div>
                 <h3>${t.name}</h3>
                 <p style="color:#666; font-size:0.88rem;">${t.email} ${t.phone ? '· ' + t.phone : ''}</p>
@@ -6238,12 +6238,12 @@ async function confirmAssignTherapist() {
                 </p>
               </div>
               <button class="btn-delete" style="margin-left:auto; align-self:flex-start; font-size:0.8rem; padding:4px 10px;"
-                onclick="permanentlyDeleteArchive(${realIdx})">🗑️ Remove</button>
+                onclick="permanentlyDeleteArchive(${realIdx})">️ Remove</button>
               <button class="btn-schedule" style="align-self:flex-start; font-size:0.8rem; padding:4px 10px; margin-left:6px;"
-                onclick="unarchiveTherapist(${realIdx})">♻️ Unarchive</button>
+                onclick="unarchiveTherapist(${realIdx})">️ Unarchive</button>
             </div>
             <div class="archived-reason-box">
-              <strong>📋 Reason for Archive:</strong> ${t.archiveReason}
+              <strong> Reason for Archive:</strong> ${t.archiveReason}
             </div>
             <p style="color:#888; font-size:0.82rem; margin:8px 0 16px;">Archived on ${archiveDate}</p>
             <div class="archived-stats-grid">
@@ -6476,7 +6476,7 @@ async function confirmAssignTherapist() {
         </div>
         
         <button class="btn-save-psr" onclick="savePostServiceRest()">
-          💾 Save Rest Period
+           Save Rest Period
         </button>
       </div>
     `;
@@ -6532,11 +6532,11 @@ async function confirmAssignTherapist() {
       });
       
       if (res.ok) {
-        showNotification('✅ Grace periods saved successfully!', 'success');
+        showNotification(' Grace periods saved successfully!', 'success');
         gracePeriodsData = updatedData;
       } else {
         const data = await res.json();
-        showNotification(`❌ ${data.msg || 'Failed to save'}`, 'error');
+        showNotification(` ${data.msg || 'Failed to save'}`, 'error');
       }
     } catch (err) {
       console.error('Error saving grace periods:', err);
@@ -6568,11 +6568,11 @@ async function confirmAssignTherapist() {
       
       if (res.ok) {
         postServiceRestMinutes = value;
-        showNotification('✅ Post-service rest period updated!', 'success');
+        showNotification(' Post-service rest period updated!', 'success');
         renderPostServiceRest();
       } else {
         const data = await res.json();
-        showNotification(`❌ ${data.msg || 'Failed to save'}`, 'error');
+        showNotification(` ${data.msg || 'Failed to save'}`, 'error');
       }
     } catch (err) {
       console.error('Error saving post-service rest:', err);
@@ -6582,7 +6582,7 @@ async function confirmAssignTherapist() {
 
   async function loadTherapistAnalytics() {
     try {
-      console.log('📊 Loading therapist analytics...');
+      console.log(' Loading therapist analytics...');
       
       // Load commission settings
       await loadCommissionSettings();
@@ -6599,10 +6599,10 @@ async function confirmAssignTherapist() {
       // Start auto-refresh for status
       startStatusAutoRefresh();
       
-      console.log('✅ Therapist analytics loaded successfully');
+      console.log(' Therapist analytics loaded successfully');
       
     } catch (err) {
-      console.error('❌ Error loading therapist analytics:', err);
+      console.error(' Error loading therapist analytics:', err);
       showNotification('Failed to load analytics', 'error');
     }
   }
@@ -6610,7 +6610,7 @@ async function confirmAssignTherapist() {
   async function loadTherapistPerformance() {
     try {
       const period = currentCardPeriod || 'today';
-      console.log(`📊 Loading therapist performance for period: ${period}`);
+      console.log(` Loading therapist performance for period: ${period}`);
       
       // Fetch all three sources in parallel
       const [statusRes, analyticsRes, mgmtRes] = await Promise.all([
@@ -6644,16 +6644,16 @@ async function confirmAssignTherapist() {
         };
       });
 
-      console.log('✅ Loaded', merged.length, 'therapists with live status');
+      console.log(' Loaded', merged.length, 'therapists with live status');
       displayTherapistPerformance(merged);
       
     } catch (err) {
-      console.error('❌ Error loading therapist performance:', err);
+      console.error(' Error loading therapist performance:', err);
       const grid = document.getElementById('therapistStatusGrid');
       if (grid) {
         grid.innerHTML = `
           <div style="padding: 40px; text-align: center; color: #dc3545;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+            <div style="font-size: 3rem; margin-bottom: 15px;">️</div>
             <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Failed to load status</p>
             <p style="font-size: 0.9rem; color: #666;">${err.message}</p>
             <button 
@@ -6671,26 +6671,26 @@ async function confirmAssignTherapist() {
   // Unified card: live status + management controls combined
   function displayTherapistPerformance(analytics) {
     const grid = document.getElementById('therapistStatusGrid');
-    if (!grid) { console.warn('⚠️ therapistStatusGrid element not found'); return; }
+    if (!grid) { console.warn('️ therapistStatusGrid element not found'); return; }
     if (!analytics || analytics.length === 0) {
       grid.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">No therapists available</p>';
       return;
     }
-    console.log('🎨 Rendering', analytics.length, 'therapist cards');
+    console.log(' Rendering', analytics.length, 'therapist cards');
 
     const statusMeta = {
-      available: { icon: '🟢', cls: 'available', label: 'Available Now' },
-      busy:      { icon: '🔴', cls: 'busy',      label: 'In Session'    },
-      break:     { icon: '🟡', cls: 'break',     label: 'On Break'      },
-      off:       { icon: '⚫', cls: 'off',        label: 'Off Duty'      },
+      available: { icon: '', cls: 'available', label: 'Available Now' },
+      busy:      { icon: '', cls: 'busy',      label: 'In Session'    },
+      break:     { icon: '', cls: 'break',     label: 'On Break'      },
+      off:       { icon: '', cls: 'off',        label: 'Off Duty'      },
     };
 
     grid.innerHTML = analytics.map(t => {
-      const sm = statusMeta[t.status] || { icon: '⚫', cls: 'off', label: t.statusMessage || 'Unknown' };
+      const sm = statusMeta[t.status] || { icon: '', cls: 'off', label: t.statusMessage || 'Unknown' };
       const expertiseTxt = t.expertise && t.expertise.length > 0
         ? t.expertise.slice(0, 2).join(', ') + (t.expertise.length > 2 ? ` +${t.expertise.length - 2}` : '')
         : 'All services';
-      const genderBadge = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.76rem;font-weight:700;background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};color:${t.gender === 'male' ? '#1d4ed8' : '#be185d'};">${t.gender === 'male' ? '♂ Male' : '♀ Female'}</span>`;
+      const genderBadge = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.76rem;font-weight:700;background:${t.gender === 'male' ? '#dbeafe' : '#fce7f3'};color:${t.gender === 'male' ? '#1d4ed8' : '#be185d'};">${t.gender === 'male' ? ' Male' : ' Female'}</span>`;
       const tid = (t._id || '').toString();
       const safeName = (t.name || '').replace(/'/g, "\'");
 
@@ -6698,7 +6698,7 @@ async function confirmAssignTherapist() {
         <div class="therapist-status-card ${sm.cls}" style="display:flex;flex-direction:column;">
 
           <div style="display:flex;align-items:center;gap:14px;padding:16px 18px 12px;">
-            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8b6f47,#4b2e1e);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">👤</div>
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8b6f47,#4b2e1e);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:700;font-size:1rem;color:#4b2e1e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name}</div>
               <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.email || ''}</div>
@@ -6719,10 +6719,10 @@ async function confirmAssignTherapist() {
           </div>
 
           <div style="padding:10px 18px 14px;border-top:1px solid rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:8px;">
-            <button class="btn-schedule" style="width:100%;" onclick="openScheduleModal('${tid}')">📅 Manage Schedule</button>
+            <button class="btn-schedule" style="width:100%;" onclick="openScheduleModal('${tid}')"> Manage Schedule</button>
             <div style="display:flex;gap:8px;">
               <button class="btn-edit" style="flex:1;" onclick="editTherapist('${tid}')">Edit</button>
-              <button class="btn-archive" style="flex:1;" onclick="archiveTherapist('${tid}', '${safeName}')">🗃️ Archive</button>
+              <button class="btn-archive" style="flex:1;" onclick="archiveTherapist('${tid}', '${safeName}')">️ Archive</button>
             </div>
           </div>
 
@@ -6732,7 +6732,7 @@ async function confirmAssignTherapist() {
   // NEW: Load predictions
   async function loadPredictions() {
     try {
-      console.log('📈 Loading predictions for period:', currentPeriod);
+      console.log(' Loading predictions for period:', currentPeriod);
       
       const res = await fetch(`${apiBase}/analytics/enhanced-predictions?period=${currentPeriod}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -6744,7 +6744,7 @@ async function confirmAssignTherapist() {
       }
       
       const data = await res.json();
-      console.log('✅ Loaded predictions:', data);
+      console.log(' Loaded predictions:', data);
       
       // Store predictions data globally
       predictionsData = data.predictions || [];
@@ -6757,7 +6757,7 @@ async function confirmAssignTherapist() {
       }
       
     } catch (err) {
-      console.error('❌ Error loading predictions:', err);
+      console.error(' Error loading predictions:', err);
     }
   }
 
@@ -6766,7 +6766,7 @@ async function confirmAssignTherapist() {
     const ctx = document.getElementById('predictionsChart');
     
     if (!ctx) {
-      console.warn('⚠️ Predictions chart canvas not found');
+      console.warn('️ Predictions chart canvas not found');
       return;
     }
     
@@ -6777,7 +6777,7 @@ async function confirmAssignTherapist() {
     const { predictions, overallTopServices } = data;
     
     if (!predictions || predictions.length === 0) {
-      console.warn('⚠️ No predictions data to display');
+      console.warn('️ No predictions data to display');
       return;
     }
     
@@ -6991,11 +6991,11 @@ async function confirmAssignTherapist() {
     updateCommissionDisplay(rate);
     if (typeof loadIncomeData === 'function') await loadIncomeData();
 
-    showNotification(`✅ Commission rate saved: ${rate}%`, 'success');
+    showNotification(` Commission rate saved: ${rate}%`, 'success');
 
   } catch (err) {
     console.error('saveCommissionSettings error:', err);
-    showNotification(`❌ Failed to save: ${err.message}`, 'error');
+    showNotification(` Failed to save: ${err.message}`, 'error');
   }
 }
 
@@ -7016,7 +7016,7 @@ async function loadCommissionSettings() {
         if (rateInput) rateInput.value = data.rate || 60;
         if (baseRateInput) baseRateInput.value = data.baseRate || 0;
         
-        console.log('✅ Commission settings loaded:', data);
+        console.log(' Commission settings loaded:', data);
       } else if (res.status === 404) {
         // Settings don't exist yet, use defaults
         console.log('ℹ️ Commission settings not found, using defaults');
@@ -7090,19 +7090,19 @@ function updateCommissionDisplay(rate) {
       switch (status) {
         case 'available':
           statusText = 'Available Now';
-          statusIcon = '🟢';
+          statusIcon = '';
           break;
         case 'busy':
           statusText = 'In Session';
-          statusIcon = '🔴';
+          statusIcon = '';
           break;
         case 'break':
           statusText = 'On Break';
-          statusIcon = '🟡';
+          statusIcon = '';
           break;
         case 'off':
           statusText = 'Off Duty';
-          statusIcon = '⚫';
+          statusIcon = '';
           break;
       }
       
@@ -7160,13 +7160,13 @@ function updateCommissionDisplay(rate) {
       clearInterval(window.therapistStatusInterval);
     }
     
-    console.log('🔄 Starting auto-refresh for therapist status');
+    console.log(' Starting auto-refresh for therapist status');
     
     window.therapistStatusInterval = setInterval(() => {
       // Only refresh if therapists tab is visible
       const therapistsTab = document.getElementById('therapists-tab');
       if (therapistsTab && therapistsTab.classList.contains('active')) {
-        console.log('🔄 Auto-refreshing therapist status...');
+        console.log(' Auto-refreshing therapist status...');
         loadTherapistPerformance();
       }
     }, 120000); // Every 2 minutes (was 30s — reduces server load)
@@ -7323,7 +7323,7 @@ function updateCommissionDisplay(rate) {
       if (successRate >= 80) rateClass = 'high';
       else if (successRate >= 60) rateClass = 'medium';
       
-      const medal = index === 0 ? '🏆 ' : index === 1 ? '🥈 ' : index === 2 ? '🥉 ' : '';
+      const medal = index === 0 ? ' ' : index === 1 ? ' ' : index === 2 ? ' ' : '';
       
       return `
         <tr>
@@ -7469,7 +7469,7 @@ function updateCommissionDisplay(rate) {
 
   async function loadReviewsManagement() {
     try {
-      console.log('📝 Loading reviews management...');
+      console.log(' Loading reviews management...');
       
       const token = localStorage.getItem('token');
       const response = await fetch(`${apiBase}/reviews/admin/all`, {
@@ -7486,19 +7486,19 @@ function updateCommissionDisplay(rate) {
       const data = await response.json();
       const reviews = data.reviews || [];
       
-      console.log(`✅ Loaded ${reviews.length} reviews`);
+      console.log(` Loaded ${reviews.length} reviews`);
       
       displayReviewsManagement(reviews);
       loadReviewStats();
       
     } catch (err) {
-      console.error('❌ Error loading reviews:', err);
+      console.error(' Error loading reviews:', err);
       
       const container = document.getElementById('reviewsManagementContainer');
       if (container) {
         container.innerHTML = `
           <div style="padding: 60px; text-align: center;">
-            <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
+            <div style="font-size: 4rem; margin-bottom: 20px;">️</div>
             <h3 style="color: #dc3545; margin-bottom: 15px;">Failed to Load Reviews</h3>
             <p style="color: #666; margin-bottom: 25px;">${err.message}</p>
             <button 
@@ -7522,7 +7522,7 @@ function updateCommissionDisplay(rate) {
   container.innerHTML = `
     <div class="stats-grid" style="margin-bottom: 30px;">
       <div class="stat-card">
-        <div class="stat-icon">📝</div>
+        <div class="stat-icon"></div>
         <div class="stat-details"><h3 id="totalReviews">0</h3><p>Total Reviews</p></div>
       </div>
       <div class="stat-card">
@@ -7533,16 +7533,16 @@ function updateCommissionDisplay(rate) {
 
     <div class="review-filters" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button class="filter-btn active" onclick="filterReviews('all')">All (${reviews.length})</button>
-      <button class="filter-btn" onclick="filterReviews(5)">5 ★ (${reviews.filter(r=>r.rating===5).length})</button>
-      <button class="filter-btn" onclick="filterReviews(4)">4 ★ (${reviews.filter(r=>r.rating===4).length})</button>
-      <button class="filter-btn" onclick="filterReviews(3)">3 ★ (${reviews.filter(r=>r.rating===3).length})</button>
-      <button class="filter-btn" onclick="filterReviews(2)">2 ★ (${reviews.filter(r=>r.rating===2).length})</button>
-      <button class="filter-btn" onclick="filterReviews(1)">1 ★ (${reviews.filter(r=>r.rating===1).length})</button>
+      <button class="filter-btn" onclick="filterReviews(5)">5  (${reviews.filter(r=>r.rating===5).length})</button>
+      <button class="filter-btn" onclick="filterReviews(4)">4  (${reviews.filter(r=>r.rating===4).length})</button>
+      <button class="filter-btn" onclick="filterReviews(3)">3  (${reviews.filter(r=>r.rating===3).length})</button>
+      <button class="filter-btn" onclick="filterReviews(2)">2  (${reviews.filter(r=>r.rating===2).length})</button>
+      <button class="filter-btn" onclick="filterReviews(1)">1  (${reviews.filter(r=>r.rating===1).length})</button>
     </div>
 
     <div id="reviewsList" style="display:flex; flex-direction:column; gap:16px; width:100%;">
       ${reviews.length === 0
-        ? `<div style="padding:60px;text-align:center;"><div style="font-size:4rem;">📝</div><h3>No Reviews Yet</h3></div>`
+        ? `<div style="padding:60px;text-align:center;"><div style="font-size:4rem;"></div><h3>No Reviews Yet</h3></div>`
         : reviews.map(review => createReviewCard(review)).join('')
       }
     </div>
@@ -7571,7 +7571,7 @@ function updateCommissionDisplay(rate) {
       </div>
       <div class="review-content">
         <div class="review-rating-display">
-          ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+          ${''.repeat(review.rating)}${''.repeat(5 - review.rating)}
           <span>(${review.rating}/5)</span>
         </div>
         <p class="review-service">${serviceName}</p>
@@ -7675,7 +7675,7 @@ function updateCommissionDisplay(rate) {
     m.className = 'modal active';
     m.innerHTML = `
       <div class="modal-content" style="max-width:480px;text-align:left;">
-        <h3 style="color:#4b2e1e;margin-bottom:6px;">📊 Export Bookings to Excel</h3>
+        <h3 style="color:#4b2e1e;margin-bottom:6px;"> Export Bookings to Excel</h3>
         <p style="color:#888;font-size:0.85rem;margin-bottom:20px;">Choose a period to export, then specify the range.</p>
 
         <label style="font-weight:600;color:#4b2e1e;display:block;margin-bottom:6px;">Filter By</label>
@@ -7847,7 +7847,7 @@ function updateCommissionDisplay(rate) {
 
     const csv = _toCSV([header, ...rows]);
     _downloadCSV(csv, `Nagomi_Bookings_${label}.csv`);
-    showNotification(`✅ Exported ${filtered.length} bookings to Excel!`, 'success');
+    showNotification(` Exported ${filtered.length} bookings to Excel!`, 'success');
     document.getElementById('bookingExportModal')?.classList.remove('active');
   };
 
@@ -7900,7 +7900,7 @@ function updateCommissionDisplay(rate) {
       const csv      = _toCSV([exportedLine, [], colHdr, ...rows, [], totalsRow]);
       const safeName = _detailTherapistName.replace(/[^a-z0-9]/gi, '_');
       _downloadCSV(csv, `Nagomi_Commission_${safeName}_${periodLabel}.csv`);
-      showNotification(`✅ Exported ${filtered.length} records for ${_detailTherapistName}!`, 'success');
+      showNotification(` Exported ${filtered.length} records for ${_detailTherapistName}!`, 'success');
       return;
     }
 
@@ -7947,7 +7947,7 @@ function updateCommissionDisplay(rate) {
     const exportedLine = [`Exported: ${now.toLocaleString('en-PH',{timeZone:'Asia/Manila'})} · Period: ${periodLabel}`, '','','','','','',''];
     const csv      = _toCSV([exportedLine, [], header, ...rows, [], summaryHdr, summaryColHdr, ...summaryRows]);
     _downloadCSV(csv, `Nagomi_Commission_All_${periodLabel.replace(/\s/g,'_')}_${_dateLabel(now)}.csv`);
-    showNotification(`✅ Exported ${filtered.length} records to Excel!`, 'success');
+    showNotification(` Exported ${filtered.length} records to Excel!`, 'success');
   }
 
   // UTILITY FUNCTIONS
@@ -8112,8 +8112,8 @@ function loadNotifStore() {
 loadNotifStore(); // Restore on page load
 
 function addNotif(message, type = 'booking', targetTab = null) {
-  const icons = { booking: '📅', cancel: '❌', reschedule: '🔄', leave: '🌴', general: 'ℹ️' };
-  notifStore.unshift({ message, type, icon: icons[type] || '🔔', time: new Date(), read: false, targetTab });
+  const icons = { booking: '', cancel: '', reschedule: '', leave: '', general: 'ℹ️' };
+  notifStore.unshift({ message, type, icon: icons[type] || '', time: new Date(), read: false, targetTab });
   if (notifStore.length > 30) notifStore.pop();
   saveNotifStore();
   renderNotifPanel();
@@ -8207,7 +8207,7 @@ document.addEventListener('click', (e) => {
 
   function attachEvents(socket) {
     socket.on('connect', () => {
-      console.log('✅ Connected to server');
+      console.log(' Connected to server');
       attempts = 0;
     });
     // Note: new-booking, booking-cancelled, reschedule-request, leave-request
@@ -8305,14 +8305,14 @@ async function switchArchiveTab(tab) {
       }
       list.innerHTML = active.map(t => `
         <div class="archive-list-row">
-          <div class="archive-row-avatar">👤</div>
+          <div class="archive-row-avatar"></div>
           <div class="archive-row-info">
             <div class="archive-row-name">${t.name}</div>
             <div class="archive-row-email">${t.email}</div>
           </div>
           <button class="btn-archive archive-row-btn"
             onclick="archiveTherapist('${t._id}','${t.name.replace(/'/g,"\\'")}');closeManageArchiveModal();">
-            🗃️ Archive
+            ️ Archive
           </button>
         </div>`).join('');
     } catch(e) {
@@ -8331,7 +8331,7 @@ async function switchArchiveTab(tab) {
       const date = new Date(t.archiveDate).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
       return `
         <div class="archive-list-row">
-          <div class="archive-row-avatar" style="opacity:0.6;">👤</div>
+          <div class="archive-row-avatar" style="opacity:0.6;"></div>
           <div class="archive-row-info">
             <div class="archive-row-name" style="color:#888;">${t.name}</div>
             <div class="archive-row-email">${t.email} · Archived ${date}</div>
@@ -8339,9 +8339,9 @@ async function switchArchiveTab(tab) {
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
             <button class="btn-schedule" style="font-size:0.78rem;padding:5px 10px;"
-              onclick="unarchiveTherapist(${realIdx});closeManageArchiveModal();">♻️ Restore</button>
+              onclick="unarchiveTherapist(${realIdx});closeManageArchiveModal();">️ Restore</button>
             <button class="btn-delete" style="font-size:0.78rem;padding:5px 10px;"
-              onclick="permanentlyDeleteArchive(${realIdx});switchArchiveTab('archived');">🗑️</button>
+              onclick="permanentlyDeleteArchive(${realIdx});switchArchiveTab('archived');">️</button>
           </div>
         </div>`;
     }).join('');
@@ -8371,7 +8371,7 @@ async function loadLeaveRequests() {
     if (!requests || requests.length === 0) {
       container.innerHTML = `
         <div style="text-align:center;padding:60px;color:#999;">
-          <div style="font-size:3rem;margin-bottom:12px;">🌴</div>
+          <div style="font-size:3rem;margin-bottom:12px;"></div>
           <p style="font-size:1.1rem;">No pending leave or overtime requests</p>
         </div>`;
       return;
@@ -8388,7 +8388,7 @@ async function loadLeaveRequests() {
     }
 
     if (reviewed.length > 0) {
-      container.innerHTML += `<h3 style="color:#888;font-family:'Playfair Display',serif;margin:24px 0 12px;">📋 Previously Reviewed</h3>`;
+      container.innerHTML += `<h3 style="color:#888;font-family:'Playfair Display',serif;margin:24px 0 12px;"> Previously Reviewed</h3>`;
       container.innerHTML += reviewed.map(r => renderLeaveCard(r)).join('');
     }
   } catch(e) {
@@ -8402,9 +8402,9 @@ async function loadLeaveRequests() {
 }
 
 function renderLeaveCard(r) {
-  const typeLabel = { leave: '🌴 Leave', vacation: '✈️ Vacation', overtime: '⏰ Overtime' }[r.type] || r.type;
+  const typeLabel = { leave: ' Leave', vacation: '️ Vacation', overtime: '⏰ Overtime' }[r.type] || r.type;
   const statusColor = { pending:'#ff9800', approved:'#28a745', rejected:'#dc3545' }[r.status] || '#666';
-  const statusLabel = { pending:'⏳ Pending', approved:'✅ Approved', rejected:'❌ Rejected' }[r.status] || r.status;
+  const statusLabel = { pending:'⏳ Pending', approved:' Approved', rejected:' Rejected' }[r.status] || r.status;
 
   return `
     <div style="background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);
@@ -8418,8 +8418,8 @@ function renderLeaveCard(r) {
           font-size:0.78rem;font-weight:700;border:1px solid ${statusColor}40;">${statusLabel}</span>
       </div>
       <div style="margin-top:12px;display:flex;gap:24px;flex-wrap:wrap;font-size:0.85rem;color:#666;">
-        <span>📅 <strong>From:</strong> ${r.startDate ? new Date(r.startDate).toLocaleDateString('en-PH') : '—'}</span>
-        <span>📅 <strong>To:</strong> ${r.endDate ? new Date(r.endDate).toLocaleDateString('en-PH') : '—'}</span>
+        <span> <strong>From:</strong> ${r.startDate ? new Date(r.startDate).toLocaleDateString('en-PH') : '—'}</span>
+        <span> <strong>To:</strong> ${r.endDate ? new Date(r.endDate).toLocaleDateString('en-PH') : '—'}</span>
         ${r.hours ? `<span>⏱ <strong>Hours:</strong> ${r.hours}</span>` : ''}
       </div>
       ${r.reason ? `<div style="margin-top:10px;padding:10px;background:#faf6f1;border-radius:8px;font-size:0.88rem;color:#555;">${r.reason}</div>` : ''}
@@ -8427,11 +8427,11 @@ function renderLeaveCard(r) {
         <div style="margin-top:14px;display:flex;gap:8px;">
           <button onclick="reviewLeaveRequest('${r._id}','approved')"
             style="background:#28a745;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;">
-            ✅ Approve
+             Approve
           </button>
           <button onclick="reviewLeaveRequest('${r._id}','rejected')"
             style="background:#dc3545;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;">
-            ❌ Reject
+             Reject
           </button>
         </div>` : ''}
     </div>`;
@@ -8444,7 +8444,7 @@ async function reviewLeaveRequest(id, decision) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('Failed');
-    showNotification(`Request ${decision === 'approved' ? 'approved ✅' : 'rejected ❌'}`, decision === 'approved' ? 'success' : 'error');
+    showNotification(`Request ${decision === 'approved' ? 'approved ' : 'rejected '}`, decision === 'approved' ? 'success' : 'error');
     loadLeaveRequests();
   } catch(e) {
     showNotification('Failed to update request', 'error');

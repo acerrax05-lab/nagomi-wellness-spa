@@ -1,10 +1,10 @@
 window.handleBookingTypeChange = function() {
-  console.log('📋 Booking type changed');
+  console.log(' Booking type changed');
   
   const bookingTypeInput = document.querySelector('input[name="bookingType"]:checked');
   
   if (!bookingTypeInput) {
-    console.warn('⚠️ No booking type selected');
+    console.warn('️ No booking type selected');
     return;
   }
   
@@ -20,7 +20,7 @@ window.handleBookingTypeChange = function() {
     // Walk-in or guest booking
     if (guestFields) {
       guestFields.style.display = 'block';
-      console.log('✅ Showing guest fields');
+      console.log(' Showing guest fields');
     }
     if (userFields) {
       userFields.style.display = 'none';
@@ -36,7 +36,7 @@ window.handleBookingTypeChange = function() {
     }
     if (userFields) {
       userFields.style.display = 'block';
-      console.log('✅ Showing user fields');
+      console.log(' Showing user fields');
     }
     if (loginSection) {
       loginSection.style.display = 'block';
@@ -44,4 +44,4 @@ window.handleBookingTypeChange = function() {
   }
 };
 
-console.log('✅ handleBookingTypeChange injected globally');
+console.log(' handleBookingTypeChange injected globally');

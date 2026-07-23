@@ -59,13 +59,13 @@
       if (!response.ok) throw new Error('Failed to load services');
       
       allServices = await response.json();
-      console.log('✅ Loaded', allServices.length, 'services');
+      console.log(' Loaded', allServices.length, 'services');
       
       buildCategories();
       displayServices(allServices);
       
     } catch (err) {
-      console.error('❌ Error loading services:', err);
+      console.error(' Error loading services:', err);
       showErrorState();
     }
   }
@@ -114,7 +114,7 @@
           onclick="window.filterByCategory('${cat}')"
           aria-label="Filter by ${cat === 'all' ? 'all services' : cat}"
         >
-          ${cat === 'all' ? '🌟 All Services' : formatCategoryName(cat)}
+          ${cat === 'all' ? ' All Services' : formatCategoryName(cat)}
         </button>
       </li>
     `).join('');
@@ -269,7 +269,7 @@
   // BOOK SERVICE
   // ============================================
   window.bookService = function(serviceId, serviceName) {
-    console.log('📅 Booking service:', serviceName);
+    console.log(' Booking service:', serviceName);
     
     const button = event.target.closest('.btn-book-service');
     if (button) {
@@ -334,7 +334,7 @@
       });
     }
 
-    console.log('✅ Enhanced service catalog module loaded');
+    console.log(' Enhanced service catalog module loaded');
   });
 
 })();

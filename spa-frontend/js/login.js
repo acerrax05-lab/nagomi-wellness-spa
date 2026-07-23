@@ -9,7 +9,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const msg = document.getElementById("loginMessage");
 
   if (!email || !password) {
-    msg.textContent = "⚠️ Please fill in both fields.";
+    msg.textContent = "️ Please fill in both fields.";
     return;
   }
 
@@ -22,16 +22,16 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await response.json(); // ✅ Fixed: was 'res'
+    const data = await response.json(); //  Fixed: was 'res'
 
-    if (!response.ok) { // ✅ Fixed: was 'res'
-      msg.textContent = `❌ ${data.msg || "Invalid credentials"}`;
+    if (!response.ok) { //  Fixed: was 'res'
+      msg.textContent = ` ${data.msg || "Invalid credentials"}`;
       return;
     }
 
-    // ✅ Only allow admin and therapist to login
+    //  Only allow admin and therapist to login
     if (data.user.role !== "admin" && data.user.role !== "therapist") {
-      msg.textContent = "❌ Access denied. Staff login only.";
+      msg.textContent = " Access denied. Staff login only.";
       return;
     }
 
@@ -41,7 +41,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     localStorage.setItem("role", data.user.role);
     localStorage.setItem("userId", data.user._id);
 
-    msg.textContent = "✅ Login successful! Redirecting...";
+    msg.textContent = " Login successful! Redirecting...";
 
     // Redirect based on role
     setTimeout(() => {
@@ -54,6 +54,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
   } catch (err) {
     console.error("Login error:", err);
-    msg.textContent = "❌ Server error. Please try again later.";
+    msg.textContent = " Server error. Please try again later.";
   }
 });

@@ -1,7 +1,7 @@
 (function() {
   'use strict';
   
-  // ✅ FIXED: API base URL
+  //  FIXED: API base URL
   const REVIEWS_API  = 'https://nagomi-backend.onrender.com/api';
   
   let selectedRating = 0;
@@ -15,7 +15,7 @@
     // Load existing reviews
     await loadGuestReviews();
     
-    console.log('✅ Guest review system ready');
+    console.log(' Guest review system ready');
   });
 
   // ============================================
@@ -23,7 +23,7 @@
   // ============================================
   async function loadGuestReviews() {
     try {
-      console.log('📝 Fetching reviews from:', `${REVIEWS_API}/reviews/public`);
+      console.log(' Fetching reviews from:', `${REVIEWS_API}/reviews/public`);
       
       const response = await fetch(`${REVIEWS_API}/reviews/public?limit=6`);
       
@@ -33,7 +33,7 @@
       
       const data = await response.json();
 const reviews = Array.isArray(data) ? data : (data.reviews || []);
-console.log(`✅ Loaded ${reviews.length} reviews`);
+console.log(` Loaded ${reviews.length} reviews`);
 
 if (!reviews || reviews.length === 0) {
   showNoReviewsPlaceholder();
@@ -44,7 +44,7 @@ displayReviews(reviews);
       await loadReviewStatistics();
       
     } catch (err) {
-      console.error('❌ Error loading reviews:', err);
+      console.error(' Error loading reviews:', err);
       showNoReviewsPlaceholder();
     }
   }
@@ -55,7 +55,7 @@ displayReviews(reviews);
   function displayReviews(reviews) {
     const container = document.querySelector('.reviews-container');
     if (!container) {
-      console.error('❌ .reviews-container not found in HTML');
+      console.error(' .reviews-container not found in HTML');
       return;
     }
     
@@ -131,7 +131,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
       if (!response.ok) return;
       
       const stats = await response.json();
-      console.log('📊 Review stats:', stats);
+      console.log(' Review stats:', stats);
       
       if (stats.approved === 0) {
         const summary = document.querySelector('.review-summary');
@@ -195,7 +195,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
     
     container.innerHTML = `
       <div class="no-reviews-placeholder" style="grid-column: 1 / -1;">
-        <div class="placeholder-icon">📝</div>
+        <div class="placeholder-icon"></div>
         <h3>No Reviews Yet</h3>
         <p>Be the first to share your spa experience!</p>
       </div>
@@ -223,7 +223,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
         </button>
         
         <div class="review-modal-header">
-          <div class="modal-icon">✍️</div>
+          <div class="modal-icon">️</div>
           <h2>Share Your Experience</h2>
           <p>Help others by sharing your spa experience</p>
         </div>
@@ -416,7 +416,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
         comment: document.getElementById('reviewText').value.trim()
       };
       
-      console.log('📝 Submitting review:', reviewData);
+      console.log(' Submitting review:', reviewData);
       
       const response = await fetch(`${REVIEWS_API}/reviews`, {
         method: 'POST',
@@ -430,7 +430,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
         throw new Error(result.msg || 'Failed to submit review');
       }
       
-      console.log('✅ Review submitted successfully:', result);
+      console.log(' Review submitted successfully:', result);
       
       showSuccessMessage();
       
@@ -440,7 +440,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
       }, 2000);
       
     } catch (err) {
-      console.error('❌ Error submitting review:', err);
+      console.error(' Error submitting review:', err);
       alert(`Error: ${err.message}`);
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
@@ -451,7 +451,7 @@ const userName = review.guestName || review.user?.name || 'Guest';
     const form = document.getElementById('guestReviewForm');
     form.innerHTML = `
       <div class="review-success">
-        <div class="success-icon">✅</div>
+        <div class="success-icon"></div>
         <h3>Thank You!</h3>
         <p>Your review has been submitted and will appear after admin approval.</p>
       </div>

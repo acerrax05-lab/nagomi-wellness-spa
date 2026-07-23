@@ -8,7 +8,7 @@
 // ============================================
 async function loadDynamicReviewsAndRatings() {
   try {
-    console.log('📝 Loading reviews and ratings...');
+    console.log(' Loading reviews and ratings...');
     
     const API_BASE = 'https://nagomi-backend.onrender.com/api';
     
@@ -16,7 +16,7 @@ async function loadDynamicReviewsAndRatings() {
     const response = await fetch(`${API_BASE}/reviews/public?limit=6`);
     const reviews = await response.json();
     
-    console.log(`✅ Loaded ${reviews.length} reviews`);
+    console.log(` Loaded ${reviews.length} reviews`);
     
     // If no reviews, hide all rating displays
     if (reviews.length === 0) {
@@ -32,7 +32,7 @@ async function loadDynamicReviewsAndRatings() {
     await loadReviewStatistics();
     
   } catch (err) {
-    console.error('❌ Error loading reviews:', err);
+    console.error(' Error loading reviews:', err);
     hideAllRatings();
   }
 }
@@ -87,7 +87,7 @@ function showNoReviewsMessage() {
       grid-column: 1 / -1;
     ">
       <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">
-        📝
+        
       </div>
       <h3 style="color: #4b2e1e; margin-bottom: 15px;">
         No Reviews Yet
@@ -231,5 +231,5 @@ function getTimeAgo(date) {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
   loadDynamicReviewsAndRatings();
-  console.log('✅ Dynamic ratings system initialized');
+  console.log(' Dynamic ratings system initialized');
 });
