@@ -769,8 +769,8 @@ function checkStep2Ready() {
   const anyFemaleChecked = document.getElementById('any-female-therapist')?.checked;
   const anyMaleChecked   = document.getElementById('any-male-therapist')?.checked;
 
-  const femaleOk = femaleClients === 0 || (!femaleAllUnavailable && (femaleTherapistConfirmed || selectedFemaleTherapists.length > 0 || anyFemaleChecked));
-  const maleOk   = maleClients   === 0 || (!maleAllUnavailable && (maleTherapistConfirmed || selectedMaleTherapists.length > 0 || anyMaleChecked));
+  const femaleOk = femaleClients === 0 || (!femaleAllUnavailable && (selectedFemaleTherapists.length > 0 || anyFemaleChecked));
+  const maleOk   = maleClients   === 0 || (!maleAllUnavailable && (selectedMaleTherapists.length > 0 || anyMaleChecked));
 
   btnStep2Next.disabled = !(hasDateTime && hasClients && femaleOk && maleOk) || dateFullyBooked;
 }
@@ -1354,7 +1354,7 @@ function updateGenderDropdownDisplay(gender) {
   if (!ph) return;
   const selected = gender === 'female' ? selectedFemaleTherapists : selectedMaleTherapists;
   if (anyCheckbox?.checked || selected.length === 0) {
-    ph.textContent = `Any available ${gender} therapist`;
+    ph.textContent = 'Any Available Therapist';
   } else {
     ph.textContent = selected.map(t => t.name).join(', ');
   }
@@ -1488,11 +1488,20 @@ function populateSummaryModal() {
     `${numClients} (${femaleClients}F / ${maleClients}M)`;
 
   const therapistParts = [];
-  if (selectedFemaleTherapists.length > 0) {
-    therapistParts.push(`Female: ${selectedFemaleTherapists.map(t => t.name).join(', ')}`);
+  const anyFemale = document.getElementById('any-female-therapist')?.checked;
+  if (femaleClients > 0 && (selectedFemaleTherapists.length > 0 || anyFemale)) {
+    const femaleNames = selectedFemaleTherapists.length > 0
+      ? selectedFemaleTherapists.map(t => t.name).join(', ')
+      : 'Any Available Therapist';
+    therapistParts.push(`Female: ${femaleNames}`);
   }
-  if (selectedMaleTherapists.length > 0) {
-    therapistParts.push(`Male: ${selectedMaleTherapists.map(t => t.name).join(', ')}`);
+  
+  const anyMale = document.getElementById('any-male-therapist')?.checked;
+  if (maleClients > 0 && (selectedMaleTherapists.length > 0 || anyMale)) {
+    const maleNames = selectedMaleTherapists.length > 0
+      ? selectedMaleTherapists.map(t => t.name).join(', ')
+      : 'Any Available Therapist';
+    therapistParts.push(`Male: ${maleNames}`);
   }
   document.getElementById('summary-therapists').textContent =
     therapistParts.length > 0 ? therapistParts.join(' | ') : '—';
@@ -1733,9 +1742,9 @@ function resetForm() {
   if (btnReview) btnReview.disabled = true;
 
   const anyFemale = document.getElementById('any-female-therapist');
-  if (anyFemale) anyFemale.checked = true;
+  if (anyFemale) anyFemale.checked = false;
   const anyMale = document.getElementById('any-male-therapist');
-  if (anyMale) anyMale.checked = true;
+  if (anyMale) anyMale.checked = false;
 
   // Uncheck all therapist checkboxes in both dropdowns
   ['femaleDropdownOptions','maleDropdownOptions'].forEach(id => {
