@@ -532,3 +532,166 @@
   .arm-body          { padding: 16px 16px 24px; }
   .arm-grid          { grid-template-columns: 1fr; }
 }
+
+/* ── Premium Service Cards (Similar to Image layout) ─────────────────────── */
+.service-card {
+  background-color: #fffdf8; /* off-white warm tone */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px; /* Adjust height as needed */
+  overflow: hidden;
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-wrapper .badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 10;
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.image-wrapper .badge.trending {
+  background-color: #d9433b; /* Reddish */
+  color: #ffffff;
+}
+
+.image-wrapper .badge.most-booked {
+  background-color: #f4a435;
+  color: #ffffff;
+}
+
+.service-card .service-info {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.service-card .subtitle {
+  color: #7a5c43;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.service-card .card-title {
+  color: #432a18;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.service-card .rating-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.service-card .stars {
+  color: #f1a938; /* gold */
+  font-size: 0.9rem;
+}
+
+.service-card .rating-text {
+  color: #6b6b6b;
+  font-size: 0.85rem;
+}
+
+.service-card .service-description {
+  color: #333333;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.service-card .service-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.service-card .benefit-tag {
+  background-color: #f7ede3;
+  color: #634b35;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e8d7c8;
+}
+
+.service-card .benefit-tag i {
+  color: #8b6f47;
+}
+
+.service-card .card-divider {
+  border: none;
+  border-top: 1px solid #e8d7c8;
+  margin: auto 0 15px 0;
+}
+
+.service-card .service-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.service-card .duration {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #432a18;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.service-card .flower-icon {
+  font-size: 1.2rem;
+  color: #ffb7c5; /* Pink flower */
+}
+
+.service-card .btn-quick-book {
+  background-color: #7b4f30;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.3s;
+}
+
+.service-card .btn-quick-book:hover {
+  background-color: #5c3921;
+}
+
+.service-card .btn-quick-book i {
+  font-size: 0.9rem;
+  color: #e5ccb3; /* sparkle color */
+}
