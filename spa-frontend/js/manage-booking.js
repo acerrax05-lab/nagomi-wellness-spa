@@ -18,11 +18,11 @@ function switchTab(method) {
   if (method === 'phone') {
     phoneForm.style.display = 'block';
     idForm.style.display    = 'none';
-    tabs[0].classList.add('active');
+    tabs[1].classList.add('active'); // Phone & Name is tabs[1]
   } else {
     phoneForm.style.display = 'none';
     idForm.style.display    = 'block';
-    tabs[1].classList.add('active');
+    tabs[0].classList.add('active'); // Transaction ID is tabs[0]
   }
 }
 window.switchTab = switchTab;

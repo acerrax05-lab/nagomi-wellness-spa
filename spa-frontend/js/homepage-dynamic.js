@@ -136,68 +136,64 @@
     stats.forEach(s => { byCat[s.category] = s; });
 
     document.querySelectorAll('.service-card').forEach(card => {
-      const heading  = card.querySelector('h3')?.textContent.trim();
+      const heading  = card.querySelector('h3.card-title')?.textContent.trim();
       const category = CARD_CATEGORY_MAP[heading];
       if (!category) return;
 
       const stat        = byCat[category] || {};
       const serviceInfo = card.querySelector('.service-info');
+      const imageWrapper = card.querySelector('.image-wrapper');
       if (!serviceInfo) return;
 
-      // ── Badge container ────────────────────────────────────────────────────
-      let bc = serviceInfo.querySelector('.badge-container');
-      if (!bc) {
-        const oldBc = card.querySelector('.badge-container');
-        if (oldBc && !serviceInfo.contains(oldBc)) oldBc.remove();
-        bc = document.createElement('div');
-        bc.className = 'badge-container';
-        serviceInfo.insertBefore(bc, serviceInfo.firstChild);
-      }
-      bc.innerHTML = '';
-
-      if (stat.isMostBooked) {
-        bc.insertAdjacentHTML('beforeend',
-          `<span class="badge most-booked">⭐ Most Booked</span>`);
-      }
-      if (stat.isTrending) {
-        bc.insertAdjacentHTML('beforeend',
-          `<span class="badge trending"> Trending</span>`);
-      }
-      if (stat.averageRating && stat.reviewCount > 0) {
-        bc.insertAdjacentHTML('beforeend',
-          `<span class="badge rating">
-             <i class="fas fa-star"></i> ${stat.averageRating.toFixed(1)}
-             <span class="badge-review-count">(${stat.reviewCount})</span>
-           </span>`);
+      // ── Badges ────────────────────────────────────────────────────────────
+      if (imageWrapper) {
+        // Clear existing static badges
+        imageWrapper.querySelectorAll('.badge').forEach(b => b.remove());
+        
+        if (stat.isMostBooked) {
+          imageWrapper.insertAdjacentHTML('beforeend',
+            `<span class="badge most-booked">Most Booked</span>`);
+        } else if (stat.isTrending) {
+          imageWrapper.insertAdjacentHTML('beforeend',
+            `<span class="badge trending">Trending</span>`);
+        }
       }
 
       // ── Star row ───────────────────────────────────────────────────────────
-      let starRow = serviceInfo.querySelector('.service-star-row');
-      if (!starRow) {
-        starRow = document.createElement('div');
-        starRow.className = 'service-star-row';
-        const h3 = serviceInfo.querySelector('h3');
-        if (h3) h3.insertAdjacentElement('afterend', starRow);
-        else serviceInfo.appendChild(starRow);
-      }
-      if (stat.averageRating && stat.reviewCount > 0) {
-        starRow.innerHTML = buildStars(stat.averageRating, stat.reviewCount);
-        starRow.style.display = '';
-      } else {
-        starRow.style.display = 'none';
+      const ratingInfo = card.querySelector('.rating-info');
+      if (ratingInfo && stat.averageRating && stat.reviewCount > 0) {
+        const full  = Math.floor(stat.averageRating);
+        const half  = (stat.averageRating - full) >= 0.3 && (stat.averageRating - full) < 0.8;
+        const empty = 5 - full - (half ? 1 : 0);
+        
+        let starsHtml = '';
+        for (let i = 0; i < full;  i++) starsHtml += '<i class="fas fa-star"></i>';
+        if (half)                       starsHtml += '<i class="fas fa-star-half-alt"></i>';
+        for (let i = 0; i < empty; i++) starsHtml += '<i class="far fa-star"></i>';
+        
+        const starsContainer = ratingInfo.querySelector('.stars');
+        if (starsContainer) starsContainer.innerHTML = starsHtml;
+        
+        const ratingText = ratingInfo.querySelector('.rating-text');
+        if (ratingText) ratingText.innerHTML = `${stat.averageRating.toFixed(1)} &bull; ${stat.reviewCount} review${stat.reviewCount !== 1 ? 's' : ''}`;
+      } else if (ratingInfo && (!stat.averageRating || stat.reviewCount === 0)) {
+        ratingInfo.style.display = 'none';
       }
 
       // ── Booking count ──────────────────────────────────────────────────────
       if (stat.bookingCount > 0) {
         let cnt = card.querySelector('.service-book-count');
         if (!cnt) {
-          cnt = document.createElement('p');
-          cnt.className = 'service-book-count';
+          cnt = document.createElement('div');
+          cnt.className = 'service-book-count duration';
           const footer = card.querySelector('.service-footer');
           if (footer) footer.insertBefore(cnt, footer.firstChild);
           else serviceInfo.appendChild(cnt);
         }
-        cnt.textContent = `${stat.bookingCount.toLocaleString()} bookings completed`;
+        cnt.innerHTML = `${stat.bookingCount.toLocaleString()} bookings<br>completed`;
+        cnt.style.fontSize = '0.75rem';
+        cnt.style.color = '#7a5c43';
+        cnt.style.lineHeight = '1.2';
       }
 
       // ── "Good for" benefit tags ────────────────────────────────────────────
@@ -216,18 +212,6 @@
           .join('');
       }
     });
-  }
-
-  function buildStars(rating, count) {
-    const full  = Math.floor(rating);
-    const half  = (rating - full) >= 0.3 && (rating - full) < 0.8;
-    const empty = 5 - full - (half ? 1 : 0);
-    let s = '<span class="star-row">';
-    for (let i = 0; i < full;  i++) s += '<i class="fas fa-star"></i>';
-    if (half)                        s += '<i class="fas fa-star-half-alt"></i>';
-    for (let i = 0; i < empty; i++) s += '<i class="far fa-star"></i>';
-    s += `</span><span class="star-count">${rating.toFixed(1)} · ${count} review${count !== 1 ? 's' : ''}</span>`;
-    return s;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
