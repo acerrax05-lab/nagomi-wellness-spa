@@ -159,41 +159,38 @@
         }
       }
 
-      // ── Star row ───────────────────────────────────────────────────────────
+      // ── Star row & Booking count ───────────────────────────────────────────
       const ratingInfo = card.querySelector('.rating-info');
-      if (ratingInfo && stat.averageRating && stat.reviewCount > 0) {
-        const full  = Math.floor(stat.averageRating);
-        const half  = (stat.averageRating - full) >= 0.3 && (stat.averageRating - full) < 0.8;
-        const empty = 5 - full - (half ? 1 : 0);
+      if (ratingInfo && (stat.averageRating || stat.bookingCount > 0)) {
+        ratingInfo.style.display = 'flex';
         
-        let starsHtml = '';
-        for (let i = 0; i < full;  i++) starsHtml += '<i class="fas fa-star"></i>';
-        if (half)                       starsHtml += '<i class="fas fa-star-half-alt"></i>';
-        for (let i = 0; i < empty; i++) starsHtml += '<i class="far fa-star"></i>';
-        
-        const starsContainer = ratingInfo.querySelector('.stars');
-        if (starsContainer) starsContainer.innerHTML = starsHtml;
-        
-        const ratingText = ratingInfo.querySelector('.rating-text');
-        if (ratingText) ratingText.innerHTML = `${stat.averageRating.toFixed(1)} &bull; ${stat.reviewCount} review${stat.reviewCount !== 1 ? 's' : ''}`;
-      } else if (ratingInfo && (!stat.averageRating || stat.reviewCount === 0)) {
-        ratingInfo.style.display = 'none';
-      }
-
-      // ── Booking count ──────────────────────────────────────────────────────
-      if (stat.bookingCount > 0) {
-        let cnt = card.querySelector('.service-book-count');
-        if (!cnt) {
-          cnt = document.createElement('div');
-          cnt.className = 'service-book-count duration';
-          const footer = card.querySelector('.service-footer');
-          if (footer) footer.insertBefore(cnt, footer.firstChild);
-          else serviceInfo.appendChild(cnt);
+        if (stat.averageRating && stat.reviewCount > 0) {
+          const full  = Math.floor(stat.averageRating);
+          const half  = (stat.averageRating - full) >= 0.3 && (stat.averageRating - full) < 0.8;
+          const empty = 5 - full - (half ? 1 : 0);
+          
+          let starsHtml = '';
+          for (let i = 0; i < full;  i++) starsHtml += '<i class="fas fa-star"></i>';
+          if (half)                       starsHtml += '<i class="fas fa-star-half-alt"></i>';
+          for (let i = 0; i < empty; i++) starsHtml += '<i class="far fa-star"></i>';
+          
+          const starsContainer = ratingInfo.querySelector('.stars');
+          if (starsContainer) starsContainer.innerHTML = starsHtml;
         }
-        cnt.innerHTML = `${stat.bookingCount.toLocaleString()} bookings<br>completed`;
-        cnt.style.fontSize = '0.75rem';
-        cnt.style.color = '#7a5c43';
-        cnt.style.lineHeight = '1.2';
+
+        const ratingText = ratingInfo.querySelector('.rating-text');
+        if (ratingText) {
+          let textParts = [];
+          if (stat.averageRating && stat.reviewCount > 0) {
+            textParts.push(`${stat.averageRating.toFixed(1)} &bull; ${stat.reviewCount} review${stat.reviewCount !== 1 ? 's' : ''}`);
+          }
+          if (stat.bookingCount > 0) {
+            textParts.push(`${stat.bookingCount.toLocaleString()} bookings`);
+          }
+          ratingText.innerHTML = textParts.join(' &bull; ');
+        }
+      } else if (ratingInfo) {
+        ratingInfo.style.display = 'none';
       }
 
       // ── "Good for" benefit tags ────────────────────────────────────────────
