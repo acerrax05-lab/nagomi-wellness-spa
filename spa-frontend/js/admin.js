@@ -127,13 +127,6 @@ let storeClosures = []; // [{ id, label, start, end }] — single days have star
     else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
   });
 
-  socket.on('new-booking', (data) => {
-    showNotification('New booking received!', 'success');
-    addNotif(`📋 New booking: ${data?.guestName || 'Client'} — ${data?.service?.name || ''}`, 'booking', 'bookings');
-    if (_activeTab() === 'overview-tab') loadOverviewData();
-    else if (_activeTab() === 'bookings-tab') loadBookingsCalendar();
-  });
-
   // bookingUpdated — triggered when admin changes status, assigns therapist, etc.
   socket.on('bookingUpdated', () => {
     if (_activeTab() === 'overview-tab') loadOverviewData();
