@@ -3475,31 +3475,33 @@ console.log(' Services chart - bookings:', bookings.length, 'unique services:', 
       const icon = growthRate > 0 ? '' : growthRate < 0 ? '' : '️';
       const color = growthRate > 0 ? '#28a745' : growthRate < 0 ? '#dc3545' : '#ffc107';
       
-      const notification = document.createElement('div');
-      notification.className = 'chart-notification';
-      notification.style.cssText = `
-        margin-top: 15px;
-        padding: 12px 16px;
-        background: ${color}15;
-        border-left: 4px solid ${color};
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.9rem;
-      `;
-      
-      notification.innerHTML = `
-        <span style="font-size: 1.5rem;">${icon}</span>
-        <div>
-          <strong style="color: ${color};">${Math.abs(growthRate)}% Net Revenue Growth</strong>
-          <div style="color: #666; font-size: 0.85rem; margin-top: 2px;">
-            Earned: ₱${earnedRevenue.toLocaleString()} • Loss: ₱${revenueLoss.toLocaleString()}
+      if (currentPeriod !== 'today') {
+        const notification = document.createElement('div');
+        notification.className = 'chart-notification';
+        notification.style.cssText = `
+          margin-top: 15px;
+          padding: 12px 16px;
+          background: ${color}15;
+          border-left: 4px solid ${color};
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.9rem;
+        `;
+        
+        notification.innerHTML = `
+          <span style="font-size: 1.5rem;">${icon}</span>
+          <div>
+            <strong style="color: ${color};">${Math.abs(growthRate)}% Net Revenue Growth</strong>
+            <div style="color: #666; font-size: 0.85rem; margin-top: 2px;">
+              Earned: ₱${earnedRevenue.toLocaleString()} • Loss: ₱${revenueLoss.toLocaleString()}
+            </div>
           </div>
-        </div>
-      `;
-      
-      chartBox.appendChild(notification);
+        `;
+        
+        chartBox.appendChild(notification);
+      }
     }
   }
 
