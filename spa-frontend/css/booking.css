@@ -798,6 +798,33 @@ h1, h2, h3 {
 
 .selection-info { font-family: 'Poppins', sans-serif; font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
 .therapist-section { background:#fff; border:1.5px solid rgba(75,46,30,0.15); border-radius:14px; padding:20px 22px; margin-top:14px; }
+.therapist-assignment-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid rgba(75,46,30,0.14);
+  border-left: 3px solid #a87b5b;
+  border-radius: 9px;
+  background: #fbf7f3;
+  color: #654837;
+  font: 400 0.79rem/1.55 'Poppins', sans-serif;
+}
+.therapist-assignment-notice i { color: #8b654d; margin-top: 3px; flex-shrink: 0; }
+.therapist-availability-notice {
+  display: none;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(185,28,28,0.22);
+  border-radius: 10px;
+  background: rgba(220,38,38,0.06);
+  color: #991b1b;
+  font: 600 0.82rem/1.5 'Poppins', sans-serif;
+}
+.therapist-availability-notice i { color: #dc3545; margin-top: 3px; flex-shrink: 0; }
 .therapist-loading { padding: 18px; text-align: center; color: var(--text-muted); }
 .therapist-gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .therapist-gender-card { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: #fff; }

@@ -75,6 +75,7 @@ let dateFullyBooked    = false;
 let lastAvailableList  = null;
 let currentSort        = 'name';
 let currentStep        = 1;
+let availabilityRequestId = 0;
 
 function syncSharedBookingState() {
   window.allTherapists = allTherapists;
@@ -512,8 +513,26 @@ function checkStep3Ready() {
   const hasTime    = !!timeSelectEl?.value;
   const hasClients = numClients >= 1;
   const notFull    = !dateFullyBooked;
+  const hasTherapists = hasEnoughAvailableTherapists();
 
-  if (btnReview) btnReview.disabled = !(hasDate && hasTime && hasClients && notFull);
+  if (btnReview) btnReview.disabled = !(hasDate && hasTime && hasClients && notFull && hasTherapists);
+}
+
+function hasEnoughAvailableTherapists() {
+  if (!Array.isArray(lastAvailableList)) return false;
+
+  let available = lastAvailableList;
+  const isIndividual = numClients === 1 && selectedService?.category !== 'Couples Packages';
+  const guestGender = document.getElementById('guestGender')?.value?.trim().toLowerCase();
+
+  if (isIndividual && guestGender) {
+    const allowedIds = new Set(allTherapists
+      .filter(t => String(t.gender || '').trim().toLowerCase() === guestGender)
+      .map(t => String(t._id || t.id || '').trim().toLowerCase()));
+    available = available.filter(t => allowedIds.has(String(t.id || t._id || '').trim().toLowerCase()));
+  }
+
+  return available.length >= numClients;
 }
 
 // ─── submitStep3 (go to summary) ─────────────────────────────────────────────
@@ -523,6 +542,10 @@ function submitStep3() {
   if (numClients < 1) { showNotification('Please add at least 1 client.', 'error'); return; }
   if (selectedService?.category === 'Couples Packages' && numClients < 2) {
     showNotification('Couples Package requires at least 2 clients.', 'warning'); return;
+  }
+  if (!hasEnoughAvailableTherapists()) {
+    showNotification('No therapists are available for your selected date and time. Please choose another date or time.', 'error');
+    return;
   }
   populateSummaryModal();
   showSummaryModal();
@@ -535,6 +558,10 @@ function setupDateRestrictions() {
   dateInputEl.min = todayStr;
 
   dateInputEl.addEventListener('change', async function() {
+    availabilityRequestId++;
+    lastAvailableList = null;
+    syncSharedBookingState();
+    checkStep3Ready();
     hideDateWarning();
     if (dateInputEl.value) {
       showDateChecking(true);
@@ -928,14 +955,19 @@ function applyDayOffGreyout(dateStr) {
 
 // ─── Booking Availability Greyout ─────────────────────────────────────────────
 async function checkAvailability() {
+  const requestId = ++availabilityRequestId;
   if (!selectedService || !selectedMinutes || !dateInputEl.value || !timeSelectEl.value) {
     lastAvailableList = null;
     syncSharedBookingState();
     window.TherapistSelection?.setAvailability(null);
     resetTherapistAvailability();
     if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+    checkStep3Ready();
     return;
   }
+  lastAvailableList = null;
+  syncSharedBookingState();
+  checkStep3Ready();
   try {
     const res = await apiFetch(`${API_URL}/bookings/check-availability`, {
       method: 'POST',
@@ -947,6 +979,7 @@ async function checkAvailability() {
         durationMinutes: selectedMinutes
       })
     });
+    if (requestId !== availabilityRequestId) return;
     if (!res.ok) {
       lastAvailableList = null;
       syncSharedBookingState();
@@ -961,6 +994,7 @@ async function checkAvailability() {
       applyBookingAvailabilityGreyout(lastAvailableList);
     }
   } catch (err) {
+    if (requestId !== availabilityRequestId) return;
     console.error('Availability check error:', err);
     lastAvailableList = null;
     syncSharedBookingState();
@@ -968,6 +1002,7 @@ async function checkAvailability() {
     resetTherapistAvailability();
   }
   if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
+  checkStep3Ready();
 }
 
 function applyBookingAvailabilityGreyout(availableList) {

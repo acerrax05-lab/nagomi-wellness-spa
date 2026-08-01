@@ -81,7 +81,8 @@
     const overlay = byId('noAvailOverlay');
     if (overlay) {
       const hasSchedule = Boolean(byId('preferredDate')?.value && byId('preferredTime')?.value);
-      overlay.style.display = hasSchedule && availableCount < Number(window.numClients || 1) ? 'block' : 'none';
+      const availabilityChecked = Array.isArray(window.lastAvailableList);
+      overlay.style.display = hasSchedule && availabilityChecked && availableCount < Number(window.numClients || 1) ? 'flex' : 'none';
     }
     syncSelection();
   }

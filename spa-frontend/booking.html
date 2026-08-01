@@ -173,6 +173,10 @@
             Preferred Therapist
             <span style="font-weight:400;font-size:0.78rem;opacity:0.7;text-transform:none;letter-spacing:0;">(Optional)</span>
           </span>
+          <div class="therapist-assignment-notice" role="note">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            <span><strong>Note:</strong> For everyone's comfort, female clients are assigned exclusively to female therapists, and male clients are assigned exclusively to male therapists.</span>
+          </div>
           <div id="therapistLoading" class="therapist-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading therapists...</div>
           <div class="therapist-gender-grid" id="therapistGenderGrid" hidden>
             <div class="therapist-gender-card therapist-female" id="femaleTherapistGroup">
@@ -189,10 +193,9 @@
           <div class="selection-info">Selections are preferences; availability is verified again when you confirm.</div>
 
           <!-- No availability overlay -->
-          <div id="noAvailOverlay" style="display:none;margin-top:12px;padding:14px 16px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:10px;text-align:center;">
-            <i class="fa-solid fa-ban" style="color:#dc3545;margin-right:6px;"></i>
-            <span style="color:#b91c1c;font-size:0.84rem;font-weight:600;">Not enough therapists available at this time.</span><br>
-            <span style="color:#991b1b;font-size:0.78rem;">Please try a different date or time.</span>
+          <div id="noAvailOverlay" class="therapist-availability-notice" role="alert" aria-live="polite">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span>No therapists are available for your selected date and time. Please choose another date or time to continue with your booking.</span>
           </div>
         </div>
 
