@@ -53,7 +53,7 @@
         <p class="step-heading">Your Information</p>
         <p class="step-subheading">Let's start with your contact details so we can reach you</p>
 
-        <div class="info-row">
+        <div class="info-row info-row-compact">
           <div class="field-group">
             <span class="field-label">Full Name <span class="req">*</span></span>
             <input type="text" id="guestName" class="spa-input" placeholder="Enter your full name" required />
@@ -61,6 +61,14 @@
           <div class="field-group">
             <span class="field-label">Phone Number <span class="req">*</span></span>
             <input type="text" id="guestPhone" class="spa-input" placeholder="e.g. 09171234567" required />
+          </div>
+          <div class="field-group">
+            <span class="field-label">Gender <span class="req">*</span></span>
+            <select id="guestGender" class="spa-select" required>
+              <option value="">Select gender...</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
           </div>
         </div>
 
@@ -121,7 +129,7 @@
           <i class="fa-solid fa-people-group" style="margin-right:6px;"></i>You've selected a Couples Package. A minimum of 2 clients is required.
         </div>
 
-        <!-- Date + Time -->
+        <!-- Date + Time + Clients -->
         <div class="schedule-grid">
           <div>
             <span class="field-label">Preferred Date <span class="req">*</span></span>
@@ -145,43 +153,40 @@
             <div class="end-time-badge" id="endTimeBadge"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>End time: —</div>
             <span class="lock-hint" id="timeLockHint"><i class="fa-solid fa-lock" style="margin-right:4px;"></i>Select a date first</span>
           </div>
+          <div class="field-group-inline client-count-field">
+            <span class="field-label">Number of Clients <span class="req">*</span></span>
+            <div class="client-counter">
+              <button type="button" class="cc-btn" id="ccMinus" onclick="adjustClients(-1)" disabled>&minus;</button>
+              <span class="cc-value" id="ccValue">1</span>
+              <button type="button" class="cc-btn" id="ccPlus" onclick="adjustClients(1)">+</button>
+            </div>
+            <div class="client-limit-note">Maximum 6 clients per booking</div>
+            <span id="totalClientsWarning" class="client-warning"><i class="fa-solid fa-triangle-exclamation"></i>Please add at least 1 client</span>
+          </div>
         </div>
 
         <div id="dateAvailWarning" class="date-avail-warning" style="display:none;"></div>
 
-        <!-- Unified Client Counter -->
-        <div style="background:#fff;border:1.5px solid rgba(75,46,30,0.15);border-radius:14px;padding:20px 22px;margin:18px 0 0;">
-          <span class="field-label" style="margin-bottom:14px;display:block;">Number of Clients <span class="req">*</span></span>
-          <div class="client-counter" style="max-width:200px;">
-            <button type="button" class="cc-btn" id="ccMinus" onclick="adjustClients(-1)" disabled>−</button>
-            <span class="cc-value" id="ccValue">1</span>
-            <button type="button" class="cc-btn" id="ccPlus" onclick="adjustClients(1)">+</button>
-          </div>
-          <div style="font-size:0.78rem;color:rgba(75,46,30,0.5);margin-top:8px;">Maximum 6 clients per booking</div>
-          <span id="totalClientsWarning" style="display:none;color:#e68a00;font-size:0.82rem;margin-top:6px;display:flex;align-items:center;gap:6px;">
-            <i class="fa-solid fa-triangle-exclamation"></i>Please add at least 1 client
-          </span>
-        </div>
-
-        <!-- Unified Therapist Dropdown -->
-        <div style="background:#fff;border:1.5px solid rgba(75,46,30,0.15);border-radius:14px;padding:20px 22px;margin:14px 0 0;" id="therapistSection">
+        <!-- Gender-labeled Therapist Dropdowns -->
+        <div class="therapist-section" id="therapistSection">
           <span class="field-label" style="margin-bottom:12px;display:block;">
             Preferred Therapist
             <span style="font-weight:400;font-size:0.78rem;opacity:0.7;text-transform:none;letter-spacing:0;">(Optional)</span>
           </span>
-          <div class="therapist-dropdown" id="therapistDropdown">
-            <div class="dropdown-display" id="dropdownDisplay">
-              <span class="placeholder">Any Available Therapist</span>
-              <span class="dropdown-arrow">▼</span>
+          <div id="therapistLoading" class="therapist-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading therapists...</div>
+          <div class="therapist-gender-grid" id="therapistGenderGrid" hidden>
+            <div class="therapist-gender-card therapist-female" id="femaleTherapistGroup">
+              <div class="therapist-gender-heading">&#9792; Female Therapist</div>
+              <select id="femaleTherapistSelect" class="spa-select therapist-select"><option value="">Any available female therapist</option></select>
+              <div class="therapist-status" id="femaleTherapistStatus"></div>
             </div>
-            <div class="dropdown-options" id="dropdownOptions">
-              <div class="option-item">
-                <input type="checkbox" id="any-therapist" value="any" checked>
-                <label for="any-therapist">Any Available Therapist</label>
-              </div>
+            <div class="therapist-gender-card therapist-male" id="maleTherapistGroup">
+              <div class="therapist-gender-heading">&#9794; Male Therapist</div>
+              <select id="maleTherapistSelect" class="spa-select therapist-select"><option value="">Any available male therapist</option></select>
+              <div class="therapist-status" id="maleTherapistStatus"></div>
             </div>
           </div>
-          <div class="selection-info">Select up to <span id="maxSelections">1</span> therapist(s)</div>
+          <div class="selection-info">Selections are preferences; availability is verified again when you confirm.</div>
 
           <!-- No availability overlay -->
           <div id="noAvailOverlay" style="display:none;margin-top:12px;padding:14px 16px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:10px;text-align:center;">
@@ -220,6 +225,7 @@
           <h3>Your Information</h3>
           <div class="summary-row"><span class="label">Name:</span><span class="value" id="summary-name">-</span></div>
           <div class="summary-row"><span class="label">Phone:</span><span class="value" id="summary-phone">-</span></div>
+          <div class="summary-row"><span class="label">Gender:</span><span class="value" id="summary-gender">-</span></div>
         </div>
         <div class="summary-section">
           <h3>Service Details</h3>
@@ -318,6 +324,7 @@
     }
   </script>
   <script src="js/booking.js"></script>
+  <script src="js/therapist-selection.js"></script>
   <script src="js/booking-fix.js"></script>
   <script src="js/booking-autoselect.js"></script>
   <script src="js/enhanced-features.js"></script>

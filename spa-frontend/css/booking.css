@@ -624,7 +624,10 @@ h1, h2, h3 {
 /* ════════════════════════════════════════════════
    STEP 2 — SCHEDULE
 ════════════════════════════════════════════════ */
-.schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.schedule-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+.client-count-field .client-counter { width: 100%; min-height: 45px; }
+.client-limit-note { font-size: 0.72rem; color: rgba(75,46,30,0.5); margin-top: 7px; }
+.client-warning { display: none; color: #e68a00; font-size: 0.78rem; margin-top: 6px; align-items: center; gap: 6px; }
 
 .couples-notice {
   background: #fffbeb;
@@ -794,11 +797,22 @@ h1, h2, h3 {
 }
 
 .selection-info { font-family: 'Poppins', sans-serif; font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+.therapist-section { background:#fff; border:1.5px solid rgba(75,46,30,0.15); border-radius:14px; padding:20px 22px; margin-top:14px; }
+.therapist-loading { padding: 18px; text-align: center; color: var(--text-muted); }
+.therapist-gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.therapist-gender-card { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: #fff; }
+.therapist-gender-heading { padding: 9px 12px; font: 600 0.82rem 'Poppins', sans-serif; }
+.therapist-female .therapist-gender-heading { color: #8f3f58; background: #fbe8ee; }
+.therapist-male .therapist-gender-heading { color: #35556f; background: #e8f0f6; }
+.therapist-select { border: 0; border-radius: 0; box-shadow: none; }
+.therapist-status { min-height: 25px; padding: 0 12px 9px; font: 500 0.72rem 'Poppins', sans-serif; color: #2f7d4b; }
+.therapist-status.unavailable { color: #b24a4a; }
 
 /* ════════════════════════════════════════════════
    STEP 3 — YOUR INFO
 ════════════════════════════════════════════════ */
 .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.info-row-compact { grid-template-columns: 1.15fr 1fr 0.72fr; }
 
 .total-card {
   background: linear-gradient(135deg, #fff8f3, #fdf3ec);
@@ -1051,6 +1065,7 @@ select option:disabled { color: rgba(75,46,30,0.3); font-style: italic; }
   .booking-type-row { flex-direction: column; }
   .schedule-grid { grid-template-columns: 1fr; }
   .info-row { grid-template-columns: 1fr; }
+  .therapist-gender-grid { grid-template-columns: 1fr; }
 
   .summary-container { margin: 10px; max-width: 95%; }
   .summary-header { padding: 20px; }

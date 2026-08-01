@@ -76,6 +76,22 @@ let lastAvailableList  = null;
 let currentSort        = 'name';
 let currentStep        = 1;
 
+function syncSharedBookingState() {
+  window.allTherapists = allTherapists;
+  window.selectedService = selectedService;
+  window.selectedMinutes = selectedMinutes;
+  window.numClients = numClients;
+  window.dateFullyBooked = dateFullyBooked;
+  window.lastAvailableList = lastAvailableList;
+  window.selectedTherapists = selectedTherapists;
+  window.TherapistSelection?.refresh();
+}
+window.setSelectedTherapists = therapists => {
+  selectedTherapists = Array.isArray(therapists) ? therapists : [];
+  window.selectedTherapists = selectedTherapists;
+};
+syncSharedBookingState();
+
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
 let categoryTabsEl, servicesGridEl, durationSectionEl, durationGridEl;
 let summaryBarEl, ssbServiceNameEl, ssbDurationEl, ssbPriceEl;
@@ -160,15 +176,17 @@ function bindDOMRefs() {
 
 // ─── Step 1 Validation (Your Info) ───────────────────────────────────────────
 function setupStep1Validation() {
-  ['guestName','guestPhone'].forEach(id => {
+  ['guestName','guestPhone','guestGender'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', validateStep1);
+    document.getElementById(id)?.addEventListener('change', validateStep1);
   });
 }
 
 function validateStep1() {
   const name  = document.getElementById('guestName')?.value?.trim();
   const phone = document.getElementById('guestPhone')?.value?.trim();
-  if (btnStep1Next) btnStep1Next.disabled = !(name && phone);
+  const gender = document.getElementById('guestGender')?.value;
+  if (btnStep1Next) btnStep1Next.disabled = !(name && phone && gender);
 }
 
 // ─── Services ─────────────────────────────────────────────────────────────────
@@ -294,6 +312,7 @@ function onServiceCardClick(svc, card) {
   card.classList.add('selected');
   selectedService = svc;
   selectedMinutes = null;
+  syncSharedBookingState();
 
   // Couples: min 2 clients
   if (svc.category === 'Couples Packages') {
@@ -318,6 +337,7 @@ function onServiceCardClick(svc, card) {
 function clearServiceSelection() {
   selectedService = null;
   selectedMinutes = null;
+  syncSharedBookingState();
   servicesGridEl.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
   hideDurationSection();
   hideSummaryBar();
@@ -427,6 +447,7 @@ function updateClientCounterUI() {
   trimTherapistSelections();
   updateTherapistGreyout();
   checkStep3Ready();
+  syncSharedBookingState();
 }
 
 function adjustClients(delta) {
@@ -435,6 +456,7 @@ function adjustClients(delta) {
   numClients = Math.max(min, Math.min(MAX_CLIENTS, numClients + delta));
   updateClientCounterUI();
   updateTotal();
+  syncSharedBookingState();
 }
 window.adjustClients = adjustClients;
 
@@ -444,8 +466,9 @@ function goToStep(step) {
   if (step === 2) {
     const name  = document.getElementById('guestName')?.value?.trim();
     const phone = document.getElementById('guestPhone')?.value?.trim();
-    if (!name || !phone) {
-      showNotification('Please enter your name and phone number to continue.', 'error');
+    const gender = document.getElementById('guestGender')?.value;
+    if (!name || !phone || !gender) {
+      showNotification('Please enter your name, phone number, and gender to continue.', 'error');
       return;
     }
   }
@@ -635,6 +658,8 @@ async function checkDateAvailability(dateStr) {
   } catch (err) {
     console.error('Date availability check failed:', err);
     dateFullyBooked = false;
+  } finally {
+    syncSharedBookingState();
   }
 }
 
@@ -686,10 +711,12 @@ async function loadTherapists() {
   try {
     const res = await apiFetch(`${API_URL}/auth/therapists`);
     allTherapists = await res.json();
-    populateTherapistDropdown(allTherapists);
+    syncSharedBookingState();
+    window.TherapistSelection?.setTherapists(allTherapists);
     if (dateInputEl && dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
   } catch (err) {
     console.error('Failed to load therapists:', err);
+    window.TherapistSelection?.setError();
   }
 }
 
@@ -903,6 +930,8 @@ function applyDayOffGreyout(dateStr) {
 async function checkAvailability() {
   if (!selectedService || !selectedMinutes || !dateInputEl.value || !timeSelectEl.value) {
     lastAvailableList = null;
+    syncSharedBookingState();
+    window.TherapistSelection?.setAvailability(null);
     resetTherapistAvailability();
     if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
     return;
@@ -918,15 +947,24 @@ async function checkAvailability() {
         durationMinutes: selectedMinutes
       })
     });
-    if (!res.ok) { lastAvailableList = null; resetTherapistAvailability(); }
+    if (!res.ok) {
+      lastAvailableList = null;
+      syncSharedBookingState();
+      window.TherapistSelection?.setAvailability(null);
+      resetTherapistAvailability();
+    }
     else {
       const data = await res.json();
       lastAvailableList = data.available || [];
+      syncSharedBookingState();
+      window.TherapistSelection?.setAvailability(lastAvailableList);
       applyBookingAvailabilityGreyout(lastAvailableList);
     }
   } catch (err) {
     console.error('Availability check error:', err);
     lastAvailableList = null;
+    syncSharedBookingState();
+    window.TherapistSelection?.setAvailability(null);
     resetTherapistAvailability();
   }
   if (dateInputEl.value) applyDayOffGreyout(dateInputEl.value);
@@ -1016,6 +1054,10 @@ function lockTherapistField() {
 function populateSummaryModal() {
   document.getElementById('summary-name').textContent  = document.getElementById('guestName')?.value || '—';
   document.getElementById('summary-phone').textContent = document.getElementById('guestPhone')?.value || '—';
+  const guestGender = document.getElementById('guestGender')?.value;
+  document.getElementById('summary-gender').textContent = guestGender
+    ? guestGender.charAt(0).toUpperCase() + guestGender.slice(1)
+    : '—';
   document.getElementById('summary-category').textContent = selectedService?.category || '—';
   document.getElementById('summary-service').textContent  = selectedService?.name || '—';
   document.getElementById('summary-duration').textContent = selectedMinutes ? `${selectedMinutes} minutes` : '—';
@@ -1108,11 +1150,12 @@ function setupConfirmBtn() {
 
     const name  = document.getElementById('guestName')?.value?.trim();
     const phone = document.getElementById('guestPhone')?.value?.trim();
+    const gender = document.getElementById('guestGender')?.value;
     const notes = guestNotesEl?.value?.trim() || '';
     const date  = dateInputEl.value;
     const time  = timeSelectEl.value;
 
-    if (!selectedService || !selectedMinutes || !date || !time || !name || !phone) {
+    if (!selectedService || !selectedMinutes || !date || !time || !name || !phone || !gender) {
       showNotification('Please complete all required fields.', 'error');
       return;
     }
@@ -1125,8 +1168,8 @@ function setupConfirmBtn() {
       minutes:         String(selectedMinutes),
       therapists:      selectedTherapists.length > 0 ? selectedTherapists : [{ name: 'Any available therapist' }],
       numberOfClients: numClients,
-      femaleClients:   0,
-      maleClients:     0,
+      femaleClients:   numClients === 1 && gender === 'female' ? 1 : undefined,
+      maleClients:     numClients === 1 && gender === 'male' ? 1 : undefined,
       date,
       time,
       endTime,
@@ -1213,8 +1256,12 @@ function resetForm() {
 
   document.getElementById('guestName').value  = '';
   document.getElementById('guestPhone').value = '';
+  document.getElementById('guestGender').value = '';
   guestNotesEl.value = '';
   charCountSmEl.textContent = '0 / 500';
+  dateFullyBooked = false;
+  lastAvailableList = null;
+  syncSharedBookingState();
   totalDisplayEl.textContent = '₱0';
 
   const anyTherapist = document.getElementById('any-therapist');
