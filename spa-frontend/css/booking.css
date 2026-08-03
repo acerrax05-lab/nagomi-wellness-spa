@@ -834,6 +834,16 @@ h1, h2, h3 {
 .therapist-select { border: 0; border-radius: 0; box-shadow: none; }
 .therapist-status { min-height: 25px; padding: 0 12px 9px; font: 500 0.72rem 'Poppins', sans-serif; color: #2f7d4b; }
 .therapist-status.unavailable { color: #b24a4a; }
+.therapist-checkbox-dropdown { position: relative; }
+.therapist-dropdown-summary { padding: 12px; cursor: pointer; font: 600 0.82rem 'Poppins', sans-serif; list-style-position: inside; }
+.therapist-female .therapist-dropdown-summary { color: #8f3f58; background: #fbe8ee; }
+.therapist-male .therapist-dropdown-summary { color: #35556f; background: #e8f0f6; }
+.therapist-checkbox-panel { max-height: 260px; overflow-y: auto; border-top: 1px solid var(--border); background: #fff; }
+.therapist-checkbox-option { display: flex; gap: 9px; align-items: flex-start; padding: 9px 12px; cursor: pointer; font: 400 0.8rem 'Poppins', sans-serif; }
+.therapist-checkbox-option:hover { background: #faf7f2; }
+.therapist-checkbox-option input { margin-top: 3px; accent-color: #7b5539; }
+.therapist-checkbox-option.unavailable { color: #8b8b8b; font-style: italic; cursor: not-allowed; }
+.therapist-checkbox-empty { padding: 12px; color: var(--text-muted); font-size: 0.8rem; }
 
 /* ════════════════════════════════════════════════
    STEP 3 — YOUR INFO

@@ -11,7 +11,7 @@
       isTherapistWorkingAt,
       hasExpertise,
       isTherapistAvailable,
-      getAvailableTherapists
+      getTherapistAvailabilityDetails
     } = require('../utils/availability');
     const Review = require('../models/Review');
 
@@ -252,31 +252,35 @@
         
         const bookingDate = new Date(date);
         
-        let availableTherapists;
+        let availabilityDetails;
         try {
-          availableTherapists = await getAvailableTherapists(
+          availabilityDetails = await getTherapistAvailabilityDetails(
             service,
             bookingDate,
             time,
             parseInt(durationMinutes)
           );
         } catch (availErr) {
-          console.error('❌ Error in getAvailableTherapists:', availErr);
+          console.error('❌ Error in getTherapistAvailabilityDetails:', availErr);
           return res.status(500).json({ 
             msg: 'Error checking availability', 
             error: availErr.message 
           });
         }
         
+        const availableTherapists = availabilityDetails.filter(item => item.available);
         console.log(`✅ Found ${availableTherapists.length} available therapists`);
         
         res.json({
-          available: availableTherapists.map(t => ({
+          available: availableTherapists.map(({ therapist: t }) => ({
             id: t._id,
             name: t.name,
             email: t.email,
             expertise: t.expertise
           })),
+          unavailable: availabilityDetails
+            .filter(item => !item.available)
+            .map(({ therapist: t, reason }) => ({ id: t._id, name: t.name, reason })),
           totalAvailable: availableTherapists.length
         });
       } catch (err) {

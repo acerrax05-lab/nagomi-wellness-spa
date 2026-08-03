@@ -404,6 +404,37 @@ async function getAvailableTherapists(serviceName, date, time, durationMinutes) 
   return available;
 }
 
+async function getScheduleUnavailableReason(therapist, date, time, durationMinutes) {
+  if (await isInGlobalGracePeriod(date, time, durationMinutes)) return 'Spa-wide break';
+  const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const override = therapist.dateOverrides?.find(item => new Date(item.date).toDateString() === date.toDateString());
+  if (override) {
+    if (!override.isWorking) return override.reason || 'Approved leave';
+    if (isInBreakTime(override.breaks, time, durationMinutes)) return 'On break';
+    return override.shifts?.length ? 'Outside working hours' : 'Not scheduled on this date';
+  }
+  const daySchedule = therapist.weeklySchedule?.find(item => item.dayOfWeek === dayOfWeek);
+  if (daySchedule) {
+    if (!daySchedule.isWorking) return 'Day off';
+    if (isInBreakTime(daySchedule.breaks, time, durationMinutes)) return 'On break';
+  }
+  return 'Outside working hours';
+}
+
+async function getTherapistAvailabilityDetails(serviceName, date, time, durationMinutes) {
+  const allTherapists = await User.find({ role: 'therapist', isActive: true });
+  const details = [];
+  for (const therapist of allTherapists) {
+    let reason = null;
+    if (!hasExpertise(therapist, serviceName)) reason = `Not qualified for ${serviceName}`;
+    else if (!await isTherapistWorkingAt(therapist, date, time, durationMinutes)) {
+      reason = await getScheduleUnavailableReason(therapist, date, time, durationMinutes);
+    } else if (!await isTherapistAvailable(therapist._id, date, time, durationMinutes)) reason = 'Already booked';
+    details.push({ therapist, available: reason === null, reason });
+  }
+  return details;
+}
+
 /**
  * Get all booked time slots for a specific date
  */
@@ -459,5 +490,6 @@ module.exports = {
   hasExpertise,
   isTherapistAvailable,
   getAvailableTherapists,
+  getTherapistAvailabilityDetails,
   getBookedSlots
 };

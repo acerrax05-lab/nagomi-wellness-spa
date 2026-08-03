@@ -3,18 +3,21 @@
 
   let therapists = [];
   let availableIds = null;
+  let unavailableReasons = new Map();
+  let selectedIds = new Set();
   let initialized = false;
 
   const byId = id => document.getElementById(id);
   const normalize = value => String(value || '').trim().toLowerCase();
   const therapistGender = therapist => normalize(therapist.gender);
+  const maxSelections = () => Math.max(1, Number(window.numClients || 1));
 
   function isCouple() {
     return window.selectedService?.category === 'Couples Packages';
   }
 
   function isIndividual() {
-    return Number(window.numClients || 1) === 1 && !isCouple();
+    return maxSelections() === 1 && !isCouple();
   }
 
   function visibleGenders() {
@@ -27,62 +30,108 @@
     return availableIds === null || availableIds.has(normalize(therapist._id));
   }
 
-  function renderSelect(gender) {
-    const select = byId(`${gender}TherapistSelect`);
-    const status = byId(`${gender}TherapistStatus`);
-    if (!select || !status) return;
-
-    const previous = select.value;
-    const label = gender === 'female' ? 'female' : 'male';
-    select.replaceChildren(new Option(`Any available ${label} therapist`, ''));
-
-    const matching = therapists.filter(t => therapistGender(t) === gender);
-    matching.forEach(therapist => {
-      const available = isAvailable(therapist);
-      const option = new Option(`${therapist.name} — ${available ? 'Available' : 'Unavailable'}`, therapist._id);
-      option.disabled = !available;
-      option.dataset.name = therapist.name;
-      select.add(option);
-    });
-
-    if ([...select.options].some(option => option.value === previous && !option.disabled)) {
-      select.value = previous;
-    }
-
-    const availableCount = matching.filter(isAvailable).length;
-    status.textContent = matching.length
-      ? `${availableCount} of ${matching.length} available`
-      : `No registered ${label} therapists`;
-    status.classList.toggle('unavailable', availableCount === 0);
+  function trimSelection(visible) {
+    const allowed = new Set(therapists
+      .filter(t => visible.has(therapistGender(t)) && isAvailable(t))
+      .map(t => normalize(t._id)));
+    selectedIds = new Set([...selectedIds].filter(id => allowed.has(id)).slice(0, maxSelections()));
   }
 
   function syncSelection() {
-    const selected = ['female', 'male'].flatMap(gender => {
-      const select = byId(`${gender}TherapistSelect`);
-      const option = select?.selectedOptions?.[0];
-      return option?.value ? [{ id: option.value, name: option.dataset.name || option.textContent.split(' — ')[0] }] : [];
-    });
+    const selected = therapists
+      .filter(t => selectedIds.has(normalize(t._id)))
+      .map(t => ({ id: String(t._id), name: t.name }));
     window.setSelectedTherapists?.(selected);
   }
 
-  function refresh() {
+  function optionText(therapist) {
+    if (isAvailable(therapist)) return `${therapist.name} — Available`;
+    const reason = unavailableReasons.get(normalize(therapist._id));
+    return `${therapist.name} — Unavailable — ${reason || 'Not available for this time'}`;
+  }
+
+  function renderGroup(gender) {
+    const label = gender === 'female' ? 'Female' : 'Male';
+    const symbol = gender === 'female' ? '♀' : '♂';
+    const matching = therapists
+      .filter(t => therapistGender(t) === gender)
+      .sort((a, b) => Number(isAvailable(b)) - Number(isAvailable(a)) || a.name.localeCompare(b.name));
+    const selectedCount = matching.filter(t => selectedIds.has(normalize(t._id))).length;
+    const availableCount = matching.filter(isAvailable).length;
+
+    const card = document.createElement('div');
+    card.className = `therapist-gender-card therapist-${gender}`;
+    card.id = `${gender}TherapistGroup`;
+
+    const dropdown = document.createElement('details');
+    dropdown.className = 'therapist-checkbox-dropdown';
+    const summary = document.createElement('summary');
+    summary.className = 'therapist-dropdown-summary';
+    summary.textContent = `${symbol} ${label} therapists — ${selectedCount} selected`;
+    dropdown.append(summary);
+
+    const panel = document.createElement('div');
+    panel.className = 'therapist-checkbox-panel';
+    if (!matching.length) {
+      const empty = document.createElement('div');
+      empty.className = 'therapist-checkbox-empty';
+      empty.textContent = `No registered ${gender} therapists`;
+      panel.append(empty);
+    }
+
+    matching.forEach(therapist => {
+      const id = normalize(therapist._id);
+      const available = isAvailable(therapist);
+      const checked = selectedIds.has(id);
+      const atLimit = selectedIds.size >= maxSelections();
+      const row = document.createElement('label');
+      row.className = `therapist-checkbox-option${available ? '' : ' unavailable'}`;
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = checked;
+      checkbox.disabled = !available || (!checked && atLimit);
+      checkbox.value = String(therapist._id);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) selectedIds.add(id);
+        else selectedIds.delete(id);
+        syncSelection();
+        refresh(gender);
+      });
+      const text = document.createElement('span');
+      text.textContent = optionText(therapist);
+      row.append(checkbox, text);
+      panel.append(row);
+    });
+    dropdown.append(panel);
+
+    const status = document.createElement('div');
+    status.className = `therapist-status${availableCount === 0 ? ' unavailable' : ''}`;
+    status.textContent = `${availableCount} of ${matching.length} available · Choose up to ${maxSelections()} total`;
+    card.append(dropdown, status);
+    return card;
+  }
+
+  function refresh(openGender) {
     if (!initialized) return;
     const visible = visibleGenders();
-    ['female', 'male'].forEach(gender => {
-      const group = byId(`${gender}TherapistGroup`);
-      const select = byId(`${gender}TherapistSelect`);
-      const show = visible.has(gender);
-      if (group) group.hidden = !show;
-      if (!show && select) select.value = '';
-      renderSelect(gender);
-    });
+    trimSelection(visible);
+    const grid = byId('therapistGenderGrid');
+    if (grid) {
+      grid.replaceChildren();
+      ['female', 'male'].forEach(gender => {
+        if (!visible.has(gender)) return;
+        const group = renderGroup(gender);
+        if (gender === openGender) group.querySelector('details').open = true;
+        grid.append(group);
+      });
+    }
 
     const availableCount = therapists.filter(t => visible.has(therapistGender(t)) && isAvailable(t)).length;
     const overlay = byId('noAvailOverlay');
     if (overlay) {
       const hasSchedule = Boolean(byId('preferredDate')?.value && byId('preferredTime')?.value);
       const availabilityChecked = Array.isArray(window.lastAvailableList);
-      overlay.style.display = hasSchedule && availabilityChecked && availableCount < Number(window.numClients || 1) ? 'flex' : 'none';
+      overlay.style.display = hasSchedule && availabilityChecked && availableCount < maxSelections() ? 'flex' : 'none';
     }
     syncSelection();
   }
@@ -97,10 +146,11 @@
     refresh();
   }
 
-  function setAvailability(list) {
-    availableIds = Array.isArray(list)
-      ? new Set(list.map(t => normalize(t.id || t._id)))
-      : null;
+  function setAvailability(list, unavailable = []) {
+    availableIds = Array.isArray(list) ? new Set(list.map(t => normalize(t.id || t._id))) : null;
+    unavailableReasons = new Map(
+      (Array.isArray(unavailable) ? unavailable : []).map(t => [normalize(t.id || t._id), t.reason])
+    );
     window.lastAvailableList = list;
     refresh();
   }
@@ -112,9 +162,7 @@
 
   function init() {
     initialized = true;
-    ['femaleTherapistSelect', 'maleTherapistSelect', 'guestGender'].forEach(id => {
-      byId(id)?.addEventListener('change', id === 'guestGender' ? refresh : syncSelection);
-    });
+    byId('guestGender')?.addEventListener('change', refresh);
     if (Array.isArray(window.allTherapists) && window.allTherapists.length) setTherapists(window.allTherapists);
     else refresh();
   }

@@ -990,7 +990,7 @@ async function checkAvailability() {
       const data = await res.json();
       lastAvailableList = data.available || [];
       syncSharedBookingState();
-      window.TherapistSelection?.setAvailability(lastAvailableList);
+      window.TherapistSelection?.setAvailability(lastAvailableList, data.unavailable || []);
       applyBookingAvailabilityGreyout(lastAvailableList);
     }
   } catch (err) {
