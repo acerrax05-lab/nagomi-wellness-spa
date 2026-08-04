@@ -843,6 +843,9 @@ h1, h2, h3 {
 .therapist-checkbox-option:hover { background: #faf7f2; }
 .therapist-checkbox-option input { margin-top: 3px; accent-color: #7b5539; }
 .therapist-checkbox-option.unavailable { color: #8b8b8b; font-style: italic; cursor: not-allowed; }
+.therapist-checkbox-option.selection-locked { color: #aaa; cursor: not-allowed; opacity: 0.55; background: #f7f7f7; }
+.therapist-checkbox-option.selection-locked:hover { background: #f7f7f7; }
+.therapist-status.selection-complete { color: #7b5539; font-weight: 600; }
 .therapist-checkbox-empty { padding: 12px; color: var(--text-muted); font-size: 0.8rem; }
 
 /* ════════════════════════════════════════════════

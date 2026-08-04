@@ -58,6 +58,7 @@
       .sort((a, b) => Number(isAvailable(b)) - Number(isAvailable(a)) || a.name.localeCompare(b.name));
     const selectedCount = matching.filter(t => selectedIds.has(normalize(t._id))).length;
     const availableCount = matching.filter(isAvailable).length;
+    const limitReached = selectedIds.size >= maxSelections();
 
     const card = document.createElement('div');
     card.className = `therapist-gender-card therapist-${gender}`;
@@ -83,16 +84,19 @@
       const id = normalize(therapist._id);
       const available = isAvailable(therapist);
       const checked = selectedIds.has(id);
-      const atLimit = selectedIds.size >= maxSelections();
+      const selectionLocked = available && !checked && limitReached;
       const row = document.createElement('label');
-      row.className = `therapist-checkbox-option${available ? '' : ' unavailable'}`;
+      row.className = `therapist-checkbox-option${available ? '' : ' unavailable'}${selectionLocked ? ' selection-locked' : ''}`;
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.checked = checked;
-      checkbox.disabled = !available || (!checked && atLimit);
+      checkbox.disabled = !available || selectionLocked;
+      if (selectionLocked) {
+        checkbox.setAttribute('aria-label', `${therapist.name} cannot be selected because the therapist limit has been reached`);
+      }
       checkbox.value = String(therapist._id);
       checkbox.addEventListener('change', () => {
-        if (checkbox.checked) selectedIds.add(id);
+        if (checkbox.checked && selectedIds.size < maxSelections()) selectedIds.add(id);
         else selectedIds.delete(id);
         syncSelection();
         refresh(gender);
@@ -105,8 +109,10 @@
     dropdown.append(panel);
 
     const status = document.createElement('div');
-    status.className = `therapist-status${availableCount === 0 ? ' unavailable' : ''}`;
-    status.textContent = `${availableCount} of ${matching.length} available · Choose up to ${maxSelections()} total`;
+    status.className = `therapist-status${availableCount === 0 ? ' unavailable' : ''}${limitReached ? ' selection-complete' : ''}`;
+    status.textContent = limitReached
+      ? `Selection locked — ${selectedIds.size} of ${maxSelections()} therapists selected`
+      : `${availableCount} of ${matching.length} available · Choose ${maxSelections() - selectedIds.size} more`;
     card.append(dropdown, status);
     return card;
   }
