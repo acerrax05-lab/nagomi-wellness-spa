@@ -1573,6 +1573,100 @@ body {
   margin-bottom: 1rem;
 }
 
+/* Service duration editor */
+#editServiceModal .service-duration-section-title {
+  display: block;
+  margin: 18px 0 8px;
+  font-size: 1rem;
+  font-weight: 700 !important;
+}
+
+#editServiceModal .service-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+#editServiceModal .service-price-field label {
+  display: block;
+  margin-bottom: 7px;
+}
+
+#editServiceModal .service-price-field input {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#editServiceModal .service-duration-help {
+  margin: 0 0 12px;
+  color: #888;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+#editServiceModal .service-duration-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+#editServiceModal .service-duration-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 8px 13px;
+  border: 1.5px solid #c9a882;
+  border-radius: 24px;
+  background: #fffaf4;
+  color: #4b2e1e;
+  cursor: pointer;
+  user-select: none;
+}
+
+#editServiceModal .service-duration-chip.is-selected {
+  border-color: #65ad73;
+  background: #effaf1;
+  color: #276b39;
+}
+
+#editServiceModal .service-duration-chip input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #429654;
+}
+
+#editServiceModal .remove-service-duration {
+  border: 0;
+  padding: 0 2px;
+  background: transparent;
+  color: #c74747;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#editServiceModal .service-add-duration-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+#editServiceModal .service-add-duration-row input {
+  width: 135px;
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  #editServiceModal .service-pricing-grid { grid-template-columns: 1fr 1fr; }
+}
+
 /* Print styles */
 @media print {
   .sidebar,

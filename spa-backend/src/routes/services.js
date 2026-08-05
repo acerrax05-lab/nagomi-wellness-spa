@@ -203,12 +203,20 @@ router.post('/', auth, roles(['admin']), async (req, res) => {
  
     if (!name) return res.status(400).json({ msg: 'Service name is required' });
  
+    const normalizedDurations = [...new Set((allowedDurations || [30, 60, 90, 120, 180]).map(Number))].sort((a, b) => a - b);
+    if (!normalizedDurations.length || normalizedDurations.some(d => !Number.isInteger(d) || d < 15 || d > 720)) {
+      return res.status(400).json({ msg: 'Select at least one valid duration between 15 and 720 minutes' });
+    }
+    if (!pricing || normalizedDurations.some(d => !Number.isFinite(Number(pricing[d])) || Number(pricing[d]) < 0)) {
+      return res.status(400).json({ msg: 'A valid price is required for every selected duration' });
+    }
+
     const serviceData = {
       name,
       description,
       durationMinutes,
       price,
-      allowedDurations: allowedDurations || [60, 90, 120],
+      allowedDurations: normalizedDurations,
       category: category || 'Massage Services',
     };
  
@@ -244,11 +252,23 @@ router.get('/:id', async (req, res) => {
 // Update service
 router.put('/:id', auth, roles(['admin']), async (req, res) => {
   try {
-    const { name, description, durationMinutes, price, pricing, allowedDurations, active, category } = req.body;
- 
-    const updateData = { name, description, durationMinutes, price, allowedDurations, active, category };
- 
-    if (pricing) {
+    const { pricing, allowedDurations } = req.body;
+    const updateData = {};
+    ['name', 'description', 'durationMinutes', 'price', 'active', 'category'].forEach(field => {
+      if (req.body[field] !== undefined) updateData[field] = req.body[field];
+    });
+    // The current admin UI calls this field isActive when hiding/showing a service.
+    if (req.body.isActive !== undefined) updateData.active = req.body.isActive;
+
+    if (allowedDurations !== undefined || pricing !== undefined) {
+      const normalizedDurations = [...new Set((allowedDurations || []).map(Number))].sort((a, b) => a - b);
+      if (!normalizedDurations.length || normalizedDurations.some(d => !Number.isInteger(d) || d < 15 || d > 720)) {
+        return res.status(400).json({ msg: 'Select at least one valid duration between 15 and 720 minutes' });
+      }
+      if (!pricing || normalizedDurations.some(d => !Number.isFinite(Number(pricing[d])) || Number(pricing[d]) < 0)) {
+        return res.status(400).json({ msg: 'A valid price is required for every selected duration' });
+      }
+      updateData.allowedDurations = normalizedDurations;
       updateData.pricing = new Map(Object.entries(pricing));
     }
  

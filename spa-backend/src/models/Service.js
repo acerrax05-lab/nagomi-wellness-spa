@@ -30,7 +30,12 @@ const ServiceSchema = new mongoose.Schema({
   // Which durations (in minutes) are selectable for this service
   allowedDurations: {
     type: [Number],
-    default: [60, 90, 120]
+    default: [30, 60, 90, 120, 180],
+    validate: {
+      validator: durations => Array.isArray(durations) && durations.length > 0 &&
+        durations.every(duration => Number.isInteger(duration) && duration >= 15 && duration <= 720),
+      message: 'Durations must be whole minutes between 15 and 720'
+    }
   },
 
   // Flat price for fixed-price services (no duration selector shown)

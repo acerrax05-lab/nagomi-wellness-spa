@@ -511,10 +511,10 @@ try {
           return res.status(400).json({ msg: 'Please fill all required fields' });
         }
 
-        // ── FIX 1: Allow 30-minute durations ──────────────────────
+        // The selected service defines which session durations are available.
         const durationMinutes = parseInt(minutes);
-        if (!durationMinutes || ![30, 60, 90, 120].includes(durationMinutes)) {
-          return res.status(400).json({ msg: 'Invalid duration. Must be 30, 60, 90, or 120 minutes.' });
+        if (!Number.isInteger(durationMinutes) || durationMinutes < 15 || durationMinutes > 720) {
+          return res.status(400).json({ msg: 'Invalid session duration.' });
         }
 
         // ── FIX 2: Service lookup with partial-match fallback ──────
@@ -578,11 +578,11 @@ try {
           const pricingObj = service.pricing.toObject
             ? service.pricing.toObject()
             : service.pricing;
-          const basePrice =
-            pricingObj[durationMinutes] ||
-            pricingObj[durationMinutes.toString()] ||
-            service.price ||
-            totalAmount;
+          const configuredPrice = pricingObj[durationMinutes] ?? pricingObj[durationMinutes.toString()];
+          if (!Number.isFinite(Number(configuredPrice))) {
+            return res.status(400).json({ msg: `No price is configured for ${durationMinutes} minutes` });
+          }
+          const basePrice = Number(configuredPrice);
           finalPrice = basePrice * (totalClients || numberOfClients || 1);
         }
 

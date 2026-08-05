@@ -227,7 +227,11 @@
   // ============================================
   function createServiceCard(service, index) {
     const pricing = service.pricing || { 60: service.price, 90: service.price, 120: service.price };
-    const price60 = pricing[60] || pricing['60'] || service.price || 0;
+    const durations = service.allowedDurations || Object.keys(pricing).map(Number);
+    const availablePrices = durations
+      .map(duration => Number(pricing[duration] ?? pricing[String(duration)] ?? service.price))
+      .filter(Number.isFinite);
+    const displayPrice = availablePrices.length ? Math.min(...availablePrices) : Number(service.price || 0);
     
     const imageSrc = getServiceImage(service);
     
@@ -251,7 +255,7 @@
           ${service.category ? `<span class="service-category-shop">${formatCategoryName(service.category)}</span>` : ''}
           <h3 class="service-title-shop">${service.name}</h3>
           <p class="service-description-shop">${description}</p>
-          <div class="service-price-shop">₱${price60.toLocaleString()}</div>
+          <div class="service-price-shop">${durations.length > 1 ? 'From ' : ''}₱${displayPrice.toLocaleString()}</div>
           <button 
             class="btn-book-service" 
             onclick="window.bookService('${service._id}', '${service.name.replace(/'/g, "\\'")}')"

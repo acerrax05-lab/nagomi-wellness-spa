@@ -5092,15 +5092,14 @@ async function confirmAssignTherapist() {
 
     servicesList.innerHTML = filtered.map(s => {
       const pricing          = s.pricing || {};
-      const price60          = pricing[60]  || pricing['60']  || s.price || 0;
-      const price90          = pricing[90]  || pricing['90']  || s.price || 0;
-      const price120         = pricing[120] || pricing['120'] || s.price || 0;
       const allowedDurations = s.allowedDurations || [60, 90, 120];
-      const durationsText    = allowedDurations.length === 3
-        ? 'All durations available'
-        : `Available: ${allowedDurations.join(', ')} minutes only`;
+      const durationsText    = `Available: ${allowedDurations.join(', ')} minutes`;
+      const priceTags = allowedDurations.map(duration => {
+        const amount = pricing[duration] ?? pricing[String(duration)] ?? s.price ?? 0;
+        return `<span class="price-tag">${duration} min: ₱${Number(amount).toLocaleString()}</span>`;
+      }).join('');
 
-      const isHidden = s.isActive === false;
+      const isHidden = s.active === false || s.isActive === false;
 
       const hiddenBadge = isHidden
         ? `<span style="
@@ -5152,18 +5151,7 @@ async function confirmAssignTherapist() {
             ${categoryBadge}
             <p style="margin-top:8px;">${s.description || 'No description'}</p>
             <div class="service-pricing">
-              <span class="price-tag ${!allowedDurations.includes(60)  ? 'disabled' : ''}"
-                style="${!allowedDurations.includes(60)  ? 'pointer-events:none;opacity:0.5;' : ''}">
-                60 min: ₱${price60}
-              </span>
-              <span class="price-tag ${!allowedDurations.includes(90)  ? 'disabled' : ''}"
-                style="${!allowedDurations.includes(90)  ? 'pointer-events:none;opacity:0.5;' : ''}">
-                90 min: ₱${price90}
-              </span>
-              <span class="price-tag ${!allowedDurations.includes(120) ? 'disabled' : ''}"
-                style="${!allowedDurations.includes(120) ? 'pointer-events:none;opacity:0.5;' : ''}">
-                120 min: ₱${price120}
-              </span>
+              ${priceTags}
             </div>
             <p style="color:#666;font-size:0.85rem;margin-top:8px;font-style:italic;">
               ℹ️ ${durationsText}
@@ -5211,18 +5199,107 @@ async function confirmAssignTherapist() {
     }
   }
 
+  const DEFAULT_SERVICE_DURATIONS = [30, 60, 90, 120, 180];
+  let serviceDurationPricingDraft = {};
+
+  function renderServiceDurationRows(durations = DEFAULT_SERVICE_DURATIONS, pricing = {}, selected = durations) {
+    const uniqueDurations = [...new Set([...DEFAULT_SERVICE_DURATIONS, ...durations].map(Number))].sort((a, b) => a - b);
+    const selectedDurations = selected.map(Number);
+    serviceDurationPricingDraft = { ...serviceDurationPricingDraft, ...pricing };
+
+    document.getElementById('servicePricingGrid').innerHTML = selectedDurations
+      .sort((a, b) => a - b)
+      .map(duration => {
+        const amount = serviceDurationPricingDraft[duration] ?? serviceDurationPricingDraft[String(duration)] ?? '';
+        return `<div class="service-price-field" data-duration="${duration}">
+          <label>${duration} minutes</label>
+          <input type="number" class="service-duration-price" min="0" step="0.01"
+            value="${amount}" placeholder="Price" required>
+        </div>`;
+      }).join('');
+
+    document.getElementById('serviceDurationChips').innerHTML = uniqueDurations.map(duration => {
+      const enabled = selectedDurations.includes(duration);
+      return `<label class="service-duration-chip ${enabled ? 'is-selected' : ''}" data-duration="${duration}">
+        <input type="checkbox" class="service-duration-check" ${enabled ? 'checked' : ''}>
+        <span>◷ ${duration} min</span>
+        ${DEFAULT_SERVICE_DURATIONS.includes(duration) ? '' : '<button type="button" class="remove-service-duration" title="Remove duration" aria-label="Remove duration">×</button>'}
+      </label>`;
+    }).join('');
+  }
+
+  function captureServicePricingDraft() {
+    document.querySelectorAll('.service-price-field').forEach(field => {
+      serviceDurationPricingDraft[field.dataset.duration] = field.querySelector('.service-duration-price').value;
+    });
+  }
+
+  function collectServiceDurationData(validate = true) {
+    const allowedDurations = [];
+    const pricing = {};
+    document.querySelectorAll('.service-duration-chip').forEach(chip => {
+      if (!chip.querySelector('.service-duration-check').checked) return;
+      const duration = Number(chip.dataset.duration);
+      const priceInput = document.querySelector(`.service-price-field[data-duration="${duration}"] .service-duration-price`);
+      const rawPrice = priceInput ? priceInput.value.trim() : '';
+      allowedDurations.push(duration);
+      pricing[duration] = rawPrice === '' ? NaN : Number(rawPrice);
+    });
+    allowedDurations.sort((a, b) => a - b);
+    if (validate && (!allowedDurations.length || allowedDurations.some(d => !Number.isFinite(pricing[d]) || pricing[d] < 0))) {
+      throw new Error('Select at least one duration and enter a valid price for each selection');
+    }
+    return { allowedDurations, pricing };
+  }
+
+  document.getElementById('serviceDurationRows').addEventListener('change', event => {
+    if (!event.target.classList.contains('service-duration-check')) return;
+    captureServicePricingDraft();
+    const durations = [...document.querySelectorAll('.service-duration-chip')].map(chip => Number(chip.dataset.duration));
+    const selected = [...document.querySelectorAll('.service-duration-check:checked')]
+      .map(check => Number(check.closest('.service-duration-chip').dataset.duration));
+    renderServiceDurationRows(durations, serviceDurationPricingDraft, selected);
+  });
+
+  document.getElementById('serviceDurationRows').addEventListener('click', event => {
+    if (!event.target.classList.contains('remove-service-duration')) return;
+    event.preventDefault();
+    captureServicePricingDraft();
+    const removedDuration = Number(event.target.closest('.service-duration-chip').dataset.duration);
+    const durations = [...document.querySelectorAll('.service-duration-chip')]
+      .map(chip => Number(chip.dataset.duration)).filter(duration => duration !== removedDuration);
+    const selected = [...document.querySelectorAll('.service-duration-check:checked')]
+      .map(check => Number(check.closest('.service-duration-chip').dataset.duration)).filter(duration => duration !== removedDuration);
+    delete serviceDurationPricingDraft[removedDuration];
+    renderServiceDurationRows(durations, serviceDurationPricingDraft, selected);
+  });
+
+  document.getElementById('addServiceDurationBtn').addEventListener('click', () => {
+    const input = document.getElementById('customDurationMinutes');
+    const duration = Number(input.value);
+    if (!Number.isInteger(duration) || duration < 15 || duration > 720) {
+      showNotification('Duration must be a whole number from 15 to 720 minutes', 'error');
+      return;
+    }
+    const existing = [...document.querySelectorAll('.service-duration-chip')].map(chip => Number(chip.dataset.duration));
+    if (existing.includes(duration)) {
+      showNotification(`${duration} minutes is already available`, 'error');
+      return;
+    }
+    captureServicePricingDraft();
+    const selected = [...document.querySelectorAll('.service-duration-check:checked')]
+      .map(check => Number(check.closest('.service-duration-chip').dataset.duration));
+    renderServiceDurationRows([...existing, duration], serviceDurationPricingDraft, [...selected, duration]);
+    input.value = '';
+  });
+
   document.getElementById('addServiceBtn').addEventListener('click', () => {
     currentServiceId = null;
     document.getElementById('serviceModalTitle').textContent = 'Add New Service';
     document.getElementById('serviceName').value = '';
     document.getElementById('serviceDesc').value = '';
-    document.getElementById('price60').value = '';
-    document.getElementById('price90').value = '';
-    document.getElementById('price120').value = '';
-    
-    document.getElementById('duration60').checked = true;
-    document.getElementById('duration90').checked = true;
-    document.getElementById('duration120').checked = true;
+    serviceDurationPricingDraft = {};
+    renderServiceDurationRows(DEFAULT_SERVICE_DURATIONS, {}, DEFAULT_SERVICE_DURATIONS);
     document.getElementById('serviceCategory').value = '';
     
     document.getElementById('editServiceModal').classList.add('active');
@@ -5242,15 +5319,11 @@ async function confirmAssignTherapist() {
       document.getElementById('serviceDesc').value = service.description || '';
       
       const pricing = service.pricing || {};
-      document.getElementById('price60').value = pricing[60] || pricing['60'] || service.price || '';
-      document.getElementById('price90').value = pricing[90] || pricing['90'] || service.price || '';
-      document.getElementById('price120').value = pricing[120] || pricing['120'] || service.price || '';
       document.getElementById('serviceCategory').value = service.category || '';
       
       const allowedDurations = service.allowedDurations || [60, 90, 120];
-      document.getElementById('duration60').checked = allowedDurations.includes(60);
-      document.getElementById('duration90').checked = allowedDurations.includes(90);
-      document.getElementById('duration120').checked = allowedDurations.includes(120);
+      serviceDurationPricingDraft = {};
+      renderServiceDurationRows(allowedDurations, pricing, allowedDurations);
       
       document.getElementById('editServiceModal').classList.add('active');
 
@@ -5446,33 +5519,29 @@ async function confirmAssignTherapist() {
   document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const allowedDurations = [];
-    if (document.getElementById('duration60').checked) allowedDurations.push(60);
-    if (document.getElementById('duration90').checked) allowedDurations.push(90);
-    if (document.getElementById('duration120').checked) allowedDurations.push(120);
-    
-    if (allowedDurations.length === 0) {
-      alert(' Please select at least one duration');
+    let durationData;
+    try {
+      durationData = collectServiceDurationData();
+    } catch (err) {
+      showNotification(err.message, 'error');
       return;
     }
+    const { allowedDurations, pricing } = durationData;
     
     const serviceData = {
       name: document.getElementById('serviceName').value,
       description: document.getElementById('serviceDesc').value,
       category: document.getElementById('serviceCategory').value,
-      durationMinutes: 60,
-      price: parseInt(document.getElementById('price60').value),
-      pricing: {
-        60: parseInt(document.getElementById('price60').value),
-        90: parseInt(document.getElementById('price90').value),
-        120: parseInt(document.getElementById('price120').value)
-      },
+      durationMinutes: allowedDurations[0],
+      price: pricing[allowedDurations[0]],
+      pricing,
       allowedDurations
     };
     
     try {
+      let response;
       if (currentServiceId) {
-        await fetch(`${apiBase}/services/${currentServiceId}`, {
+        response = await fetch(`${apiBase}/services/${currentServiceId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -5480,9 +5549,8 @@ async function confirmAssignTherapist() {
           },
           body: JSON.stringify(serviceData)
         });
-        showNotification('Service updated!', 'success');
       } else {
-        await fetch(`${apiBase}/services`, {
+        response = await fetch(`${apiBase}/services`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -5490,14 +5558,16 @@ async function confirmAssignTherapist() {
           },
           body: JSON.stringify(serviceData)
         });
-        showNotification('Service created!', 'success');
       }
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.msg || 'Failed to save service');
+      showNotification(currentServiceId ? 'Service updated!' : 'Service created!', 'success');
       
       document.getElementById('editServiceModal').classList.remove('active');
       loadServices();
     } catch (err) {
       console.error(err);
-      showNotification('Failed to save service', 'error');
+      showNotification(err.message || 'Failed to save service', 'error');
     }
   });
 
