@@ -573,18 +573,25 @@ try {
           : (numberOfClients || 1);
 
         // ── Calculate price ────────────────────────────────────────
-        let finalPrice = totalAmount;
-        if (service.pricing) {
-          const pricingObj = service.pricing.toObject
-            ? service.pricing.toObject()
-            : service.pricing;
-          const configuredPrice = pricingObj[durationMinutes] ?? pricingObj[durationMinutes.toString()];
-          if (!Number.isFinite(Number(configuredPrice))) {
-            return res.status(400).json({ msg: `No price is configured for ${durationMinutes} minutes` });
-          }
-          const basePrice = Number(configuredPrice);
-          finalPrice = basePrice * (totalClients || numberOfClients || 1);
+        const pricing = service.pricing;
+        const durationKey = durationMinutes.toString();
+        const durationPrice = pricing && typeof pricing.get === 'function'
+          ? (pricing.get(durationKey) ?? pricing.get(durationMinutes))
+          : (pricing?.[durationKey] ?? pricing?.[durationMinutes]);
+        const flatPrice = Number(service.price);
+
+        // Legacy/fixed-price services may have an empty duration-pricing map. The
+        // booking UI displays their flat price for each allowed duration, so use
+        // that same server-owned value instead of rejecting the booking.
+        const basePrice = Number.isFinite(Number(durationPrice))
+          ? Number(durationPrice)
+          : (Number.isFinite(flatPrice) && flatPrice > 0 ? flatPrice : null);
+
+        if (basePrice === null) {
+          return res.status(400).json({ msg: `No price is configured for ${durationMinutes} minutes` });
         }
+
+        const finalPrice = basePrice * (totalClients || numberOfClients || 1);
 
         console.log('💰 Final price:', finalPrice);
 
